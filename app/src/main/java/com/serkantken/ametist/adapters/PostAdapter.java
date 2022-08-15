@@ -72,7 +72,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                     }
                 }
                 holder.binding.username.setText(user.getName());
-                Glide.with(context).load(user.getProfilePic()).placeholder(AppCompatResources.getDrawable(context, R.drawable.ic_person_profile)).into((ImageView) holder.binding.profileImage);
+                Glide.with(context).load(user.getProfilePic()).placeholder(AppCompatResources.getDrawable(context, R.drawable.ic_person)).into((ImageView) holder.binding.profileImage);
             }
         });
         holder.binding.postText.setText(postModels.get(position).getPostText());

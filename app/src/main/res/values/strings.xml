@@ -77,4 +77,7 @@
     <string name="someone_is_following">Someone is now following you</string>
     <string name="new_follower">New follower</string>
     <string name="photo_preview">Photo preview</string>
+    <string name="error_at_sending_text">Error at sending text message. Try again.</string>
+    <string name="sent_you_a_photo">" sent you a photo"</string>
+    <string name="photo_uploading">Uploading photo...</string>
 </resources>

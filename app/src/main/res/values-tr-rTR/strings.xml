@@ -73,4 +73,8 @@
     <string name="is_now_following_you">" seni takip etmeye başladı"</string>
     <string name="someone_is_following">Biri seni takip etmeye başladı</string>
     <string name="new_follower">Yeni takipçi</string>
+    <string name="error_at_sending_text">Mesajınız gönderilirken bir hata oluştu. Tekrar deneyin.</string>
+    <string name="sent_you_a_photo">" size bir fotoğraf gönderdi"</string>
+    <string name="photo_uploading">Fotoğraf gönderiliyor...</string>
+    <string name="photo_preview">Fotoğraf önizleme</string>
 </resources>

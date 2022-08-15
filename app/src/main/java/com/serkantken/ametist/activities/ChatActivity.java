@@ -1,6 +1,7 @@
 package com.serkantken.ametist.activities;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -28,6 +29,9 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.StorageTask;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.adapters.ChatAdapter;
 import com.serkantken.ametist.databinding.ActivityChatBinding;
@@ -48,6 +52,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -69,8 +74,6 @@ public class ChatActivity extends BaseActivity {
     private String photoUri;
     private BottomSheetDialog choosePhotoDialog;
     private LayoutChatPhotoSelectorBinding choosePhotoView;
-    private BottomSheetDialog sendPhotoDialog;
-    private LayoutChatPhotoSelectorBinding sendPhotoView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,49 +127,49 @@ public class ChatActivity extends BaseActivity {
         });
     }
 
-    private void selectPhotoFromGallery()
-    {
+    private void selectPhotoFromGallery() {
         choosePhotoDialog = new BottomSheetDialog(ChatActivity.this, R.style.BottomSheetDialogTheme_Chat);
         choosePhotoView = LayoutChatPhotoSelectorBinding.inflate(getLayoutInflater());
 
         utilities.blur(choosePhotoView.blur, 10f, false);
 
         choosePhotoView.buttonGallery.setOnClickListener(view -> {
-            if (isPermissionGranted())
-            {
+            if (isPermissionGranted()) {
                 getContent.launch("image/*");
             }
+        });
+
+        choosePhotoView.buttonDelete.setOnClickListener(view -> {
+            photoUri = "";
+            choosePhotoDialog.dismiss();
+        });
+
+        choosePhotoView.buttonSend.setOnClickListener(view -> {
+            sendPhoto();
         });
 
         choosePhotoDialog.setContentView(choosePhotoView.getRoot());
         choosePhotoDialog.show();
     }
 
-    private void sendPhotoFromGallery()
-    {
-        sendPhotoDialog = new BottomSheetDialog(ChatActivity.this, R.style.BottomSheetDialogTheme_Chat);
-        sendPhotoView = LayoutChatPhotoSelectorBinding.inflate(getLayoutInflater());
-
-        utilities.blur(sendPhotoView.blur, 10f, false);
-
-        if (!photoUri.isEmpty())
-        {
-            Glide.with(this).load(photoUri).into(sendPhotoView.postImage);
+    private void sendPhotoFromGallery() {
+        if (!photoUri.isEmpty()) {
+            Glide.with(this).load(photoUri).into(choosePhotoView.postImage);
+            choosePhotoView.titleMessageBox.setText(getString(R.string.photo_preview));
+            choosePhotoView.buttonCamera.setVisibility(View.GONE);
+            choosePhotoView.buttonGallery.setVisibility(View.GONE);
+            choosePhotoView.buttonDelete.setVisibility(View.VISIBLE);
+            choosePhotoView.buttonSend.setVisibility(View.VISIBLE);
+            choosePhotoView.postImage.setVisibility(View.VISIBLE);
+            choosePhotoView.messageLayout.setVisibility(View.VISIBLE);
         }
-
-        sendPhotoDialog.setContentView(choosePhotoView.getRoot());
-        sendPhotoDialog.show();
     }
 
-    private Boolean isPermissionGranted()
-    {
+    private Boolean isPermissionGranted() {
         if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
-        {
+                ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             return true;
-        }
-        else
-        {
+        } else {
             ActivityCompat.requestPermissions(ChatActivity.this, new String[]{
                     Manifest.permission.READ_EXTERNAL_STORAGE,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -176,50 +179,143 @@ public class ChatActivity extends BaseActivity {
         }
     }
 
-    private void sendMessage()
-    {
+    private void sendMessage() {
         String message = binding.inputMessage.getText().toString();
-        MessageModel model = new MessageModel();
-        model.setTimestamp(new Date().getTime());
-        model.setMessage(message);
-        model.setSenderId(auth.getUid());
-        model.setReceiverId(receiverUser.getUserId());
+        HashMap<String, Object> model = new HashMap<>();
+        model.put("timestamp", new Date().getTime());
+        model.put("message", message);
+        model.put("photo", "null");
+        model.put("senderId", auth.getUid());
+        model.put("receiverId", receiverUser.getUserId());
 
-        database.collection("chats").add(model);
+        database.collection("chats").add(model).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                model.put("messageId", task.getResult().getId());
+                database.collection("chats").document(task.getResult().getId()).update(model);
 
-        if (conversationId != null) {
-            updateConversation(binding.inputMessage.getText().toString());
-        } else {
-            MessageModel messageModel = new MessageModel();
-            messageModel.setSenderId(auth.getUid());
-            messageModel.setReceiverId(receiverUser.getUserId());
-            messageModel.setMessage(binding.inputMessage.getText().toString());
-            messageModel.setTimestamp(new Date().getTime());
-            addConversation(messageModel);
-        }
-        if (!isReceiverAvailable) {
-            try {
-                JSONArray tokens = new JSONArray();
-                tokens.put(receiverUser.getToken());
+                if (conversationId != null) {
+                    updateConversation(binding.inputMessage.getText().toString());
+                } else {
+                    MessageModel messageModel = new MessageModel();
+                    messageModel.setSenderId(auth.getUid());
+                    messageModel.setReceiverId(receiverUser.getUserId());
+                    messageModel.setMessage(binding.inputMessage.getText().toString());
+                    messageModel.setTimestamp(new Date().getTime());
+                    addConversation(messageModel);
+                }
+                if (!isReceiverAvailable) {
+                    try {
+                        JSONArray tokens = new JSONArray();
+                        tokens.put(receiverUser.getToken());
 
-                JSONObject data = new JSONObject();
-                data.put("userId", auth.getUid());
-                data.put("username", utilities.getPreferences("username"));
-                data.put("token", utilities.getPreferences("token"));
-                data.put("messageType", "1");
-                data.put("message", binding.inputMessage.getText().toString());
+                        JSONObject data = new JSONObject();
+                        data.put("userId", auth.getUid());
+                        data.put("username", utilities.getPreferences("username"));
+                        data.put("token", utilities.getPreferences("token"));
+                        data.put("messageType", "1");
+                        data.put("message", binding.inputMessage.getText().toString());
 
-                JSONObject body = new JSONObject();
-                body.put(Constants.REMOTE_MSG_DATA, data);
-                body.put(Constants.REMOTE_MSG_REGISTRATION_IDS, tokens);
+                        JSONObject body = new JSONObject();
+                        body.put(Constants.REMOTE_MSG_DATA, data);
+                        body.put(Constants.REMOTE_MSG_REGISTRATION_IDS, tokens);
 
-                sendNotification(body.toString());
-            } catch (Exception e) {
-                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                        sendNotification(body.toString());
+                    } catch (Exception e) {
+                        Toast.makeText(ChatActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                binding.inputMessage.setText("");
+            } else {
+                Toast.makeText(this, getString(R.string.error_at_sending_text), Toast.LENGTH_SHORT).show();
             }
-        }
+        });
 
-        binding.inputMessage.setText("");
+
+    }
+
+    private void sendPhoto() {
+        ProgressDialog progressDialog = new ProgressDialog(ChatActivity.this);
+        progressDialog.setMessage(getString(R.string.photo_uploading));
+        progressDialog.create();
+        progressDialog.show();
+
+        String message = choosePhotoView.inputMessage.getText().toString();
+        HashMap<String, Object> model = new HashMap<>();
+        model.put("timestamp", new Date().getTime());
+        model.put("message", message);
+        model.put("senderId", auth.getUid());
+        model.put("receiverId", receiverUser.getUserId());
+
+        StorageReference filePath = FirebaseStorage.getInstance()
+                .getReference("Chats")
+                .child(auth.getUid())
+                .child(receiverUser.getUserId())
+                .child(new StringBuilder(UUID.randomUUID().toString()).append(".jpg").toString());
+
+        StorageTask uploadTask = filePath.putFile(Uri.parse(photoUri));
+        uploadTask.continueWithTask(task -> {
+            if (!task.isSuccessful())
+            {
+                throw task.getException();
+            }
+            return filePath.getDownloadUrl();
+        }).addOnCompleteListener((OnCompleteListener<Uri>) task -> {
+            Uri downloadUri = task.getResult();
+            String downloadUrl = downloadUri.toString();
+            model.put("photo", downloadUrl);
+
+            database.collection("chats").add(model).addOnCompleteListener(task1 -> {
+                if (task1.isSuccessful()) {
+                    model.put("messageId", task1.getResult().getId());
+
+                    database.collection("chats").document(task1.getResult().getId()).update(model);
+
+                    if (conversationId != null) {
+                        updateConversation(choosePhotoView.inputMessage.getText().toString());
+                    } else {
+                        MessageModel messageModel = new MessageModel();
+                        messageModel.setSenderId(auth.getUid());
+                        messageModel.setReceiverId(receiverUser.getUserId());
+                        if (Objects.equals(choosePhotoView.inputMessage.getText().toString(), ""))
+                        {
+                            messageModel.setMessage("Photo");
+                        }
+                        else
+                        {
+                            messageModel.setMessage(choosePhotoView.inputMessage.getText().toString());
+                        }
+                        messageModel.setTimestamp(new Date().getTime());
+                        addConversation(messageModel);
+                    }
+                    if (!isReceiverAvailable) {
+                        try {
+                            JSONArray tokens = new JSONArray();
+                            tokens.put(receiverUser.getToken());
+
+                            JSONObject data = new JSONObject();
+                            data.put("userId", auth.getUid());
+                            data.put("username", utilities.getPreferences("username"));
+                            data.put("token", utilities.getPreferences("token"));
+                            data.put("messageType", "3");
+                            data.put("message", choosePhotoView.inputMessage.getText().toString());
+
+                            JSONObject body = new JSONObject();
+                            body.put(Constants.REMOTE_MSG_DATA, data);
+                            body.put(Constants.REMOTE_MSG_REGISTRATION_IDS, tokens);
+
+                            sendNotification(body.toString());
+                        } catch (Exception e) {
+                            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    progressDialog.dismiss();
+                    binding.inputMessage.setText("");
+                    choosePhotoDialog.dismiss();
+                }
+            });
+        });
     }
 
     private void sendNotification(String messageBody) {
@@ -302,6 +398,7 @@ public class ChatActivity extends BaseActivity {
                     model.setSenderId(documentChange.getDocument().getString("senderId"));
                     model.setReceiverId(documentChange.getDocument().getString("receiverId"));
                     model.setMessage(documentChange.getDocument().getString("message"));
+                    model.setPhoto(documentChange.getDocument().getString("photo"));
                     model.setTimestamp(documentChange.getDocument().getLong("timestamp"));
                     messageModels.add(model);
                 }
@@ -358,17 +455,13 @@ public class ChatActivity extends BaseActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
-    {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP)
-        {
+        if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
             Uri resultUri = UCrop.getOutput(data);
-            if (resultUri != null)
-            {
+            if (resultUri != null) {
                 photoUri = resultUri.toString();
-                choosePhotoDialog.dismiss();
                 sendPhotoFromGallery();
             }
         }

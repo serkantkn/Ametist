@@ -82,6 +82,10 @@ public class MessagingService extends FirebaseMessagingService
         {
             notificationBuilder.setContentText(message+getApplicationContext().getResources().getString(R.string.is_now_following_you));
         }
+        else if (messageType.equals("3"))
+        {
+            notificationBuilder.setContentText(message+getApplicationContext().getResources().getString(R.string.sent_you_a_photo));
+        }
         notificationBuilder.setStyle(new NotificationCompat.BigTextStyle().bigText(message));
         notificationBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
         notificationBuilder.setContentIntent(createPendingIntent());

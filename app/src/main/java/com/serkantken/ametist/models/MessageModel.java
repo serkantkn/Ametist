@@ -48,6 +48,14 @@ public class MessageModel
         this.timestamp = timestamp;
     }
 
+    public String getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
+    }
+
     public String getConversationId() {
         return conversationId;
     }
