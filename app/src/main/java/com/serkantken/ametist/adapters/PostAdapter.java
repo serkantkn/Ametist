@@ -59,10 +59,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.binding.postImage.setVisibility(View.GONE);
         UserModel user = new UserModel();
+        PostModel postModel = postModels.get(position);
         database.collection("Users").get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
-                    if (documentSnapshot.getId().equals(postModels.get(holder.getAdapterPosition()).getPostedBy())) {
+                    if (documentSnapshot.getId().equals(postModel.getPostedBy())) {
                         user.setUserId(documentSnapshot.getId());
                         user.setName(documentSnapshot.getString("name"));
                         user.setProfilePic(documentSnapshot.getString("profilePic"));
@@ -75,17 +76,17 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                 Glide.with(context).load(user.getProfilePic()).placeholder(AppCompatResources.getDrawable(context, R.drawable.ic_person)).into((ImageView) holder.binding.profileImage);
             }
         });
-        holder.binding.postText.setText(postModels.get(position).getPostText());
-        holder.binding.date.setText(TimeAgo.using(postModels.get(position).getPostedAt()));
+        holder.binding.postText.setText(postModel.getPostText());
+        holder.binding.date.setText(TimeAgo.using(postModel.getPostedAt()));
         holder.binding.profileImage.setOnClickListener(view -> onUserClicked(user));
         holder.binding.username.setOnClickListener(view -> onUserClicked(user));
-        if (!Objects.equals(postModels.get(position).getPostPicture(), null))
+        if (!Objects.equals(postModel.getPostPicture(), null))
         {
             holder.binding.postImage.setVisibility(View.VISIBLE);
-            Glide.with(context).load(postModels.get(position).getPostPicture()).into(holder.binding.postImage);
+            Glide.with(context).load(postModel.getPostPicture()).into(holder.binding.postImage);
             holder.binding.postImage.setOnClickListener(view -> {
                 Intent intent = new Intent(context, FullProfilePhotoActivity.class);
-                intent.putExtra("pictureUrl", postModels.get(position).getPostPicture());
+                intent.putExtra("pictureUrl", postModel.getPostPicture());
                 context.startActivity(intent);
             });
         }

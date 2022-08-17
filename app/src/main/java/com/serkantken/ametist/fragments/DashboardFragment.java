@@ -28,6 +28,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -74,6 +75,7 @@ public class DashboardFragment extends Fragment
 {
     FragmentDashboardBinding binding;
     ArrayList<PostModel> postModels;
+    ArrayList<String> followingUsers;
     PostAdapter adapter;
     FirebaseFirestore database;
     FirebaseAuth auth;
@@ -93,13 +95,14 @@ public class DashboardFragment extends Fragment
         database = FirebaseFirestore.getInstance();
         currentUser = new UserModel();
         postModels = new ArrayList<>();
-
-        getUserInfo();
-        getPosts();
+        followingUsers = new ArrayList<>();
 
         adapter = new PostAdapter(postModels, getContext(), getActivity(), database);
         binding.dashboardRV.setAdapter(adapter);
         binding.dashboardRV.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        getUserInfo();
+        getPosts();
 
         binding.dashboardRefresher.setOnRefreshListener(this::getPosts);
 
@@ -261,31 +264,53 @@ public class DashboardFragment extends Fragment
     private void getPosts()
     {
         binding.dashboardRefresher.setRefreshing(true);
-        database.collection("Users").document(auth.getUid()).collection("Posts").get().addOnCompleteListener(task -> {
-            if (task.isSuccessful())
+        followingUsers.clear();
+        followingUsers.add(auth.getUid());
+        database.collection("Users").document(auth.getUid()).collection("followings").get().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult() != null)
             {
-                postModels.clear();
-                for (QueryDocumentSnapshot documentSnapshot : task.getResult())
+                for (QueryDocumentSnapshot snapshot : task.getResult())
                 {
-                    PostModel postModel = new PostModel();
-                    postModel.setPostId(documentSnapshot.getId());
-                    postModel.setPostText(documentSnapshot.getString("postText"));
-                    postModel.setPostPicture(documentSnapshot.getString("postPicture"));
-                    postModel.setPostedBy(documentSnapshot.getString("postedBy"));
-                    postModel.setPostedAt(documentSnapshot.getLong("postedAt"));
-                    postModel.setCommentCount(Integer.parseInt(documentSnapshot.get("commentCount").toString()));
-                    postModel.setLikeCount(Integer.parseInt(documentSnapshot.get("likeCount").toString()));
-                    postModels.add(postModel);
+                    followingUsers.add(snapshot.getId());
                 }
-                postModels.sort(Comparator.comparing(PostModel::getPostedAt).reversed());
-                adapter.notifyDataSetChanged();
-                binding.dashboardRefresher.setRefreshing(false);
-            }
-            else
-            {
-                Toast.makeText(requireContext(), getString(R.string.check_your_connection), Toast.LENGTH_LONG).show();
+
+                postModels.clear();
+                for (int i = 0; i < followingUsers.size(); i++)
+                {
+                    Log.i("sira", i+"");
+                    int index = i;
+                    database.collection("Users").document(followingUsers.get(i)).collection("Posts").get().addOnCompleteListener(task1 -> {
+                        if (task1.isSuccessful())
+                        {
+                            for (QueryDocumentSnapshot documentSnapshot : task1.getResult())
+                            {
+                                PostModel postModel = new PostModel();
+                                postModel.setPostId(documentSnapshot.getId());
+                                postModel.setPostText(documentSnapshot.getString("postText"));
+                                postModel.setPostPicture(documentSnapshot.getString("postPicture"));
+                                postModel.setPostedBy(documentSnapshot.getString("postedBy"));
+                                postModel.setPostedAt(documentSnapshot.getLong("postedAt"));
+                                postModel.setCommentCount(Integer.parseInt(documentSnapshot.get("commentCount").toString()));
+                                postModel.setLikeCount(Integer.parseInt(documentSnapshot.get("likeCount").toString()));
+                                postModels.add(postModel);
+                            }
+                            if (postModels.size() != 0)
+                                postModels.sort(Comparator.comparing(PostModel::getPostedAt).reversed());
+                            if (index == followingUsers.size()-1)
+                                adapter.notifyDataSetChanged();
+                        }
+                        else
+                        {
+                            Toast.makeText(requireContext(), getString(R.string.check_your_connection), Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+                //Log.i("followingUser", followingUsers.toString() + " " + followingUsers.size());
             }
         });
+
+
+        binding.dashboardRefresher.setRefreshing(false);
     }
 
     @Override
