@@ -111,7 +111,16 @@ public class ChatActivity extends BaseActivity {
 
         binding.addPhoto.setOnClickListener(view -> selectPhotoFromGallery());
 
-        binding.buttonSend.setOnClickListener(view -> sendMessage());
+        binding.buttonSend.setOnClickListener(view -> {
+            if (!Objects.equals(binding.inputMessage.getText().toString(), ""))
+            {
+                sendMessage();
+            }
+            else
+            {
+                Toast.makeText(this, "Mesaj kutusu boş", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         getContent = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
             String destUri = new StringBuilder(UUID.randomUUID().toString()).append(".jpg").toString();
