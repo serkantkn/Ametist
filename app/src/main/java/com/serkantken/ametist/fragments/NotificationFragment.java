@@ -29,11 +29,13 @@ import com.serkantken.ametist.adapters.NotificationsAdapter;
 import com.serkantken.ametist.databinding.FragmentNotificationBinding;
 import com.serkantken.ametist.databinding.LayoutProfileBinding;
 import com.serkantken.ametist.models.NotificationModel;
+import com.serkantken.ametist.models.PostModel;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.utilities.UserListener;
 import com.serkantken.ametist.utilities.Utilities;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Objects;
 
 import eightbitlab.com.blurview.BlurView;
@@ -41,7 +43,7 @@ import eightbitlab.com.blurview.BlurView;
 public class NotificationFragment extends Fragment implements UserListener
 {
     ArrayList<NotificationModel> notifList;
-    ArrayList<UserModel> userlist;
+    //ArrayList<UserModel> userlist;
     FragmentNotificationBinding binding;
     FirebaseAuth auth;
     FirebaseFirestore database;
@@ -56,14 +58,14 @@ public class NotificationFragment extends Fragment implements UserListener
         auth = FirebaseAuth.getInstance();
         database = FirebaseFirestore.getInstance();
         notifList = new ArrayList<>();
-        userlist = new ArrayList<>();
-        adapter = new NotificationsAdapter(requireContext(), notifList, userlist, this);
+        //userlist = new ArrayList<>();
+        adapter = new NotificationsAdapter(requireContext(), notifList, this);
         binding.notifRV.setAdapter(adapter);
         binding.notifRV.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         binding.notifRefresher.setOnRefreshListener(this::getNotifications);
 
-        //getNotifications();
+        getNotifications();
 
         return binding.getRoot();
     }
@@ -78,7 +80,7 @@ public class NotificationFragment extends Fragment implements UserListener
                     if (task.isSuccessful())
                     {
                         notifList.clear();
-                        userlist.clear();
+                        //userlist.clear();
                         for (QueryDocumentSnapshot snapshot : task.getResult())
                         {
                             notificationModel = new NotificationModel();
@@ -87,29 +89,32 @@ public class NotificationFragment extends Fragment implements UserListener
                             notificationModel.setNotifDate(snapshot.getLong("followedAt"));
                             notificationModel.setRead(snapshot.getBoolean("isRead"));
                             notifList.add(notificationModel);
+                        }
 
-                            database.collection("Users").get().addOnCompleteListener(task1 -> {
-                                if (task1.isSuccessful())
+                        /*
+                        database.collection("Users").get().addOnCompleteListener(task1 -> {
+                            if (task1.isSuccessful())
+                            {
+                                for (QueryDocumentSnapshot documentSnapshot : task1.getResult())
                                 {
-                                    for (QueryDocumentSnapshot documentSnapshot : task1.getResult())
+                                    if (Objects.equals(documentSnapshot.getId(), notificationModel.getUserId()))
                                     {
-                                        if (Objects.equals(documentSnapshot.getId(), snapshot.getString("followedBy")))
-                                        {
-                                            UserModel userModel = new UserModel();
-                                            userModel.setUserId(documentSnapshot.getId());
-                                            userModel.setName(documentSnapshot.getString("name"));
-                                            userModel.setProfilePic(documentSnapshot.getString("profilePic"));
-                                            userModel.setGender(documentSnapshot.getString("gender"));
-                                            userModel.setAge(documentSnapshot.getString("age"));
-                                            userModel.setAbout(documentSnapshot.getString("about"));
-                                            userModel.setFollowingCount((Integer) documentSnapshot.get("followingCount"));
-                                            userModel.setFollowerCount((Integer) documentSnapshot.get("followerCount"));
-                                            userlist.add(userModel);
-                                        }
+                                        UserModel userModel = new UserModel();
+                                        userModel.setUserId(documentSnapshot.getId());
+                                        userModel.setName(documentSnapshot.getString("name"));
+                                        userModel.setProfilePic(documentSnapshot.getString("profilePic"));
+                                        userModel.setGender(documentSnapshot.getString("gender"));
+                                        userModel.setAge(documentSnapshot.getString("age"));
+                                        userModel.setAbout(documentSnapshot.getString("about"));
+                                        userModel.setFollowingCount((Integer) documentSnapshot.get("followingCount"));
+                                        userModel.setFollowerCount((Integer) documentSnapshot.get("followerCount"));
+                                        userlist.add(userModel);
                                     }
                                 }
-                            });
-                        }
+                            }
+                        });*/
+
+                        notifList.sort(Comparator.comparing(NotificationModel::getNotifDate).reversed());
                         adapter.notifyDataSetChanged();
                         binding.notifRefresher.setRefreshing(false);
                     }
