@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/post_delete"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="@drawable/menu_item_top"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:paddingStart="15dp"
+        android:paddingEnd="20dp">
+
+        <ImageView
+            android:id="@+id/ic_delete"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:src="@drawable/ic_delete"
+            android:padding="3dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <TextView
+            android:id="@+id/text_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/delete_post"
+            android:textColor="@color/primary_text"
+            android:textSize="17sp"
+            android:fontFamily="@font/jost_regular"
+            app:layout_constraintTop_toTopOf="@id/ic_delete"
+            app:layout_constraintStart_toEndOf="@id/ic_delete"
+            app:layout_constraintBottom_toBottomOf="@id/ic_delete"
+            android:layout_marginStart="10dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/post_edit"
+        app:layout_constraintTop_toBottomOf="@id/post_delete"
+        app:layout_constraintStart_toStartOf="@id/post_delete"
+        app:layout_constraintEnd_toEndOf="@id/post_delete"
+        android:background="@drawable/menu_item_bottom"
+        android:layout_marginTop="2dp"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:paddingStart="15dp"
+        android:paddingEnd="20dp">
+
+        <ImageView
+            android:id="@+id/ic_edit"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:src="@drawable/ic_edit"
+            android:padding="3dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <TextView
+            android:id="@+id/text_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/edit"
+            android:textColor="@color/primary_text"
+            android:textSize="17sp"
+            android:fontFamily="@font/jost_regular"
+            app:layout_constraintTop_toTopOf="@id/ic_edit"
+            app:layout_constraintStart_toEndOf="@id/ic_edit"
+            app:layout_constraintBottom_toBottomOf="@id/ic_edit"
+            android:layout_marginStart="10dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -50,7 +50,7 @@ public class ChatListDialogFragment extends BottomSheetDialogFragment implements
         auth = FirebaseAuth.getInstance();
         database = FirebaseFirestore.getInstance();
         Utilities utilities = new Utilities(requireContext(), requireActivity());
-        utilities.blur(binding.blur, 10f, false);
+        utilities.blur(binding.blur, 25f, false);
         adapter = new ChatListAdapter(messageList, getContext(), getActivity(), this);
         binding.rvMessageList.setAdapter(adapter);
         binding.rvMessageList.setLayoutManager(new LinearLayoutManager(getActivity()));

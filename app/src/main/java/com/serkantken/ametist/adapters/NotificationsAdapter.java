@@ -1,9 +1,7 @@
 package com.serkantken.ametist.adapters;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -11,34 +9,27 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.github.marlonlom.utilities.timeago.TimeAgo;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.databinding.NotifListLayoutBinding;
 import com.serkantken.ametist.models.NotificationModel;
-import com.serkantken.ametist.models.PostModel;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.utilities.UserListener;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Objects;
 
 public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdapter.ViewHolder>
 {
     Context context;
     ArrayList<NotificationModel> notifList;
-    //ArrayList<UserModel> userList;
     UserListener userListener;
 
     public NotificationsAdapter(Context context, ArrayList<NotificationModel> notifList, UserListener listener)
     {
         this.context = context;
         this.notifList = notifList;
-        //this.userList = userList;
         this.userListener = listener;
     }
 

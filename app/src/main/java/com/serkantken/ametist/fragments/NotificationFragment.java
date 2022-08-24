@@ -2,26 +2,18 @@ package com.serkantken.ametist.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.activities.ChatActivity;
 import com.serkantken.ametist.activities.ProfileActivity;
@@ -29,21 +21,18 @@ import com.serkantken.ametist.adapters.NotificationsAdapter;
 import com.serkantken.ametist.databinding.FragmentNotificationBinding;
 import com.serkantken.ametist.databinding.LayoutProfileBinding;
 import com.serkantken.ametist.models.NotificationModel;
-import com.serkantken.ametist.models.PostModel;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.utilities.UserListener;
 import com.serkantken.ametist.utilities.Utilities;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Objects;
 
 import eightbitlab.com.blurview.BlurView;
 
 public class NotificationFragment extends Fragment implements UserListener
 {
     ArrayList<NotificationModel> notifList;
-    //ArrayList<UserModel> userlist;
     FragmentNotificationBinding binding;
     FirebaseAuth auth;
     FirebaseFirestore database;
@@ -58,7 +47,6 @@ public class NotificationFragment extends Fragment implements UserListener
         auth = FirebaseAuth.getInstance();
         database = FirebaseFirestore.getInstance();
         notifList = new ArrayList<>();
-        //userlist = new ArrayList<>();
         adapter = new NotificationsAdapter(requireContext(), notifList, this);
         binding.notifRV.setAdapter(adapter);
         binding.notifRV.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -80,7 +68,6 @@ public class NotificationFragment extends Fragment implements UserListener
                     if (task.isSuccessful())
                     {
                         notifList.clear();
-                        //userlist.clear();
                         for (QueryDocumentSnapshot snapshot : task.getResult())
                         {
                             notificationModel = new NotificationModel();
@@ -90,29 +77,6 @@ public class NotificationFragment extends Fragment implements UserListener
                             notificationModel.setRead(snapshot.getBoolean("isRead"));
                             notifList.add(notificationModel);
                         }
-
-                        /*
-                        database.collection("Users").get().addOnCompleteListener(task1 -> {
-                            if (task1.isSuccessful())
-                            {
-                                for (QueryDocumentSnapshot documentSnapshot : task1.getResult())
-                                {
-                                    if (Objects.equals(documentSnapshot.getId(), notificationModel.getUserId()))
-                                    {
-                                        UserModel userModel = new UserModel();
-                                        userModel.setUserId(documentSnapshot.getId());
-                                        userModel.setName(documentSnapshot.getString("name"));
-                                        userModel.setProfilePic(documentSnapshot.getString("profilePic"));
-                                        userModel.setGender(documentSnapshot.getString("gender"));
-                                        userModel.setAge(documentSnapshot.getString("age"));
-                                        userModel.setAbout(documentSnapshot.getString("about"));
-                                        userModel.setFollowingCount((Integer) documentSnapshot.get("followingCount"));
-                                        userModel.setFollowerCount((Integer) documentSnapshot.get("followerCount"));
-                                        userlist.add(userModel);
-                                    }
-                                }
-                            }
-                        });*/
 
                         notifList.sort(Comparator.comparing(NotificationModel::getNotifDate).reversed());
                         adapter.notifyDataSetChanged();

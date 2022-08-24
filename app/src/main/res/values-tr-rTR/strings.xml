@@ -77,4 +77,8 @@
     <string name="sent_you_a_photo">" size bir fotoğraf gönderdi"</string>
     <string name="photo_uploading">Fotoğraf gönderiliyor...</string>
     <string name="photo_preview">Fotoğraf önizleme</string>
+    <string name="delete_post_question">Gönderiyi silmek istediğinize emin misiniz?</string>
+    <string name="yes">Evet</string>
+    <string name="no">Hayır</string>
+    <string name="delete_post">Gönderiyi sil</string>
 </resources>

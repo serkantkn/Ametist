@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/primary_dark"
-            android:paddingBottom="5dp">
+            android:paddingBottom="10dp">
 
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/profileImage"
@@ -47,6 +47,8 @@
                 android:textSize="20sp"
                 app:layout_constraintStart_toEndOf="@id/profileImage"
                 app:layout_constraintTop_toTopOf="@id/profileImage"
+                app:layout_constraintEnd_toStartOf="@id/buttonMenu"
+                app:layout_constraintHorizontal_bias="0"
                 android:layout_marginStart="10dp"/>
 
             <TextView
@@ -56,8 +58,22 @@
                 app:layout_constraintTop_toBottomOf="@id/username"
                 app:layout_constraintStart_toStartOf="@id/username"
                 app:layout_constraintBottom_toBottomOf="@id/profileImage"
+                app:layout_constraintEnd_toStartOf="@id/buttonMenu"
+                app:layout_constraintHorizontal_bias="0"
                 android:textColor="@color/secondary_text"
                 android:fontFamily="@font/jost_light_italic"/>
+
+            <com.makeramen.roundedimageview.RoundedImageView
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:id="@+id/buttonMenu"
+                android:src="@drawable/ic_arrow_drop_down"
+                android:background="@drawable/background_menu_button"
+                app:layout_constraintTop_toTopOf="@id/profileImage"
+                app:layout_constraintBottom_toBottomOf="@id/profileImage"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginEnd="10dp"
+                android:visibility="gone"/>
 
             <TextView
                 android:id="@+id/postText"
@@ -97,7 +113,7 @@
                 android:layout_height="35dp"
                 android:id="@+id/buttonLike"
                 android:src="@drawable/ic_like_empty"
-                android:background="@drawable/background_post_button"
+                android:background="@drawable/background_post_footer_buttons"
                 android:padding="7dp"
                 app:layout_constraintTop_toBottomOf="@id/postImage"
                 app:layout_constraintStart_toStartOf="parent"
@@ -113,7 +129,7 @@
                 android:layout_height="35dp"
                 android:id="@+id/buttonComment"
                 android:src="@drawable/ic_comment"
-                android:background="@drawable/background_post_button"
+                android:background="@drawable/background_post_footer_buttons"
                 android:padding="7dp"
                 app:layout_constraintStart_toEndOf="@id/buttonLike"
                 app:layout_constraintEnd_toEndOf="parent"

@@ -80,4 +80,8 @@
     <string name="error_at_sending_text">Error at sending text message. Try again.</string>
     <string name="sent_you_a_photo">" sent you a photo"</string>
     <string name="photo_uploading">Uploading photo...</string>
+    <string name="delete_post">Delete post</string>
+    <string name="delete_post_question">Do you want to detete this post?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>

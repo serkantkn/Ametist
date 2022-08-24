@@ -3,7 +3,6 @@ package com.serkantken.ametist.fragments;
 import static android.app.Activity.RESULT_OK;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -11,64 +10,43 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Log;
-import android.util.Pair;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.DecelerateInterpolator;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
-import com.makeramen.roundedimageview.RoundedImageView;
 import com.serkantken.ametist.R;
-import com.serkantken.ametist.activities.ProfileEditActivity;
 import com.serkantken.ametist.adapters.PostAdapter;
 import com.serkantken.ametist.databinding.FragmentDashboardBinding;
 import com.serkantken.ametist.databinding.LayoutNewPostDialogBinding;
 import com.serkantken.ametist.models.PostModel;
 import com.serkantken.ametist.models.UserModel;
-import com.serkantken.ametist.utilities.HidingScrollListener;
 import com.yalantis.ucrop.UCrop;
-import com.yalantis.ucrop.UCropActivity;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Objects;
 import java.util.UUID;
 
 public class DashboardFragment extends Fragment
@@ -111,6 +89,8 @@ public class DashboardFragment extends Fragment
             dialogBinding = LayoutNewPostDialogBinding.inflate(getLayoutInflater());
             builder.setView(dialogBinding.getRoot());
             AlertDialog dialog = builder.create();
+            dialogBinding.buttonSubmitBackground.setBackgroundColor(requireContext().getColor(R.color.secondary_text));
+            dialogBinding.buttonSubmit.setEnabled(false);
             Glide.with(requireContext()).load(currentUser.getProfilePic()).placeholder(AppCompatResources.getDrawable(requireContext(), R.drawable.ic_person_profile)).into(dialogBinding.profileImage);
             dialogBinding.username.setText(currentUser.getName());
             dialogBinding.buttonAddPhoto.setOnClickListener(view1 -> {
@@ -138,10 +118,9 @@ public class DashboardFragment extends Fragment
                     }
                     else
                     {
-                        dialogBinding.buttonSubmitBackground.setBackgroundColor(requireContext().getColor(R.color.accent_blue_dark));
+                        dialogBinding.buttonSubmitBackground.setBackground(AppCompatResources.getDrawable(requireContext(), R.drawable.background_post_footer_buttons));
                         dialogBinding.buttonSubmit.setEnabled(true);
                     }
-
                 }
             });
             dialogBinding.buttonSubmit.setOnClickListener(view1 -> {
@@ -305,7 +284,6 @@ public class DashboardFragment extends Fragment
                         }
                     });
                 }
-                //Log.i("followingUser", followingUsers.toString() + " " + followingUsers.size());
             }
         });
 
@@ -324,6 +302,8 @@ public class DashboardFragment extends Fragment
                 isPhotoSelected = true;
                 dialogBinding.postImage.setVisibility(View.VISIBLE);
                 Glide.with(requireContext()).load(postUri).into(dialogBinding.postImage);
+                dialogBinding.buttonSubmitBackground.setBackground(AppCompatResources.getDrawable(requireContext(), R.drawable.background_post_footer_buttons));
+                dialogBinding.buttonSubmit.setEnabled(true);
             }
         }
     }
