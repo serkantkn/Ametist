@@ -12,6 +12,21 @@ public class Constants
     public static final String REMOTE_MSG_CONTENT_TYPE = "Content-Type";
     public static final String REMOTE_MSG_DATA = "data";
     public static final String REMOTE_MSG_REGISTRATION_IDS = "registration_ids";
+    public static final String DATABASE_PATH_USERS = "Users";
+    public static final String DATABASE_PATH_CHATS = "chats";
+    public static final String DATABASE_PATH_CONVERSATIONS = "conversations";
+    public static final String DATABASE_PATH_POSTS = "Posts";
+    public static final String DATABASE_PATH_FOLLOWERS = "followers";
+    public static final String DATABASE_PATH_FOLLOWINGS = "followings";
+    public static final String DATABASE_PATH_NOTIFICATIONS = "notifications";
+    public static final String MESSAGE_TYPE = "messageType";
+    public static final String MESSAGE_TYPE_TEXT = "1";
+    public static final String MESSAGE_TYPE_FOLLOW = "2";
+    public static final String MESSAGE_TYPE_PHOTO = "3";
+    public static final String USER_ID = "userId";
+    public static final String USERNAME = "username";
+    public static final String TOKEN = "token";
+    public static final String MESSAGE = "message";
 
     public static HashMap<String, String> remoteMsgHeaders = null;
     public static HashMap<String, String> getRemoteMsgHeaders()

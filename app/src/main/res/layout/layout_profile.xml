@@ -27,29 +27,29 @@
 
         <com.makeramen.roundedimageview.RoundedImageView
             android:id="@+id/buttonEdit"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
             android:layout_marginStart="15dp"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
-            android:background="@drawable/background_toolbar_button"
+            android:background="@drawable/background_post_footer_buttons"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_edit"
-            android:padding="10dp"
+            android:padding="7dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <com.makeramen.roundedimageview.RoundedImageView
             android:id="@+id/buttonClose"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
             android:layout_marginEnd="15dp"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
-            android:background="@drawable/background_toolbar_button"
+            android:background="@drawable/background_close_button"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_close"
-            android:padding="10dp"
+            android:padding="7dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
 

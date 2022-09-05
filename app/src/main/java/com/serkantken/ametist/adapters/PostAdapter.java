@@ -1,34 +1,21 @@
 package com.serkantken.ametist.adapters;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.PopupMenu;
 import android.widget.PopupWindow;
 
-import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -37,37 +24,51 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.activities.ChatActivity;
+import com.serkantken.ametist.activities.CommentActivity;
 import com.serkantken.ametist.activities.FullProfilePhotoActivity;
 import com.serkantken.ametist.activities.ProfileActivity;
+import com.serkantken.ametist.activities.ProfileEditActivity;
 import com.serkantken.ametist.databinding.LayoutNewPostDialogBinding;
 import com.serkantken.ametist.databinding.LayoutPostBinding;
 import com.serkantken.ametist.databinding.LayoutProfileBinding;
 import com.serkantken.ametist.models.PostModel;
 import com.serkantken.ametist.models.UserModel;
+import com.serkantken.ametist.utilities.Constants;
 import com.serkantken.ametist.utilities.Utilities;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
-import eightbitlab.com.blurview.BlurView;
-
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
     ArrayList<PostModel> postModels;
     Context context;
     Activity activity;
+    boolean isLiked;
     FirebaseFirestore database;
+    String currentUserId;
+    int likeCount;
 
-    public PostAdapter(ArrayList<PostModel> postModels, Context context, Activity activity, FirebaseFirestore database) {
+    public PostAdapter(ArrayList<PostModel> postModels, Context context, Activity activity) {
         this.postModels = postModels;
         this.context = context;
         this.activity = activity;
-        this.database = database;
+        database = FirebaseFirestore.getInstance();
+        currentUserId = FirebaseAuth.getInstance().getUid();
+    }
+
+    public PostAdapter(ArrayList<PostModel> postModels, Context context, Activity activity, boolean isLiked) {
+        this.postModels = postModels;
+        this.context = context;
+        this.activity = activity;
+        this.isLiked = isLiked;
+        database = FirebaseFirestore.getInstance();
+        currentUserId = FirebaseAuth.getInstance().getUid();
     }
 
     @NonNull
@@ -99,13 +100,15 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                 }
                 holder.binding.username.setText(user.getName());
                 Glide.with(context).load(user.getProfilePic()).placeholder(AppCompatResources.getDrawable(context, R.drawable.ic_person)).into(holder.binding.profileImage);
-                if (Objects.equals(user.getUserId(), FirebaseAuth.getInstance().getUid()))
+                if (Objects.equals(user.getUserId(), currentUserId))
                 {
                     holder.binding.buttonMenu.setVisibility(View.VISIBLE);
                 }
             }
         });
         holder.binding.postText.setText(postModel.getPostText());
+        holder.binding.textLikeCount.setText(String.valueOf(postModel.getLikeCount()));
+        holder.binding.textCommentCount.setText(String.valueOf(postModel.getCommentCount()));
         holder.binding.date.setText(TimeAgo.using(postModel.getPostedAt()));
         holder.binding.profileImage.setOnClickListener(view -> onUserClicked(user));
         holder.binding.username.setOnClickListener(view -> onUserClicked(user));
@@ -139,6 +142,85 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
             buttonDelete.setOnClickListener(view1 -> postDelete(postModel.getPostId(), popupWindow));
             buttonEdit.setOnClickListener(view1 -> postEdit(postModel.getPostId(), position, popupWindow));
         });
+
+        holder.binding.buttonLike.setOnClickListener(view -> {
+            if (isLiked)
+            {
+                database.collection(Constants.DATABASE_PATH_USERS)
+                        .document(postModel.getPostedBy())
+                        .collection("Posts")
+                        .document(postModel.getPostId())
+                        .collection("Likers")
+                        .document(FirebaseAuth.getInstance().getUid())
+                        .delete().addOnCompleteListener(task -> {
+                            if (task.isSuccessful())
+                            {
+                                database.collection(Constants.DATABASE_PATH_USERS)
+                                        .document(postModel.getPostedBy())
+                                        .collection("Posts")
+                                        .document(postModel.getPostId())
+                                        .get().addOnCompleteListener(task1 -> {
+                                            if (task1.isSuccessful())
+                                            {
+                                                DocumentSnapshot snapshot = task1.getResult();
+                                                likeCount = Integer.parseInt(Objects.requireNonNull(snapshot.get("likeCount")).toString());
+                                                likeCount--;
+                                                database.collection(Constants.DATABASE_PATH_USERS)
+                                                        .document(postModel.getPostedBy())
+                                                        .collection("Posts")
+                                                        .document(postModel.getPostId())
+                                                        .update("likeCount", likeCount).addOnCompleteListener(task2 -> {
+                                                            holder.binding.textLikeCount.setText(String.valueOf(likeCount));
+                                                            holder.binding.buttonLike.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.ic_like_empty));
+                                                        });
+                                            }
+                                        });
+                            }
+                        });
+            }
+            else
+            {
+                database.collection(Constants.DATABASE_PATH_USERS)
+                        .document(postModel.getPostedBy())
+                        .collection("Posts")
+                        .document(postModel.getPostId())
+                        .collection("Likers")
+                        .document(FirebaseAuth.getInstance().getUid())
+                        .delete().addOnCompleteListener(task -> {
+                            if (task.isSuccessful())
+                            {
+                                database.collection(Constants.DATABASE_PATH_USERS)
+                                        .document(postModel.getPostedBy())
+                                        .collection("Posts")
+                                        .document(postModel.getPostId())
+                                        .get().addOnCompleteListener(task1 -> {
+                                            if (task1.isSuccessful())
+                                            {
+                                                DocumentSnapshot snapshot = task1.getResult();
+                                                likeCount = Integer.parseInt(Objects.requireNonNull(snapshot.get("likeCount")).toString());
+                                                likeCount++;
+                                                database.collection(Constants.DATABASE_PATH_USERS)
+                                                        .document(postModel.getPostedBy())
+                                                        .collection("Posts")
+                                                        .document(postModel.getPostId())
+                                                        .update("likeCount", likeCount).addOnCompleteListener(task2 -> {
+                                                            holder.binding.textLikeCount.setText(String.valueOf(likeCount));
+                                                            holder.binding.buttonLike.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.ic_like_fill));
+                                                        });
+                                            }
+                                        });
+                            }
+                        });
+            }
+        });
+
+        holder.binding.buttonComment.setOnClickListener(view -> {
+            Intent intent = new Intent(context, CommentActivity.class);
+            intent.putExtra("postId", postModel.getPostId());
+            intent.putExtra("userId", postModel.getPostedBy());
+            context.startActivity(intent);
+            activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        });
     }
 
     private void postDelete(String postId, PopupWindow window)
@@ -147,7 +229,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
         AlertDialog.Builder dialog = new AlertDialog.Builder(context);
         dialog.setMessage(R.string.delete_post_question);
         dialog.setPositiveButton(R.string.yes, (dialogInterface, i) -> {
-            database.collection("Users").document(FirebaseAuth.getInstance().getUid()).collection("Posts").document(postId).delete();
+            database.collection("Users").document(currentUserId).collection("Posts").document(postId).delete();
             notifyDataSetChanged();
             dialogInterface.dismiss();
         });
@@ -161,7 +243,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
     private void postEdit(String postId, int position, PopupWindow window)
     {
         window.dismiss();
-        database.collection("Users").document(FirebaseAuth.getInstance().getUid()).collection("Posts").get().addOnCompleteListener(task -> {
+        database.collection("Users").document(currentUserId).collection("Posts").get().addOnCompleteListener(task -> {
             if (task.isSuccessful())
             {
                 HashMap<String, Object> model = new HashMap<>();
@@ -221,7 +303,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
 
                 dialogBinding.buttonSubmit.setOnClickListener(view -> {
                     model.put("postText", dialogBinding.postText.getText().toString());
-                    database.collection("Users").document(FirebaseAuth.getInstance().getUid()).collection("Posts").document(postId).update(model);
+                    database.collection("Users").document(currentUserId).collection("Posts").document(postId).update(model);
                     notifyItemChanged(position);
                     dialog.dismiss();
                 });
@@ -270,8 +352,18 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
             context.startActivity(intent);
             bottomSheetDialog.dismiss();
         });
+        bottomSheetView.buttonEdit.setOnClickListener(view -> context.startActivity(new Intent(activity, ProfileEditActivity.class)));
         bottomSheetView.buttonClose.setOnClickListener(view1 -> bottomSheetDialog.dismiss());
-        bottomSheetView.buttonEdit.setVisibility(View.GONE);
+        if (Objects.equals(userModel.getUserId(), FirebaseAuth.getInstance().getUid()))
+        {
+            bottomSheetView.buttonEdit.setVisibility(View.VISIBLE);
+            bottomSheetView.buttonMessage.setVisibility(View.GONE);
+        }
+        else
+        {
+            bottomSheetView.buttonEdit.setVisibility(View.GONE);
+            bottomSheetView.buttonMessage.setVisibility(View.VISIBLE);
+        }
 
         bottomSheetDialog.setContentView(bottomSheetView.getRoot());
         bottomSheetDialog.show();

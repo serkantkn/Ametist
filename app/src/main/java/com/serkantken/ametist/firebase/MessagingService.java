@@ -37,16 +37,16 @@ public class MessagingService extends FirebaseMessagingService
     public void onMessageReceived(@NonNull RemoteMessage message) {
         super.onMessageReceived(message);
         user = new UserModel();
-        user.setUserId(message.getData().get("userId"));
-        user.setName(message.getData().get("username"));
-        user.setToken(message.getData().get("token"));
-        messageType = message.getData().get("messageType");
+        user.setUserId(message.getData().get(Constants.USER_ID));
+        user.setName(message.getData().get(Constants.USERNAME));
+        user.setToken(message.getData().get(Constants.TOKEN));
+        messageType = message.getData().get(Constants.MESSAGE_TYPE);
 
         notificationId = new Random().nextInt();
         channelId = "chat_message";
 
-        String username = message.getData().get("username");
-        String messageString = message.getData().get("message");
+        String username = message.getData().get(Constants.USERNAME);
+        String messageString = message.getData().get(Constants.MESSAGE);
         buildNotification(username, messageString);
 
         createNotificationChannel();
@@ -74,15 +74,15 @@ public class MessagingService extends FirebaseMessagingService
         notificationBuilder = new NotificationCompat.Builder(this, channelId);
         notificationBuilder.setSmallIcon(R.mipmap.ametist_logo);
         notificationBuilder.setContentTitle(username);
-        if (messageType.equals("1"))
+        if (messageType.equals(Constants.MESSAGE_TYPE_TEXT))
         {
             notificationBuilder.setContentText(message);
         }
-        else if (messageType.equals("2"))
+        else if (messageType.equals(Constants.MESSAGE_TYPE_FOLLOW))
         {
             notificationBuilder.setContentText(message+getApplicationContext().getResources().getString(R.string.is_now_following_you));
         }
-        else if (messageType.equals("3"))
+        else if (messageType.equals(Constants.MESSAGE_TYPE_PHOTO))
         {
             notificationBuilder.setContentText(message+getApplicationContext().getResources().getString(R.string.sent_you_a_photo));
         }

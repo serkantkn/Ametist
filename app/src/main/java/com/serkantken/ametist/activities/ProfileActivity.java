@@ -3,6 +3,7 @@ package com.serkantken.ametist.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
@@ -20,12 +21,24 @@ import com.serkantken.ametist.adapters.PostAdapter;
 import com.serkantken.ametist.databinding.ActivityProfileBinding;
 import com.serkantken.ametist.models.PostModel;
 import com.serkantken.ametist.models.UserModel;
+import com.serkantken.ametist.network.ApiClient;
+import com.serkantken.ametist.network.ApiService;
+import com.serkantken.ametist.utilities.Constants;
+import com.serkantken.ametist.utilities.Utilities;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Objects;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ProfileActivity extends BaseActivity
 {
@@ -56,7 +69,7 @@ public class ProfileActivity extends BaseActivity
         getUserInfo();
         getPosts();
 
-        adapter = new PostAdapter(postModels, ProfileActivity.this, ProfileActivity.this, database);
+        adapter = new PostAdapter(postModels, ProfileActivity.this, ProfileActivity.this);
         binding.posts.setAdapter(adapter);
         binding.posts.setLayoutManager(new LinearLayoutManager(ProfileActivity.this));
 
@@ -84,40 +97,122 @@ public class ProfileActivity extends BaseActivity
         });
 
         binding.buttonFollow.setOnClickListener(view -> {
-            //follow();
+            follow();
         });
     }
 
     private void follow() {
-        HashMap<String, Object> follow = new HashMap<>();
-        follow.put("followId", user.getUserId());
-        follow.put("followedBy", auth.getUid());
-        follow.put("followedAt", new Date().getTime());
-        database.collection("Users").document(auth.getUid()).collection("followings").add(follow).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+        if (binding.textFollow.getText().equals(getString(R.string.followed)))
+        {
+            database.collection(Constants.DATABASE_PATH_USERS)
+                    .document(user.getUserId())
+                    .collection("followers")
+                    .document(FirebaseAuth.getInstance().getUid())
+                    .delete().addOnCompleteListener(task -> {
+                        database.collection(Constants.DATABASE_PATH_USERS)
+                                .document(FirebaseAuth.getInstance().getUid())
+                                .collection("followings")
+                                .document(user.getUserId())
+                                .delete().addOnCompleteListener(task12 -> {
+                                    binding.textFollow.setText(getString(R.string.follow));
+                                    binding.buttonFollowBackground.setBackground(AppCompatResources.getDrawable(this, R.drawable.purple_gradient));
+                                });
+                    });
+        }
+        else
+        {
+            //Karşı tarafın listesine ekle
+            HashMap<String, Object> followMap = new HashMap<>();
+            followMap.put("followedBy", FirebaseAuth.getInstance().getUid());
+            followMap.put("followedAt", new Date().getTime());
+            followMap.put("isRead", false);
+
+            database.collection(Constants.DATABASE_PATH_USERS)
+                    .document(user.getUserId())
+                    .collection("followers")
+                    .document(FirebaseAuth.getInstance().getUid())
+                    .set(followMap).addOnCompleteListener(task -> {
+                        //Bildirim gönder
+                        database.collection(Constants.DATABASE_PATH_USERS)
+                                .document(user.getUserId())
+                                .collection("notifications")
+                                .add(followMap).addOnCompleteListener(task13 -> {
+                                    Utilities utilities = new Utilities(this, ProfileActivity.this);
+                                    try {
+                                        JSONArray tokens = new JSONArray();
+                                        tokens.put(user.getToken());
+
+                                        JSONObject data = new JSONObject();
+                                        data.put(Constants.USER_ID, FirebaseAuth.getInstance().getUid());
+                                        data.put(Constants.USERNAME, getString(R.string.new_follower));
+                                        data.put(Constants.TOKEN, utilities.getPreferences(Constants.TOKEN));
+                                        data.put(Constants.MESSAGE_TYPE, Constants.MESSAGE_TYPE_FOLLOW);
+                                        data.put(Constants.MESSAGE, utilities.getPreferences(Constants.USERNAME));
+
+                                        JSONObject body = new JSONObject();
+                                        body.put(Constants.REMOTE_MSG_DATA, data);
+                                        body.put(Constants.REMOTE_MSG_REGISTRATION_IDS, tokens);
+
+                                        sendNotification(body.toString());
+                                    } catch (Exception e) {
+                                        Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                    //Kendi listene ekle
+                                    HashMap<String, Object> followMap2 = new HashMap<>();
+                                    followMap2.put("followedTo", user.getUserId());
+                                    followMap2.put("followedAt", new Date().getTime());
+
+                                    database.collection(Constants.DATABASE_PATH_USERS)
+                                            .document(FirebaseAuth.getInstance().getUid())
+                                            .collection("followings")
+                                            .document(user.getUserId())
+                                            .set(followMap2).addOnCompleteListener(task1 -> {
+                                                //Butonu düzenle
+                                                binding.textFollow.setText(getString(R.string.followed));
+                                                binding.buttonFollowBackground.setBackground(AppCompatResources.getDrawable(this, R.drawable.blue_gradient));
+                                            });
+                                });
+                    });
+        }
+    }
+
+    private void sendNotification(String messageBody) {
+        ApiClient.getClient().create(ApiService.class).sendMessage(
+                Constants.getRemoteMsgHeaders(),
+                messageBody
+        ).enqueue(new Callback<String>() {
             @Override
-            public void onComplete(@NonNull Task<DocumentReference> task) {
-                if (task.isSuccessful())
-                {
-                    HashMap<String, Object> follower = new HashMap<>();
-                    follower.put("followId", auth.getUid());
-                    follower.put("followedAt", new Date().getTime());
-                    database.collection("Users").document(user.getUserId()).collection("followers").add(follower).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentReference> task) {
-                            if (task.isSuccessful())
-                            {
-                                binding.textFollow.setText(getString(R.string.unfollow));
+            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
+                if (response.isSuccessful()) {
+                    try {
+                        if (response.body() != null) {
+                            JSONObject responseJson = new JSONObject(response.body());
+                            JSONArray results = responseJson.getJSONArray("results");
+                            if (responseJson.getInt("failure") == 1) {
+                                JSONObject error = (JSONObject) results.get(0);
+                                Toast.makeText(ProfileActivity.this, error.getString("error"), Toast.LENGTH_SHORT).show();
+                                return;
                             }
                         }
-                    });
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    Toast.makeText(ProfileActivity.this, "Bildirim gönderildi", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(ProfileActivity.this, "Hata: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<String> call, @NonNull Throwable t) {
+                Toast.makeText(ProfileActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
 
     private void getUserInfo()
     {
-        database.collection("Users").get().addOnCompleteListener(task -> {
+        database.collection(Constants.DATABASE_PATH_USERS).get().addOnCompleteListener(task -> {
             if (task.isSuccessful())
             {
                 for (QueryDocumentSnapshot documentSnapshot : task.getResult())
@@ -163,7 +258,7 @@ public class ProfileActivity extends BaseActivity
 
     private void getPosts()
     {
-        database.collection("Users").document(user.getUserId()).collection("Posts").get().addOnCompleteListener(task -> {
+        database.collection(Constants.DATABASE_PATH_USERS).document(user.getUserId()).collection("Posts").get().addOnCompleteListener(task -> {
             if (task.isSuccessful())
             {
                 postModels.clear();

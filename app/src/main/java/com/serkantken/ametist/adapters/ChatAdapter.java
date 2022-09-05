@@ -3,6 +3,7 @@ package com.serkantken.ametist.adapters;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -110,11 +111,19 @@ public class ChatAdapter extends RecyclerView.Adapter
 
         if (holder.getClass() == SenderViewHolder.class)
         {
+            if (position == 0)
+            {
+                ((SenderViewHolder) holder).binding.container.setPadding(0, sizeInPixel(70), 0, 0);
+            }
             ((SenderViewHolder)holder).binding.sentMessage.setText(messageModel.getMessage());
             ((SenderViewHolder)holder).binding.date.setText(TimeAgo.using(messageModel.getTimestamp()));
         }
         else if (holder.getClass() == ReceiverViewHolder.class)
         {
+            if (position == 0)
+            {
+                ((ReceiverViewHolder) holder).binding.container.setPadding(0, sizeInPixel(70), 0, 0);
+            }
             ((ReceiverViewHolder)holder).binding.receivedMessage.setText(messageModel.getMessage());
             ((ReceiverViewHolder)holder).binding.date.setText(TimeAgo.using(messageModel.getTimestamp()));
             FirebaseFirestore.getInstance().collection("Users").get().addOnCompleteListener(task -> {
@@ -137,7 +146,18 @@ public class ChatAdapter extends RecyclerView.Adapter
         }
         else if (holder.getClass() == PhotoSenderViewHolder.class)
         {
-            ((PhotoSenderViewHolder)holder).binding.sentMessage.setText(messageModel.getMessage());
+            if (position == 0)
+            {
+                ((PhotoSenderViewHolder) holder).binding.container.setPadding(0, sizeInPixel(70), 0, 0);
+            }
+            if (Objects.equals(messageModel.getMessage(), ""))
+            {
+                ((PhotoSenderViewHolder)holder).binding.sentMessage.setVisibility(View.GONE);
+            }
+            else
+            {
+                ((PhotoSenderViewHolder)holder).binding.sentMessage.setText(messageModel.getMessage());
+            }
             ((PhotoSenderViewHolder)holder).binding.date.setText(TimeAgo.using(messageModel.getTimestamp()));
             Glide.with(context).load(messageModel.getPhoto()).into(((PhotoSenderViewHolder)holder).binding.sentPhoto);
             ((PhotoSenderViewHolder)holder).binding.sentPhoto.setOnClickListener(view -> {
@@ -148,7 +168,18 @@ public class ChatAdapter extends RecyclerView.Adapter
         }
         else
         {
-            ((PhotoReceiverViewHolder)holder).binding.receivedMessage.setText(messageModel.getMessage());
+            if (position == 0)
+            {
+                ((PhotoReceiverViewHolder)holder).binding.container.setPadding(0, sizeInPixel(70), 0, 0);
+            }
+            if (Objects.equals(messageModel.getMessage(), ""))
+            {
+                ((PhotoReceiverViewHolder)holder).binding.receivedMessage.setVisibility(View.GONE);
+            }
+            else
+            {
+                ((PhotoReceiverViewHolder)holder).binding.receivedMessage.setText(messageModel.getMessage());
+            }
             ((PhotoReceiverViewHolder)holder).binding.date.setText(TimeAgo.using(messageModel.getTimestamp()));
             FirebaseFirestore.getInstance().collection("Users").get().addOnCompleteListener(task -> {
                 if (task.isSuccessful())
@@ -174,6 +205,12 @@ public class ChatAdapter extends RecyclerView.Adapter
                 }
             });
         }
+    }
+
+    private int sizeInPixel(int sizeInDp)
+    {
+        float density = context.getResources().getDisplayMetrics().density;
+        return (int)(sizeInDp * density);
     }
 
     @Override

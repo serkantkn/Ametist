@@ -88,6 +88,8 @@ public class ChatActivity extends BaseActivity {
         utilities = new Utilities(getApplicationContext(), this);
         receiverUser = (UserModel) getIntent().getSerializableExtra("receiverUser");
 
+        utilities.blur(binding.toolbar, 10f, false);
+
         messageModels = new ArrayList<>();
         chatAdapter = new ChatAdapter(messageModels, this);
         binding.messageRV.setAdapter(chatAdapter);
@@ -101,11 +103,14 @@ public class ChatActivity extends BaseActivity {
                 for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
                     if (documentSnapshot.getId().equals(receiverUser.getUserId())) {
                         receiverUser.setName(documentSnapshot.getString("name"));
+                        receiverUser.setProfilePic(documentSnapshot.getString("profilePic"));
                     }
                 }
                 binding.username.setText(receiverUser.getName());
+                Glide.with(this).load(receiverUser.getProfilePic()).placeholder(R.drawable.ic_person).into(binding.profileImage);
             }
         });
+
 
         listenMessages();
 
@@ -118,7 +123,7 @@ public class ChatActivity extends BaseActivity {
             }
             else
             {
-                Toast.makeText(this, "Mesaj kutusu boş", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.messagebox_empty, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -129,7 +134,6 @@ public class ChatActivity extends BaseActivity {
             options.setLogoColor(getColor(R.color.accent_purple_dark));
             options.setFreeStyleCropEnabled(false);
             options.setToolbarTitle(getString(R.string.crop));
-            options.withAspectRatio(1, 1);
             UCrop.of(result, Uri.fromFile(new File(getCacheDir(), destUri)))
                     .withOptions(options)
                     .start(ChatActivity.this);
@@ -166,7 +170,9 @@ public class ChatActivity extends BaseActivity {
             Glide.with(this).load(photoUri).into(choosePhotoView.postImage);
             choosePhotoView.titleMessageBox.setText(getString(R.string.photo_preview));
             choosePhotoView.buttonCamera.setVisibility(View.GONE);
+            choosePhotoView.textCamera.setVisibility(View.GONE);
             choosePhotoView.buttonGallery.setVisibility(View.GONE);
+            choosePhotoView.textGallery.setVisibility(View.GONE);
             choosePhotoView.buttonDelete.setVisibility(View.VISIBLE);
             choosePhotoView.buttonSend.setVisibility(View.VISIBLE);
             choosePhotoView.postImage.setVisibility(View.VISIBLE);

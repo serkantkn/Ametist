@@ -75,7 +75,7 @@ public class DashboardFragment extends Fragment
         postModels = new ArrayList<>();
         followingUsers = new ArrayList<>();
 
-        adapter = new PostAdapter(postModels, getContext(), getActivity(), database);
+        adapter = new PostAdapter(postModels, getContext(), getActivity());
         binding.dashboardRV.setAdapter(adapter);
         binding.dashboardRV.setLayoutManager(new LinearLayoutManager(getContext()));
 
@@ -135,6 +135,8 @@ public class DashboardFragment extends Fragment
                 postModel.setPostedAt(new Date().getTime());
                 postModel.setPostedBy(auth.getUid());
                 postModel.setPostText(dialogBinding.postText.getText().toString());
+                postModel.setLikeCount(0);
+                postModel.setCommentCount(0);
                 if (isPhotoSelected)
                 {
                     StorageReference filePath = FirebaseStorage.getInstance().getReference("Users").child(auth.getUid()).child("postPics").child(new StringBuilder(UUID.randomUUID().toString()).append(".jpg").toString());

@@ -84,4 +84,11 @@
     <string name="delete_post_question">Do you want to detete this post?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="messagebox_empty">Messagebox is empty</string>
+    <string name="show_more_comment">Show more comment</string>
+    <string name="type_a_comment">Type a comment</string>
+    <string name="comments">Comments</string>
+    <string name="see_and_add_a_comment">See and add a comment</string>
+    <string name="like_post">Like post</string>
+    <string name="unlike_post">Unlike post</string>
 </resources>

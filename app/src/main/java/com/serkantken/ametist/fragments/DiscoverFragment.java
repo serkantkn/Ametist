@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.bumptech.glide.Glide;
@@ -71,8 +72,7 @@ public class DiscoverFragment extends Fragment implements UserListener
 
         adapter = new UsersAdapter(userList, getContext(), getActivity(), this);
         binding.discoverRV.setAdapter(adapter);
-        LinearLayoutManager manager = new LinearLayoutManager(getContext());
-        binding.discoverRV.setLayoutManager(manager);
+        binding.discoverRV.setLayoutManager(new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL));
         binding.discoverRefresher.setOnRefreshListener(this::getUsers);
 
         getUsers();

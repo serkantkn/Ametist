@@ -81,4 +81,11 @@
     <string name="yes">Evet</string>
     <string name="no">Hayır</string>
     <string name="delete_post">Gönderiyi sil</string>
+    <string name="messagebox_empty">Mesaj kutusu boş</string>
+    <string name="show_more_comment">Daha fazla yorum gör</string>
+    <string name="type_a_comment">Bir yorum yazın</string>
+    <string name="comments">Yorumlar</string>
+    <string name="see_and_add_a_comment">Yorumları gör ve yenisini ekle</string>
+    <string name="like_post">Gönderiyi beğen</string>
+    <string name="unlike_post">Beğeniyi geri al</string>
 </resources>

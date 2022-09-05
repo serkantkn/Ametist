@@ -31,7 +31,7 @@
                 android:background="@drawable/background_edittext"
                 android:fontFamily="@font/jost_regular"
                 android:hint="@string/type_a_message"
-                android:inputType="textMultiLine"
+                android:inputType="textMultiLine|textCapSentences"
                 android:textIsSelectable="true"
                 android:maxLines="4"
                 android:paddingStart="25dp"
@@ -98,7 +98,7 @@
             android:layout_height="0dp"
             app:stackFromEnd="true"
             app:layout_constraintBottom_toTopOf="@+id/constraintLayout"
-            app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+            app:layout_constraintTop_toTopOf="parent"/>
 
         <eightbitlab.com.blurview.BlurView
             android:id="@+id/toolbar"
@@ -134,17 +134,15 @@
                     android:id="@+id/username"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/jost_light"
+                    android:fontFamily="@font/jost_regular"
                     android:text="@string/app_name"
                     android:textColor="@color/primary_text"
-                    android:textSize="24sp"
+                    android:textSize="20sp"
                     app:layout_constraintBottom_toTopOf="@id/availability"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/buttonBack"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="@id/buttonBack"
-                    app:layout_constraintHorizontal_bias="0"
-                    app:layout_constraintVertical_bias="0"
-                    android:layout_marginStart="10dp"/>
+                    app:layout_constraintVertical_bias="0"/>
 
                 <TextView
                     android:id="@+id/availability"
@@ -153,13 +151,27 @@
                     android:fontFamily="@font/jost_light_italic"
                     android:text="@string/getting_last_seen"
                     android:textColor="@color/secondary_text"
-                    android:textSize="18sp"
+                    android:textSize="15sp"
                     app:layout_constraintBottom_toBottomOf="@id/buttonBack"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/buttonBack"
-                    app:layout_constraintTop_toBottomOf="@id/username"
-                    app:layout_constraintHorizontal_bias="0"
-                    android:layout_marginStart="10dp"/>
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/username"/>
+
+                <com.makeramen.roundedimageview.RoundedImageView
+                    android:id="@+id/profileImage"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_marginEnd="15dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:scaleType="centerCrop"
+                    app:riv_corner_radius="10dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="1"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

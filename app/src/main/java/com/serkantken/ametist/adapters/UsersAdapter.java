@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -83,8 +84,8 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
                         {
                             if (snapshot.getId().equals(list.get(holder.getAdapterPosition()).getUserId()))
                             {
-                                holder.binding.textFollow.setText(context.getString(R.string.followed));
-                                holder.binding.buttonFollowBackground.setBackground(context.getDrawable(R.drawable.purple_gradient));
+                                //holder.binding.textFollow.setText(context.getString(R.string.followed));
+                                //holder.binding.buttonFollowBackground.setBackground(AppCompatResources.getDrawable(context, R.drawable.purple_gradient));
                             }
                         }
                     }
@@ -92,7 +93,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
         Glide.with(context).load(list.get(position).getProfilePic()).placeholder(R.drawable.ic_person).into(holder.binding.profileImage);
         holder.binding.username.setText(list.get(position).getName());
         holder.binding.getRoot().setOnClickListener(view -> listener.onUserClicked(list.get(position)));
-        holder.binding.buttonFollow.setOnClickListener(view -> {
+        /*holder.binding.buttonFollow.setOnClickListener(view -> {
             if (holder.binding.textFollow.getText().equals(context.getString(R.string.followed)))
             {
                 database.collection("Users")
@@ -106,7 +107,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
                                     .document(list.get(position).getUserId())
                                     .delete().addOnCompleteListener(task12 -> {
                                         holder.binding.textFollow.setText(context.getString(R.string.follow));
-                                        holder.binding.buttonFollowBackground.setBackground(context.getDrawable(R.drawable.blue_gradient));
+                                        holder.binding.buttonFollowBackground.setBackground(AppCompatResources.getDrawable(context, R.drawable.blue_gradient));
                                     });
                         });
             }
@@ -160,12 +161,12 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
                                                 .set(followMap2).addOnCompleteListener(task1 -> {
                                                     //Butonu düzenle
                                                     holder.binding.textFollow.setText(context.getString(R.string.followed));
-                                                    holder.binding.buttonFollowBackground.setBackground(context.getDrawable(R.drawable.purple_gradient));
+                                                    holder.binding.buttonFollowBackground.setBackground(AppCompatResources.getDrawable(context, R.drawable.purple_gradient));
                                                 });
                                     });
                         });
             }
-        });
+        });*/
     }
 
     private void sendNotification(String messageBody) {

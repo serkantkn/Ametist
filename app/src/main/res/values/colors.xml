@@ -11,6 +11,7 @@
     <color name="accent_red_dark">#FE5276</color>
     <color name="accent_red_light">#FE8D79</color>
     <color name="primary_text">#212121</color>
+    <color name="primary_text_reversed">#ECECEC</color>
     <color name="secondary_text">#4E4E4E</color>
     <color name="secondary_text_light">#9E9E9E</color>
     <color name="white">#FFFFFF</color>

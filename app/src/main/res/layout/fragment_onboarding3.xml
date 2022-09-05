@@ -35,21 +35,6 @@
         app:layout_constraintVertical_bias=".4" />
 
     <TextView
-        android:id="@+id/skip"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="30dp"
-        android:text="@string/finish"
-        android:textColor="@color/accent_red_dark"
-        android:textSize="22sp"
-        android:fontFamily="@font/jost_regular"
-        app:layout_constraintBottom_toBottomOf="@id/appName"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/appName" />
-
-    <TextView
         android:id="@+id/baslik1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -78,8 +63,42 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/baslik1"
         app:layout_constraintVertical_bias=".1"
-        app:layout_constraintHorizontal_bias=".4"
+        app:layout_constraintHorizontal_bias=".2"
         app:layout_constraintWidth_percent=".8" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/skip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/aciklama"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="20dp"
+        app:cardCornerRadius="25dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/purple_gradient"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:paddingStart="35dp"
+            android:paddingEnd="35dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/finish"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

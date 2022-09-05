@@ -7,7 +7,7 @@ public class UserModel implements Serializable
     String userId, name, email, password, profilePic, picSecond, picThird, picFourth, about, gender, age, token;
     int followerCount, followingCount;
     Boolean isOnline;
-    Long lastSeen;
+    Long lastSeen, signupDate;
 
     public UserModel()
     {
@@ -139,5 +139,13 @@ public class UserModel implements Serializable
 
     public void setFollowingCount(int followingCount) {
         this.followingCount = followingCount;
+    }
+
+    public Long getSignupDate() {
+        return signupDate;
+    }
+
+    public void setSignupDate(Long signupDate) {
+        this.signupDate = signupDate;
     }
 }

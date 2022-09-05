@@ -3,31 +3,26 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/background_button.xml" value="0.2815" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/background_edittext.xml" value="0.2815" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/background_menu_button.xml" value="0.2815" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/background_post_button.xml" value="0.2815" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/background_post_footer_buttons.xml" value="0.2815" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/background_toolbar_button.xml" value="0.2815" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/blue_gradient.xml" value="0.2815" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/ic_add.xml" value="0.2815" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/ic_arrow_drop_down.xml" value="0.2815" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/ic_back.xml" value="0.2815" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/menu_item_bottom.xml" value="0.2815" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/menu_item_middle.xml" value="0.2815" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/menu_item_top.xml" value="0.2815" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/purple_gradient.xml" value="0.2815" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/tab_indicator.xml" value="0.2815" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/layout/activity_main.xml" value="0.37447916666666664" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/layout/layout_chat_photo_preview.xml" value="0.37447916666666664" />
+        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/background_close_button.xml" value="0.3625" />
+        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/background_post_footer_buttons.xml" value="0.2835" />
+        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/background_splash_blue.xml" value="0.2835" />
+        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/background_splash_purple.xml" value="0.2835" />
+        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/bottom_sheet_background.xml" value="0.3635" />
+        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/ic_like_empty.xml" value="0.2835" />
+        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/drawable/ic_like_fill.xml" value="0.2835" />
+        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/layout/activity_intro.xml" value="0.30925925925925923" />
+        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/layout/activity_onboarding.xml" value="0.3625" />
+        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/layout/chat_list_layout.xml" value="0.37447916666666664" />
+        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/layout/comment_item.xml" value="0.3625" />
+        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/layout/fragment_discover.xml" value="0.37447916666666664" />
+        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/layout/layout_chat_photo_preview.xml" value="0.1" />
         <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/layout/layout_chat_photo_selector.xml" value="0.3625" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/layout/layout_new_post_dialog.xml" value="0.37447916666666664" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/layout/layout_post.xml" value="0.3625" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/layout/layout_profile.xml" value="0.3625" />
+        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/layout/layout_message_list.xml" value="0.37447916666666664" />
+        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/layout/layout_post.xml" value="0.37447916666666664" />
+        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/layout/layout_profile.xml" value="0.37447916666666664" />
         <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/layout/layout_received_photo.xml" value="0.33425925925925926" />
         <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/layout/layout_send_photo.xml" value="0.3118811881188119" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/layout/popup_layout.xml" value="0.3734375" />
-        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/menu/post_menu.xml" value="0.3734375" />
+        <entry key="..\:/AndroidStudioProjects/Ametist/app/src/main/res/layout/user_list_layout.xml" value="0.37447916666666664" />
         <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/drawable/background_button.xml" value="0.1745" />
         <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/drawable/background_edittext.xml" value="0.1745" />
         <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/drawable/background_edittext_dark.xml" value="0.1745" />
@@ -66,6 +61,7 @@
         <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/drawable/red_gradient.xml" value="0.1745" />
         <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/drawable/tab_indicator.xml" value="0.1745" />
         <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/layout/activity_chat.xml" value="0.2677083333333333" />
+        <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/layout/activity_comment.xml" value="0.28072916666666664" />
         <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/layout/activity_full_profile_photo.xml" value="0.26875" />
         <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/layout/activity_intro.xml" value="0.2677083333333333" />
         <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/layout/activity_login.xml" value="0.2677083333333333" />
@@ -74,6 +70,7 @@
         <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/layout/activity_profile_edit.xml" value="0.26461538461538464" />
         <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/layout/activity_settings.xml" value="0.26875" />
         <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/layout/chat_list_layout.xml" value="0.2677083333333333" />
+        <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/layout/comment_item.xml" value="0.28072916666666664" />
         <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/layout/fragment_dashboard.xml" value="0.2677083333333333" />
         <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/layout/fragment_discover.xml" value="0.2677083333333333" />
         <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/layout/fragment_first_pic.xml" value="0.2205128205128205" />
@@ -97,6 +94,7 @@
         <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/layout/layout_send_message.xml" value="0.2677083333333333" />
         <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/layout/layout_send_photo.xml" value="0.26875" />
         <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/layout/notif_list_layout.xml" value="0.2677083333333333" />
+        <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/layout/popup_layout.xml" value="0.28072916666666664" />
         <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/layout/spinner_item.xml" value="0.2677083333333333" />
         <entry key="..\:/Users/serka/AndroidStudioProjects/Ametist/app/src/main/res/layout/user_list_layout.xml" value="0.2677083333333333" />
       </map>
