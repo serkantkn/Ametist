@@ -29,6 +29,8 @@
     <string name="reset_balloons">Reset alert balloons</string>
     <string name="sign_out">Sign out</string>
     <string name="what_do_you_think">What do you think?</string>
+    <string name="how_do_you_feel">How do you feel today?</string>
+    <string name="what_happened">What happened?</string>
     <string name="search_user">Search users</string>
     <string name="password">Password</string>
     <string name="skip"><![CDATA[Skip >]]></string>
@@ -91,4 +93,5 @@
     <string name="see_and_add_a_comment">See and add a comment</string>
     <string name="like_post">Like post</string>
     <string name="unlike_post">Unlike post</string>
+    <string name="ok">OK</string>
 </resources>

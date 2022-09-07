@@ -91,7 +91,7 @@ public class ChatActivity extends BaseActivity {
         utilities.blur(binding.toolbar, 10f, false);
 
         messageModels = new ArrayList<>();
-        chatAdapter = new ChatAdapter(messageModels, this);
+        chatAdapter = new ChatAdapter(messageModels, this, ChatActivity.this);
         binding.messageRV.setAdapter(chatAdapter);
         LinearLayoutManager manager = new LinearLayoutManager(this);
         manager.setStackFromEnd(true);

@@ -14,7 +14,7 @@
         app:riv_border_color="@color/accent_purple_dark"
         app:riv_border_width="2dp"
         app:riv_corner_radius="100dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="3dp"
         android:layout_marginStart="15dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -72,6 +72,7 @@
                 android:layout_height="wrap_content"
                 android:maxHeight="600dp"
                 android:minHeight="110dp"
+                app:layout_constraintDimensionRatio="1:1"
                 app:riv_corner_radius="10dp"
                 android:src="@drawable/ic_wallpaper"
                 app:layout_constraintTop_toBottomOf="@id/username"
@@ -80,9 +81,10 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintVertical_bias="0"
                 app:layout_constraintHorizontal_bias="0"
-                android:layout_marginEnd="15dp"
+                android:layout_marginEnd="5dp"
                 android:layout_marginTop="3dp"
-                android:layout_marginStart="15dp" />
+                android:layout_marginStart="5dp"
+                android:transitionName="photograph"/>
 
             <TextView
                 android:id="@+id/receivedMessage"
@@ -113,13 +115,12 @@
         android:textSize="11sp"
         android:textColor="@color/secondary_text"
         android:fontFamily="@font/jost_light_italic"
-        app:layout_constraintTop_toBottomOf="@id/card"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="@id/card"
+        app:layout_constraintBottom_toBottomOf="@id/card"
+        app:layout_constraintStart_toEndOf="@id/card"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"
         android:layout_marginStart="10dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="3dp"/>
+        android:layout_marginEnd="15dp"
+        android:layout_marginBottom="5dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

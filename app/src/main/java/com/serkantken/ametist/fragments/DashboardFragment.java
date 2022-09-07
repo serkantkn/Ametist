@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Random;
 import java.util.UUID;
 
 public class DashboardFragment extends Fragment
@@ -83,6 +84,14 @@ public class DashboardFragment extends Fragment
         getPosts();
 
         binding.dashboardRefresher.setOnRefreshListener(this::getPosts);
+
+        ArrayList<String> greetings = new ArrayList<>();
+        greetings.add(getString(R.string.what_do_you_think));
+        greetings.add(getString(R.string.how_do_you_feel));
+        greetings.add(getString(R.string.what_happened));
+
+        Random random = new Random();
+        binding.textNewPost.setText(greetings.get(random.nextInt(greetings.size())));
 
         binding.newPostButton.setOnClickListener(view -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(requireContext(), R.style.AlertDialogTheme);

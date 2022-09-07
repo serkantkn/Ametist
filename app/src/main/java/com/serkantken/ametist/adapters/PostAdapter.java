@@ -16,6 +16,7 @@ import android.widget.PopupWindow;
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -27,6 +28,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.activities.ChatActivity;
 import com.serkantken.ametist.activities.CommentActivity;
@@ -36,12 +38,14 @@ import com.serkantken.ametist.activities.ProfileEditActivity;
 import com.serkantken.ametist.databinding.LayoutNewPostDialogBinding;
 import com.serkantken.ametist.databinding.LayoutPostBinding;
 import com.serkantken.ametist.databinding.LayoutProfileBinding;
+import com.serkantken.ametist.models.CommentModel;
 import com.serkantken.ametist.models.PostModel;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.utilities.Constants;
 import com.serkantken.ametist.utilities.Utilities;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -53,6 +57,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
     FirebaseFirestore database;
     String currentUserId;
     int likeCount;
+    ArrayList<CommentModel> comments = new ArrayList<>();
 
     public PostAdapter(ArrayList<PostModel> postModels, Context context, Activity activity) {
         this.postModels = postModels;
@@ -100,12 +105,12 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                 }
                 holder.binding.username.setText(user.getName());
                 Glide.with(context).load(user.getProfilePic()).placeholder(AppCompatResources.getDrawable(context, R.drawable.ic_person)).into(holder.binding.profileImage);
-                if (Objects.equals(user.getUserId(), currentUserId))
-                {
-                    holder.binding.buttonMenu.setVisibility(View.VISIBLE);
-                }
             }
         });
+        if (Objects.equals(postModel.getPostedBy(), currentUserId))
+        {
+            holder.binding.buttonMenu.setVisibility(View.VISIBLE);
+        }
         holder.binding.postText.setText(postModel.getPostText());
         holder.binding.textLikeCount.setText(String.valueOf(postModel.getLikeCount()));
         holder.binding.textCommentCount.setText(String.valueOf(postModel.getCommentCount()));
@@ -119,7 +124,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
             holder.binding.postImage.setOnLongClickListener(view -> {
                 Intent intent = new Intent(context, FullProfilePhotoActivity.class);
                 intent.putExtra("pictureUrl", postModel.getPostPicture());
-                context.startActivity(intent);
+                ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, holder.binding.postImage, "photograph");
+                context.startActivity(intent, optionsCompat.toBundle());
                 return true;
             });
         }
@@ -218,9 +224,61 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
             Intent intent = new Intent(context, CommentActivity.class);
             intent.putExtra("postId", postModel.getPostId());
             intent.putExtra("userId", postModel.getPostedBy());
-            context.startActivity(intent);
-            activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, holder.binding.cardLayout, "comment");
+            context.startActivity(intent, optionsCompat.toBundle());
         });
+
+        getComment(postModel.getPostedBy(), postModel.getPostId(), holder);
+    }
+
+    private void getComment(String userId, String postId, ViewHolder holder) {
+        comments.clear();
+        database.collection(Constants.DATABASE_PATH_USERS)
+                .document(userId)
+                .collection("Posts")
+                .document(postId)
+                .collection("Comments")
+                .get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot snapshot : task.getResult()) {
+                            CommentModel model = new CommentModel();
+                            model.setCommentId(snapshot.getId());
+                            model.setCommentText(snapshot.getString("commentText"));
+                            model.setUserId(snapshot.getString("userId"));
+                            model.setPostId(snapshot.getString("postId"));
+                            model.setCommentedAt(snapshot.getLong("date"));
+                            comments.add(model);
+                        }
+                        comments.sort(Comparator.comparing(CommentModel::getCommentedAt));
+
+                        if (comments.size() > 0)
+                        {
+                            database.collection(Constants.DATABASE_PATH_USERS).get().addOnCompleteListener(task1 -> {
+                                if (task1.isSuccessful())
+                                {
+                                    for (QueryDocumentSnapshot snapshot : task1.getResult())
+                                    {
+                                        if (Objects.equals(snapshot.getId(), comments.get(comments.size()-1).getUserId()))
+                                        {
+                                            holder.binding.commentUsername.setText(snapshot.getString("name"));
+                                        }
+                                    }
+                                    holder.binding.commentText.setText(comments.get(comments.size()-1).getCommentText());
+                                    holder.binding.buttonMoreComment.setOnClickListener(view -> {
+                                        Intent intent = new Intent(context, CommentActivity.class);
+                                        intent.putExtra("postId", postId);
+                                        intent.putExtra("userId", userId);
+                                        ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, holder.binding.cardLayout, "comment");
+                                        context.startActivity(intent, optionsCompat.toBundle());
+                                    });
+                                    holder.binding.commentUsername.setVisibility(View.VISIBLE);
+                                    holder.binding.commentText.setVisibility(View.VISIBLE);
+                                    holder.binding.buttonMoreComment.setVisibility(View.VISIBLE);
+                                }
+                            });
+                        }
+                    }
+                });
     }
 
     private void postDelete(String postId, PopupWindow window)

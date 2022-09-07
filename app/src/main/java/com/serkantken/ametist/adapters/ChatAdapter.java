@@ -1,5 +1,6 @@
 package com.serkantken.ametist.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
@@ -8,6 +9,8 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.app.ActivityOptionsCompat;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -31,16 +34,18 @@ public class ChatAdapter extends RecyclerView.Adapter
 {
     ArrayList<MessageModel> messageModels;
     Context context;
+    Activity activity;
     String receiverId;
     int SENDER_VIEW_TYPE = 1;
     int RECEIVER_VIEW_TYPE = 2;
     int PHOTO_SENDER_VIEW_TYPE = 3;
     int PHOTO_RECEIVER_VIEW_TYPE = 4;
 
-    public ChatAdapter(ArrayList<MessageModel> messageModels, Context context)
+    public ChatAdapter(ArrayList<MessageModel> messageModels, Context context, Activity activity)
     {
         this.messageModels = messageModels;
         this.context = context;
+        this.activity = activity;
     }
 
     @NonNull
@@ -163,7 +168,8 @@ public class ChatAdapter extends RecyclerView.Adapter
             ((PhotoSenderViewHolder)holder).binding.sentPhoto.setOnClickListener(view -> {
                 Intent intent = new Intent(context, FullProfilePhotoActivity.class);
                 intent.putExtra("pictureUrl", messageModel.getPhoto());
-                context.startActivity(intent);
+                ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, ((PhotoSenderViewHolder) holder).binding.sentPhoto, "photograph");
+                context.startActivity(intent, optionsCompat.toBundle());
             });
         }
         else
@@ -200,7 +206,8 @@ public class ChatAdapter extends RecyclerView.Adapter
                     ((PhotoReceiverViewHolder)holder).binding.receivedPhoto.setOnClickListener(view -> {
                         Intent intent = new Intent(context, FullProfilePhotoActivity.class);
                         intent.putExtra("pictureUrl", messageModel.getPhoto());
-                        context.startActivity(intent);
+                        ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, ((PhotoReceiverViewHolder) holder).binding.receivedPhoto, "photograph");
+                        context.startActivity(intent, optionsCompat.toBundle());
                     });
                 }
             });

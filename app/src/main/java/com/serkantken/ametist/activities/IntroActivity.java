@@ -1,20 +1,23 @@
 package com.serkantken.ametist.activities;
 
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.WindowManager;
+import android.widget.Toast;
 
-import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentStatePagerAdapter;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.databinding.ActivityIntroBinding;
-import com.serkantken.ametist.fragments.OnboardingFragments;
-import com.serkantken.ametist.utilities.Constants;
+import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.utilities.Utilities;
 
 import java.util.Timer;
@@ -24,7 +27,11 @@ public class IntroActivity extends AppCompatActivity
 {
     private ActivityIntroBinding binding;
     private FirebaseAuth auth;
+    private FirebaseFirestore database;
     Timer timer;
+    private UserModel user;
+    boolean connected = false;
+    AlertDialog.Builder alertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -36,37 +43,104 @@ public class IntroActivity extends AppCompatActivity
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         auth = FirebaseAuth.getInstance();
+
+        ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
+        connected = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED;
+
         if (auth.getCurrentUser() == null)
         {
-            /*
-            binding.imgLogo.animate().translationY(-1600).setDuration(1000).setStartDelay(4000);
-            binding.appName.animate().translationY(-1600).setDuration(1000).setStartDelay(4000);
-            binding.introBG.animate().translationY(-2600).setDuration(1000).setStartDelay(4000);*/
-            timer = new Timer();
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    startActivity(new Intent(IntroActivity.this, OnboardingActivity.class));
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                    finish();
-                }
-            }, 3000);
+            if (connected)
+            {
+                timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        startActivity(new Intent(IntroActivity.this, OnboardingActivity.class));
+                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                        finish();
+                    }
+                }, 2000);
+            }
+            else
+            {
+                showError();
+            }
         }
         else
         {
-            /*
-            binding.imgLogo.animate().translationY(-1600).setDuration(1000).setStartDelay(3000);
-            binding.appName.animate().translationY(-1600).setDuration(1000).setStartDelay(3000);
-            binding.introBG.animate().translationY(-2600).setDuration(1000).setStartDelay(3000);*/
-            timer = new Timer();
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    startActivity(new Intent(IntroActivity.this, MainActivity.class));
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                    finish();
-                }
-            }, 2000);
+            if (connected)
+            {
+                timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        getUserInfoAndPosts();
+                    }
+                }, 1000);
+            }
+            else
+            {
+                showError();
+            }
         }
+    }
+
+    private void showError()
+    {
+        alertDialog = new AlertDialog.Builder(IntroActivity.this);
+        alertDialog.setMessage(getString(R.string.error_at_login));
+        alertDialog.setNeutralButton(getString(R.string.ok), (dialogInterface, i) -> {
+            dialogInterface.dismiss();
+            finish();
+        });
+        alertDialog.create();
+        alertDialog.show();
+    }
+
+    private void getUserInfoAndPosts()
+    {
+        database = FirebaseFirestore.getInstance();
+        Utilities utilities = new Utilities(this, this);
+        database.collection("Users").get().addOnCompleteListener(task -> {
+            if (task.isSuccessful())
+            {
+                for (QueryDocumentSnapshot documentSnapshot : task.getResult())
+                {
+                    if (documentSnapshot.getId().equals(auth.getUid()))
+                    {
+                        user = new UserModel();
+                        user.setName(documentSnapshot.getString("name"));
+                        user.setProfilePic(documentSnapshot.getString("profilePic"));
+                        user.setAbout(documentSnapshot.getString("about"));
+                        user.setGender(documentSnapshot.getString("gender"));
+                        user.setAge(documentSnapshot.getString("age"));
+                        user.setUserId(documentSnapshot.getId());
+                        user.setFollowerCount(Integer.parseInt(String.valueOf(documentSnapshot.get("followerCount"))));
+                        user.setFollowingCount(Integer.parseInt(String.valueOf(documentSnapshot.get("followingCount"))));
+                        utilities.setPreferences("username", documentSnapshot.getString("name"));
+                    }
+                }
+                getToken(utilities);
+
+                Intent intent = new Intent(IntroActivity.this, MainActivity.class);
+                intent.putExtra("currentUserInfo", user);
+                startActivity(intent);
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                finish();
+            }
+        });
+    }
+
+    private void getToken(Utilities utilities)
+    {
+        FirebaseMessaging.getInstance().getToken().addOnSuccessListener(token -> updateToken(token, utilities));
+    }
+
+    private void updateToken(String token, Utilities utilities)
+    {
+        utilities.setPreferences("token", token);
+        DocumentReference documentReference = database.collection("Users").document(auth.getUid());
+        documentReference.update("token", token).addOnFailureListener(e -> Toast.makeText(this, "Token güncellenemedi", Toast.LENGTH_SHORT).show());
     }
 }

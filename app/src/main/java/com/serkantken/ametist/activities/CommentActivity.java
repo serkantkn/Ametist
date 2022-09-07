@@ -1,6 +1,8 @@
 package com.serkantken.ametist.activities;
 
 import android.os.Bundle;
+import android.transition.Fade;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -43,6 +45,14 @@ public class CommentActivity extends AppCompatActivity {
 
         binding.buttonBack.setOnClickListener(view -> onBackPressed());
 
+        Fade fade = new Fade();
+        View decor = getWindow().getDecorView();
+        fade.excludeTarget(android.R.id.statusBarBackground, true);
+        fade.excludeTarget(android.R.id.navigationBarBackground, true);
+        fade.excludeTarget(decor.findViewById(R.id.container), true);
+        getWindow().setEnterTransition(fade);
+        getWindow().setExitTransition(fade);
+
         database = FirebaseFirestore.getInstance();
 
         String userId = getIntent().getStringExtra("userId");
@@ -74,6 +84,7 @@ public class CommentActivity extends AppCompatActivity {
             comment.put("userId", FirebaseAuth.getInstance().getUid());
             comment.put("date", new Date().getTime());
 
+            //Yorumu ekle
             database.collection(Constants.DATABASE_PATH_USERS)
                     .document(userId)
                     .collection("Posts")
@@ -84,6 +95,7 @@ public class CommentActivity extends AppCompatActivity {
                         {
                             comment.put("commentId", task.getResult().getId());
 
+                            //Yorum IDsini al
                             database.collection(Constants.DATABASE_PATH_USERS)
                                     .document(userId)
                                     .collection("Posts")
@@ -94,6 +106,7 @@ public class CommentActivity extends AppCompatActivity {
                                     .addOnCompleteListener(task1 -> {
                                         if (task1.isSuccessful())
                                         {
+                                            //Yorumun bulunduğu postun yorum sayısını al
                                             database.collection(Constants.DATABASE_PATH_USERS)
                                                     .document(userId)
                                                     .collection("Posts")
@@ -108,6 +121,7 @@ public class CommentActivity extends AppCompatActivity {
                                                                     commentCount = Integer.parseInt(Objects.requireNonNull(snapshot.get("commentCount")).toString());
                                                                 }
                                                             }
+                                                            //Yorum sayısını bir arttır ve yaz
                                                             database.collection(Constants.DATABASE_PATH_USERS)
                                                                     .document(userId)
                                                                     .collection("Posts")
@@ -156,6 +170,6 @@ public class CommentActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        //overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 }

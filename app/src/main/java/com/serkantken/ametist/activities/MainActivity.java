@@ -5,25 +5,19 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.messaging.FirebaseMessaging;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.adapters.ChatListAdapter;
 import com.serkantken.ametist.adapters.MainAdapter;
@@ -31,7 +25,6 @@ import com.serkantken.ametist.databinding.ActivityMainBinding;
 import com.serkantken.ametist.databinding.LayoutMessageListBinding;
 import com.serkantken.ametist.databinding.LayoutProfileBinding;
 import com.serkantken.ametist.models.MessageModel;
-import com.serkantken.ametist.models.SettingsModel;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.utilities.Constants;
 import com.serkantken.ametist.utilities.UserListener;
@@ -43,7 +36,6 @@ import com.skydoves.balloon.BalloonSizeSpec;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Objects;
 
 import eightbitlab.com.blurview.BlurView;
 
@@ -74,7 +66,6 @@ public class MainActivity extends BaseActivity implements UserListener
         database = FirebaseFirestore.getInstance();
         user = new UserModel();
         getUserInfo();
-        getToken();
 
         binding.buttonSettings.setOnClickListener(view -> {
             startActivity(new Intent(MainActivity.this, SettingsActivity.class));
@@ -107,6 +98,7 @@ public class MainActivity extends BaseActivity implements UserListener
                 {
                     //tab.setText(getResources().getString(R.string.notifications));
                     //tab.setIcon(null);
+                    tab.setIcon(AppCompatResources.getDrawable(MainActivity.this, R.drawable.ic_notifications));
 
                     tab.view.performClick();
                 }
@@ -273,7 +265,7 @@ public class MainActivity extends BaseActivity implements UserListener
 
     private void getUserInfo()
     {
-        database.collection("Users").get().addOnCompleteListener(task -> {
+        /*database.collection("Users").get().addOnCompleteListener(task -> {
             if (task.isSuccessful())
             {
                 for (QueryDocumentSnapshot documentSnapshot : task.getResult())
@@ -289,21 +281,11 @@ public class MainActivity extends BaseActivity implements UserListener
                         utilities.setPreferences("username", documentSnapshot.getString("name"));
                     }
                 }
-                Glide.with(getApplicationContext()).load(user.getProfilePic()).placeholder(R.mipmap.ametist_logo).into(binding.profileImage);
+
             }
-        });
-    }
-
-    private void getToken()
-    {
-        FirebaseMessaging.getInstance().getToken().addOnSuccessListener(this::updateToken);
-    }
-
-    private void updateToken(String token)
-    {
-        utilities.setPreferences("token", token);
-        DocumentReference documentReference = database.collection("Users").document(auth.getUid());
-        documentReference.update("token", token).addOnFailureListener(e -> Toast.makeText(this, "Token güncellenemedi", Toast.LENGTH_SHORT).show());
+        });*/
+        user = (UserModel) getIntent().getSerializableExtra("currentUserInfo");
+        Glide.with(getApplicationContext()).load(user.getProfilePic()).placeholder(R.mipmap.ametist_logo).into(binding.profileImage);
     }
 
     private void showBalloon(String message, View view, int position)
@@ -315,7 +297,7 @@ public class MainActivity extends BaseActivity implements UserListener
                 .setText(message)
                 .setTextSize(15f)
                 .setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.white))
-                .setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.accent_purple_dark))
+                .setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.accent_blue_dark))
                 .setArrowPosition(0.5f)
                 .setArrowPositionRules(ArrowPositionRules.ALIGN_ANCHOR)
                 .setPadding(12)
