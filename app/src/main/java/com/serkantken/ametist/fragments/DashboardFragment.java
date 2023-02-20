@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.app.ActivityCompat;
@@ -29,9 +30,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
@@ -41,12 +45,14 @@ import com.serkantken.ametist.databinding.FragmentDashboardBinding;
 import com.serkantken.ametist.databinding.LayoutNewPostDialogBinding;
 import com.serkantken.ametist.models.PostModel;
 import com.serkantken.ametist.models.UserModel;
+import com.serkantken.ametist.utilities.Constants;
 import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
 
@@ -220,15 +226,8 @@ public class DashboardFragment extends Fragment
                     Manifest.permission.READ_EXTERNAL_STORAGE,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
             }, 1);
-            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
-                    ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
         }
     }
 
@@ -269,7 +268,7 @@ public class DashboardFragment extends Fragment
                 {
                     Log.i("sira", i+"");
                     int index = i;
-                    database.collection("Users").document(followingUsers.get(i)).collection("Posts").get().addOnCompleteListener(task1 -> {
+                    database.collection("Users").document(followingUsers.get(index)).collection("Posts").get().addOnCompleteListener(task1 -> {
                         if (task1.isSuccessful())
                         {
                             for (QueryDocumentSnapshot documentSnapshot : task1.getResult())

@@ -36,6 +36,7 @@ import com.skydoves.balloon.BalloonSizeSpec;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Objects;
 
 import eightbitlab.com.blurview.BlurView;
 
@@ -128,6 +129,7 @@ public class MainActivity extends BaseActivity implements UserListener
 
             }
         });
+        utilities.blur(binding.tabBarBlur, 10f, false);
 
         mainAdapter = new MainAdapter(getSupportFragmentManager(), this, binding.tabLayout.getTabCount());
         binding.viewPager.setAdapter(mainAdapter);
@@ -179,8 +181,6 @@ public class MainActivity extends BaseActivity implements UserListener
         });
 
         binding.buttonMessages.setOnClickListener(view -> {
-            //ChatListDialogFragment fragment = new ChatListDialogFragment();
-            //fragment.show(getSupportFragmentManager(), "mesajkutusu");
             showMessageListDialog();
         });
     }
@@ -228,7 +228,7 @@ public class MainActivity extends BaseActivity implements UserListener
                     model.setSenderId(documentChange.getDocument().getString("senderId"));
                     model.setReceiverId(documentChange.getDocument().getString("receiverId"));
 
-                    if (auth.getUid().equals(documentChange.getDocument().getString("senderId")))
+                    if (Objects.equals(auth.getUid(), documentChange.getDocument().getString("senderId")))
                     {
                         model.setConversationId(documentChange.getDocument().getString("receiverId"));
                     }
@@ -285,7 +285,10 @@ public class MainActivity extends BaseActivity implements UserListener
             }
         });*/
         user = (UserModel) getIntent().getSerializableExtra("currentUserInfo");
-        Glide.with(getApplicationContext()).load(user.getProfilePic()).placeholder(R.mipmap.ametist_logo).into(binding.profileImage);
+        if (user != null)
+        {
+            Glide.with(getApplicationContext()).load(user.getProfilePic()).placeholder(R.mipmap.ametist_logo).into(binding.profileImage);
+        }
     }
 
     private void showBalloon(String message, View view, int position)

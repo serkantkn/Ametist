@@ -6,6 +6,7 @@ public class PostModel implements Serializable {
     String postId, postedBy, postText, postPicture;
     long postedAt;
     int likeCount, commentCount;
+    boolean isLiked;
 
     public PostModel(){
     }
@@ -64,5 +65,13 @@ public class PostModel implements Serializable {
 
     public void setPostedAt(long postedAt) {
         this.postedAt = postedAt;
+    }
+
+    public boolean isLiked() {
+        return isLiked;
+    }
+
+    public void setLiked(boolean liked) {
+        isLiked = liked;
     }
 }

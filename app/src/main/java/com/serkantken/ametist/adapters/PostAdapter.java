@@ -46,6 +46,7 @@ import com.serkantken.ametist.utilities.Utilities;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -53,25 +54,16 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
     ArrayList<PostModel> postModels;
     Context context;
     Activity activity;
-    boolean isLiked;
     FirebaseFirestore database;
     String currentUserId;
     int likeCount;
     ArrayList<CommentModel> comments = new ArrayList<>();
+    boolean result;
 
     public PostAdapter(ArrayList<PostModel> postModels, Context context, Activity activity) {
         this.postModels = postModels;
         this.context = context;
         this.activity = activity;
-        database = FirebaseFirestore.getInstance();
-        currentUserId = FirebaseAuth.getInstance().getUid();
-    }
-
-    public PostAdapter(ArrayList<PostModel> postModels, Context context, Activity activity, boolean isLiked) {
-        this.postModels = postModels;
-        this.context = context;
-        this.activity = activity;
-        this.isLiked = isLiked;
         database = FirebaseFirestore.getInstance();
         currentUserId = FirebaseAuth.getInstance().getUid();
     }
@@ -111,6 +103,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
         {
             holder.binding.buttonMenu.setVisibility(View.VISIBLE);
         }
+
+        isLiked(postModel, holder);
+
         holder.binding.postText.setText(postModel.getPostText());
         holder.binding.textLikeCount.setText(String.valueOf(postModel.getLikeCount()));
         holder.binding.textCommentCount.setText(String.valueOf(postModel.getCommentCount()));
@@ -150,73 +145,13 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
         });
 
         holder.binding.buttonLike.setOnClickListener(view -> {
-            if (isLiked)
+            if (holder.binding.buttonLike.getTag().equals("Liked"))
             {
-                database.collection(Constants.DATABASE_PATH_USERS)
-                        .document(postModel.getPostedBy())
-                        .collection("Posts")
-                        .document(postModel.getPostId())
-                        .collection("Likers")
-                        .document(FirebaseAuth.getInstance().getUid())
-                        .delete().addOnCompleteListener(task -> {
-                            if (task.isSuccessful())
-                            {
-                                database.collection(Constants.DATABASE_PATH_USERS)
-                                        .document(postModel.getPostedBy())
-                                        .collection("Posts")
-                                        .document(postModel.getPostId())
-                                        .get().addOnCompleteListener(task1 -> {
-                                            if (task1.isSuccessful())
-                                            {
-                                                DocumentSnapshot snapshot = task1.getResult();
-                                                likeCount = Integer.parseInt(Objects.requireNonNull(snapshot.get("likeCount")).toString());
-                                                likeCount--;
-                                                database.collection(Constants.DATABASE_PATH_USERS)
-                                                        .document(postModel.getPostedBy())
-                                                        .collection("Posts")
-                                                        .document(postModel.getPostId())
-                                                        .update("likeCount", likeCount).addOnCompleteListener(task2 -> {
-                                                            holder.binding.textLikeCount.setText(String.valueOf(likeCount));
-                                                            holder.binding.buttonLike.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.ic_like_empty));
-                                                        });
-                                            }
-                                        });
-                            }
-                        });
+                unlikePost(postModel, holder);
             }
             else
             {
-                database.collection(Constants.DATABASE_PATH_USERS)
-                        .document(postModel.getPostedBy())
-                        .collection("Posts")
-                        .document(postModel.getPostId())
-                        .collection("Likers")
-                        .document(FirebaseAuth.getInstance().getUid())
-                        .delete().addOnCompleteListener(task -> {
-                            if (task.isSuccessful())
-                            {
-                                database.collection(Constants.DATABASE_PATH_USERS)
-                                        .document(postModel.getPostedBy())
-                                        .collection("Posts")
-                                        .document(postModel.getPostId())
-                                        .get().addOnCompleteListener(task1 -> {
-                                            if (task1.isSuccessful())
-                                            {
-                                                DocumentSnapshot snapshot = task1.getResult();
-                                                likeCount = Integer.parseInt(Objects.requireNonNull(snapshot.get("likeCount")).toString());
-                                                likeCount++;
-                                                database.collection(Constants.DATABASE_PATH_USERS)
-                                                        .document(postModel.getPostedBy())
-                                                        .collection("Posts")
-                                                        .document(postModel.getPostId())
-                                                        .update("likeCount", likeCount).addOnCompleteListener(task2 -> {
-                                                            holder.binding.textLikeCount.setText(String.valueOf(likeCount));
-                                                            holder.binding.buttonLike.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.ic_like_fill));
-                                                        });
-                                            }
-                                        });
-                            }
-                        });
+                likePost(postModel, holder);
             }
         });
 
@@ -228,7 +163,106 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
             context.startActivity(intent, optionsCompat.toBundle());
         });
 
-        getComment(postModel.getPostedBy(), postModel.getPostId(), holder);
+        //getComment(postModel.getPostedBy(), postModel.getPostId(), holder);
+    }
+
+    private void likePost(PostModel postModel, ViewHolder holder)
+    {
+        HashMap<String, Object> liker = new HashMap<>();
+        liker.put("userId", FirebaseAuth.getInstance().getUid());
+        liker.put("date", new Date().getTime());
+
+        database.collection("LikesComments")
+                .document(postModel.getPostId())
+                .collection("Likes")
+                .document(FirebaseAuth.getInstance().getUid())
+                .set(liker)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful())
+                    {
+                        database.collection(Constants.DATABASE_PATH_USERS)
+                                .document(postModel.getPostedBy())
+                                .collection("Posts")
+                                .document(postModel.getPostId())
+                                .get().addOnCompleteListener(task1 -> {
+                                    if (task1.isSuccessful())
+                                    {
+                                        DocumentSnapshot snapshot = task1.getResult();
+                                        likeCount = Integer.parseInt(Objects.requireNonNull(snapshot.get("likeCount")).toString());
+                                        likeCount++;
+                                        database.collection(Constants.DATABASE_PATH_USERS)
+                                                .document(postModel.getPostedBy())
+                                                .collection("Posts")
+                                                .document(postModel.getPostId())
+                                                .update("likeCount", likeCount).addOnCompleteListener(task2 -> {
+                                                    holder.binding.textLikeCount.setText(String.valueOf(likeCount));
+                                                    holder.binding.buttonLike.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.ic_like_fill));
+                                                    holder.binding.buttonLike.setTag("Liked");
+                                                });
+                                    }
+                                });
+                    }
+                });
+    }
+
+    private void unlikePost(PostModel postModel, ViewHolder holder)
+    {
+        database.collection("LikesComments")
+                .document(postModel.getPostId())
+                .collection("Likes")
+                .document(FirebaseAuth.getInstance().getUid())
+                .delete().addOnCompleteListener(task -> {
+                    if (task.isSuccessful())
+                    {
+                        database.collection(Constants.DATABASE_PATH_USERS)
+                                .document(postModel.getPostedBy())
+                                .collection("Posts")
+                                .document(postModel.getPostId())
+                                .get().addOnCompleteListener(task1 -> {
+                                    if (task1.isSuccessful())
+                                    {
+                                        DocumentSnapshot snapshot = task1.getResult();
+                                        likeCount = Integer.parseInt(Objects.requireNonNull(snapshot.get("likeCount")).toString());
+                                        likeCount--;
+                                        database.collection(Constants.DATABASE_PATH_USERS)
+                                                .document(postModel.getPostedBy())
+                                                .collection("Posts")
+                                                .document(postModel.getPostId())
+                                                .update("likeCount", likeCount).addOnCompleteListener(task2 -> {
+                                                    holder.binding.textLikeCount.setText(String.valueOf(likeCount));
+                                                    holder.binding.buttonLike.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.ic_like_empty));
+                                                    holder.binding.buttonLike.setTag("NoLike");
+                                                });
+                                    }
+                                });
+                    }
+                });
+    }
+
+    private void isLiked(PostModel postModel, ViewHolder holder)
+    {
+        holder.binding.buttonLike.setTag("NoLike");
+        database.collection("LikesComments")
+                .document(postModel.getPostId())
+                .collection("Likes")
+                .get().addOnCompleteListener((OnCompleteListener<QuerySnapshot>) task -> {
+                    if (task.isSuccessful())
+                    {
+                        for (QueryDocumentSnapshot snapshot : task.getResult())
+                        {
+                            if (snapshot.getId().equals(FirebaseAuth.getInstance().getUid()))
+                            {
+                                holder.binding.buttonLike.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.ic_like_fill));
+                                holder.binding.buttonLike.setTag("Liked");
+                            }
+                            else
+                            {
+                                holder.binding.buttonLike.setImageDrawable(AppCompatResources.getDrawable(context, R.drawable.ic_like_empty));
+                                holder.binding.buttonLike.setTag("NoLike");
+                            }
+                        }
+                    }
+                });
     }
 
     private void getComment(String userId, String postId, ViewHolder holder) {
