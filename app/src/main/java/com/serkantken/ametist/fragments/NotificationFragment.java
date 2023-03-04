@@ -1,6 +1,7 @@
 package com.serkantken.ametist.fragments;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,6 +35,7 @@ public class NotificationFragment extends Fragment implements UserListener
 {
     ArrayList<NotificationModel> notifList;
     FragmentNotificationBinding binding;
+    Utilities utilities;
     FirebaseAuth auth;
     FirebaseFirestore database;
     NotificationsAdapter adapter;
@@ -47,11 +49,13 @@ public class NotificationFragment extends Fragment implements UserListener
         auth = FirebaseAuth.getInstance();
         database = FirebaseFirestore.getInstance();
         notifList = new ArrayList<>();
+        utilities = new Utilities(requireContext(), requireActivity());
         adapter = new NotificationsAdapter(requireContext(), notifList, this);
         binding.notifRV.setAdapter(adapter);
         binding.notifRV.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         binding.notifRefresher.setOnRefreshListener(this::getNotifications);
+        binding.notifRV.setPadding(0, utilities.getStatusBarHeight()+utilities.convertDpToPixel(56), 0, utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT)+utilities.convertDpToPixel(66));
 
         getNotifications();
 

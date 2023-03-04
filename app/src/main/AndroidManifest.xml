@@ -21,7 +21,12 @@
             android:exported="false" />
         <activity
             android:name=".activities.CommentActivity"
-            android:exported="false" />
+            android:screenOrientation="portrait"
+            android:exported="false"
+            android:theme="@style/Theme.Ametist_Comment"
+            android:resizeableActivity="true"
+            android:windowSoftInputMode="adjustResize"
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name="com.yalantis.ucrop.UCropActivity"
             android:screenOrientation="portrait"

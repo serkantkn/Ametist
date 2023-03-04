@@ -1,10 +1,12 @@
 package com.serkantken.ametist.fragments;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +14,8 @@ import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -56,28 +60,38 @@ public class DiscoverFragment extends Fragment implements UserListener
     private FragmentDiscoverBinding binding;
     private FirebaseAuth auth;
     private FirebaseFirestore database;
+    private Utilities utilities;
     private ArrayList<UserModel> userList;
     private UsersAdapter adapter;
     private Balloon balloon;
     private UserModel userModel;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         binding = FragmentDiscoverBinding.inflate(inflater, container, false);
 
         auth = FirebaseAuth.getInstance();
         database = FirebaseFirestore.getInstance();
         userList = new ArrayList<>();
+        utilities = new Utilities(requireContext(), requireActivity());
 
         adapter = new UsersAdapter(userList, getContext(), getActivity(), this);
         binding.discoverRV.setAdapter(adapter);
         binding.discoverRV.setLayoutManager(new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL));
         binding.discoverRefresher.setOnRefreshListener(this::getUsers);
 
+        CoordinatorLayout.LayoutParams searchBlurParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        searchBlurParams.setMargins(0, utilities.getStatusBarHeight()+utilities.convertDpToPixel(64), 0, 0);
+        searchBlurParams.gravity = Gravity.TOP;
+        binding.searchBlur.setLayoutParams(searchBlurParams);
+        utilities.blur(binding.searchBlur, 10f, false);
+
+        binding.discoverRV.setPadding(utilities.convertDpToPixel(10), utilities.getStatusBarHeight()+utilities.convertDpToPixel(112), utilities.convertDpToPixel(10), utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT)+utilities.convertDpToPixel(66));
+
         getUsers();
 
-        binding.discoverRV.addOnScrollListener(new HidingScrollListener() {
+        /*binding.discoverRV.addOnScrollListener(new HidingScrollListener() {
             @Override
             public void onHide() {
                 binding.etSearch.animate().translationY(-binding.etSearch.getHeight()).setInterpolator(new AccelerateInterpolator(2));
@@ -89,7 +103,7 @@ public class DiscoverFragment extends Fragment implements UserListener
                 binding.etSearch.setVisibility(View.VISIBLE);
                 binding.etSearch.animate().translationY(0).setInterpolator(new DecelerateInterpolator(2));
             }
-        });
+        });*/
 
         final Boolean[] isBalloonShowed = {false};
         binding.etSearch.addTextChangedListener(new TextWatcher() {

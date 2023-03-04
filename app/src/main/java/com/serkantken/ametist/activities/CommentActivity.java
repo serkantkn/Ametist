@@ -1,12 +1,16 @@
 package com.serkantken.ametist.activities;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.transition.Fade;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -23,6 +27,7 @@ import com.serkantken.ametist.adapters.CommentAdapter;
 import com.serkantken.ametist.databinding.ActivityCommentBinding;
 import com.serkantken.ametist.models.CommentModel;
 import com.serkantken.ametist.utilities.Constants;
+import com.serkantken.ametist.utilities.Utilities;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -35,6 +40,7 @@ public class CommentActivity extends AppCompatActivity {
     private FirebaseFirestore database;
     private ArrayList<CommentModel> comments;
     private CommentAdapter adapter;
+    private Utilities utilities;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -42,6 +48,8 @@ public class CommentActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityCommentBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        utilities = new Utilities(this, this);
 
         binding.buttonBack.setOnClickListener(view -> onBackPressed());
 

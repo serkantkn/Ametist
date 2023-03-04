@@ -7,12 +7,14 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +25,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -30,12 +33,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
@@ -45,7 +45,7 @@ import com.serkantken.ametist.databinding.FragmentDashboardBinding;
 import com.serkantken.ametist.databinding.LayoutNewPostDialogBinding;
 import com.serkantken.ametist.models.PostModel;
 import com.serkantken.ametist.models.UserModel;
-import com.serkantken.ametist.utilities.Constants;
+import com.serkantken.ametist.utilities.Utilities;
 import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
@@ -53,7 +53,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Objects;
-import java.util.Random;
 import java.util.UUID;
 
 public class DashboardFragment extends Fragment
@@ -65,6 +64,7 @@ public class DashboardFragment extends Fragment
     FirebaseFirestore database;
     FirebaseAuth auth;
     UserModel currentUser;
+    Utilities utilities;
     ActivityResultLauncher<String> getContent;
     LayoutNewPostDialogBinding dialogBinding;
     String postUri;
@@ -72,16 +72,17 @@ public class DashboardFragment extends Fragment
     Boolean isPhotoSelected = false;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         binding = FragmentDashboardBinding.inflate(inflater, container, false);
 
         auth = FirebaseAuth.getInstance();
         database = FirebaseFirestore.getInstance();
+
         currentUser = new UserModel();
         postModels = new ArrayList<>();
         followingUsers = new ArrayList<>();
-
+        utilities = new Utilities(requireContext(), requireActivity());
         adapter = new PostAdapter(postModels, getContext(), getActivity());
         binding.dashboardRV.setAdapter(adapter);
         binding.dashboardRV.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -89,15 +90,25 @@ public class DashboardFragment extends Fragment
         getUserInfo();
         getPosts();
 
+        CoordinatorLayout.LayoutParams newPostButtonParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        newPostButtonParams.setMargins(0, 0, utilities.convertDpToPixel(16), utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT)+utilities.convertDpToPixel(66));
+        newPostButtonParams.gravity = Gravity.BOTTOM|Gravity.END;
+        binding.newPostButton.setLayoutParams(newPostButtonParams);
+
+        binding.dashboardRV.setPadding(0, utilities.getStatusBarHeight()+utilities.convertDpToPixel(56), 0, utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT)+utilities.convertDpToPixel(66));
+
         binding.dashboardRefresher.setOnRefreshListener(this::getPosts);
 
-        ArrayList<String> greetings = new ArrayList<>();
-        greetings.add(getString(R.string.what_do_you_think));
-        greetings.add(getString(R.string.how_do_you_feel));
-        greetings.add(getString(R.string.what_happened));
-
-        Random random = new Random();
-        binding.textNewPost.setText(greetings.get(random.nextInt(greetings.size())));
+        binding.dashboardRV.setOnScrollChangeListener((view, x, y, oldX, oldY) -> {
+            if (y > oldY && binding.newPostButton.isExtended())
+            {
+                binding.newPostButton.shrink();
+            }
+            if (y < oldY && !binding.newPostButton.isExtended())
+            {
+                binding.newPostButton.extend();
+            }
+        });
 
         binding.newPostButton.setOnClickListener(view -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(requireContext(), R.style.AlertDialogTheme);
@@ -154,7 +165,7 @@ public class DashboardFragment extends Fragment
                 postModel.setCommentCount(0);
                 if (isPhotoSelected)
                 {
-                    StorageReference filePath = FirebaseStorage.getInstance().getReference("Users").child(auth.getUid()).child("postPics").child(new StringBuilder(UUID.randomUUID().toString()).append(".jpg").toString());
+                    StorageReference filePath = FirebaseStorage.getInstance().getReference("Users").child(Objects.requireNonNull(auth.getUid())).child("postPics").child(UUID.randomUUID().toString() + ".jpg");
                     StorageTask uploadTask = filePath.putFile(resultUri);
                     uploadTask.continueWithTask(task -> {
                         if (!task.isSuccessful())
@@ -179,7 +190,7 @@ public class DashboardFragment extends Fragment
                 }
                 else
                 {
-                    database.collection("Users").document(auth.getUid()).collection("Posts").document(postId).set(postModel).addOnCompleteListener(task -> {
+                    database.collection("Users").document(Objects.requireNonNull(auth.getUid())).collection("Posts").document(postId).set(postModel).addOnCompleteListener(task -> {
                         if (task.isSuccessful())
                         {
                             progressDialog.dismiss();
@@ -198,10 +209,10 @@ public class DashboardFragment extends Fragment
         });
 
         getContent = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
-            String destUri = new StringBuilder(UUID.randomUUID().toString()).append(".jpg").toString();
+            String destUri = UUID.randomUUID().toString() + ".jpg";
 
             UCrop.Options options = new UCrop.Options();
-            options.setLogoColor(getResources().getColor(R.color.accent_purple_dark));
+            options.setLogoColor(getResources().getColor(R.color.accent_purple_dark, null));
             options.setFreeStyleCropEnabled(false);
             options.setToolbarTitle(getString(R.string.crop));
             options.withAspectRatio(1, 1);
@@ -245,7 +256,6 @@ public class DashboardFragment extends Fragment
                         currentUser.setName(documentSnapshot.getString("name"));
                     }
                 }
-                Glide.with(requireActivity()).load(currentUser.getProfilePic()).placeholder(AppCompatResources.getDrawable(requireContext(), R.drawable.ic_person)).into(binding.profileImage);
             }
         });
     }
@@ -255,7 +265,7 @@ public class DashboardFragment extends Fragment
         binding.dashboardRefresher.setRefreshing(true);
         followingUsers.clear();
         followingUsers.add(auth.getUid());
-        database.collection("Users").document(auth.getUid()).collection("followings").get().addOnCompleteListener(task -> {
+        database.collection("Users").document(Objects.requireNonNull(auth.getUid())).collection("followings").get().addOnCompleteListener(task -> {
             if (task.isSuccessful() && task.getResult() != null)
             {
                 for (QueryDocumentSnapshot snapshot : task.getResult())
@@ -279,8 +289,8 @@ public class DashboardFragment extends Fragment
                                 postModel.setPostPicture(documentSnapshot.getString("postPicture"));
                                 postModel.setPostedBy(documentSnapshot.getString("postedBy"));
                                 postModel.setPostedAt(documentSnapshot.getLong("postedAt"));
-                                postModel.setCommentCount(Integer.parseInt(documentSnapshot.get("commentCount").toString()));
-                                postModel.setLikeCount(Integer.parseInt(documentSnapshot.get("likeCount").toString()));
+                                postModel.setCommentCount(Integer.parseInt(Objects.requireNonNull(documentSnapshot.get("commentCount")).toString()));
+                                postModel.setLikeCount(Integer.parseInt(Objects.requireNonNull(documentSnapshot.get("likeCount")).toString()));
                                 postModels.add(postModel);
                             }
                             if (postModels.size() != 0)
@@ -306,6 +316,7 @@ public class DashboardFragment extends Fragment
     {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
+            assert data != null;
             resultUri = UCrop.getOutput(data);
             if (resultUri != null) {
                 postUri = resultUri.toString();

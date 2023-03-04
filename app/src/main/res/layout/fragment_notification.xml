@@ -14,7 +14,9 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/notifRV"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            tools:listitem="@layout/notif_list_layout" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

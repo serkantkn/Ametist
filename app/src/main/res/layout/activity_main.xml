@@ -6,10 +6,21 @@
     android:layout_height="match_parent"
     tools:context=".activities.MainActivity">
 
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/viewPager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fitsSystemWindows="false"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
     <eightbitlab.com.blurview.BlurView
         android:id="@+id/toolbarBlur"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:fitsSystemWindows="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -17,16 +28,15 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/primary">
+            android:layout_height="64dp">
 
             <com.makeramen.roundedimageview.RoundedImageView
                 android:id="@+id/buttonMessages"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:layout_marginEnd="15dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
                 android:background="@drawable/background_toolbar_button"
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_message"
@@ -36,16 +46,15 @@
                 app:layout_constraintHorizontal_bias="1"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0"
                 android:contentDescription="@string/messages"/>
 
             <com.makeramen.roundedimageview.RoundedImageView
                 android:id="@+id/buttonSettings"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:layout_marginEnd="10dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
                 android:background="@drawable/background_toolbar_button"
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_settings"
@@ -55,16 +64,15 @@
                 app:layout_constraintHorizontal_bias="1"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0"
                 android:contentDescription="@string/settings"/>
 
             <com.makeramen.roundedimageview.RoundedImageView
                 android:id="@+id/profileImage"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:layout_marginStart="15dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
                 android:scaleType="centerCrop"
                 app:riv_corner_radius="10dp"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -72,7 +80,6 @@
                 app:layout_constraintHorizontal_bias="0"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0"
                 android:contentDescription="@string/profile_photo"/>
 
             <TextView
@@ -96,15 +103,6 @@
 
     </eightbitlab.com.blurview.BlurView>
 
-    <androidx.viewpager.widget.ViewPager
-        android:id="@+id/viewPager"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/toolbarBlur"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
-
     <eightbitlab.com.blurview.BlurView
         android:id="@+id/tabBarBlur"
         android:layout_width="match_parent"
@@ -116,7 +114,7 @@
         <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="46dp"
         android:background="@android:color/transparent"
         app:tabMode="fixed"
         app:tabGravity="center"
@@ -129,9 +127,7 @@
         app:tabInlineLabel="true"
         app:tabIconTint="@color/accent_purple_light"
         android:layout_marginStart="15dp"
-        android:layout_marginEnd="15dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"/>
+        android:layout_marginEnd="15dp"/>
 
     </eightbitlab.com.blurview.BlurView>
 

@@ -1,10 +1,12 @@
 package com.serkantken.ametist.activities;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.WindowManager;
 
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.content.ContextCompat;
@@ -60,18 +62,82 @@ public class MainActivity extends BaseActivity implements UserListener
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
         utilities = new Utilities(getApplicationContext(), this);
+
+        binding.toolbarBlur.setPadding(0, utilities.getStatusBarHeight(), 0, 0);
+        binding.tabBarBlur.setPadding(0, utilities.convertDpToPixel(5), 0, utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT)+utilities.convertDpToPixel(5));
 
         auth = FirebaseAuth.getInstance();
         database = FirebaseFirestore.getInstance();
         user = new UserModel();
         getUserInfo();
+        setTabs();
+
+        utilities.blur(binding.tabBarBlur, 10f, false);
+        utilities.blur(binding.toolbarBlur, 10f, false);
+
+        mainAdapter = new MainAdapter(getSupportFragmentManager(), this, binding.tabLayout.getTabCount());
+        binding.viewPager.setAdapter(mainAdapter);
+        binding.viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(binding.tabLayout));
+
+        String balloons_showed = utilities.getPreferences(Constants.IS_BALLOONS_SHOWED);
+        if (TextUtils.equals(balloons_showed, Constants.PREF_NO))
+        {
+            new Handler().postDelayed(() -> {
+                showBalloon(getString(R.string.your_profile_here), binding.profileImage, 3);
+                utilities.setPreferences(Constants.IS_BALLOONS_SHOWED, Constants.PREF_YES);
+            }, 2000);
+        }
 
         binding.buttonSettings.setOnClickListener(view -> {
             startActivity(new Intent(MainActivity.this, SettingsActivity.class));
         });
 
+        binding.profileImage.setOnClickListener(view -> {
+            final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.BottomSheetDialogTheme_Chat);
+            LayoutProfileBinding bottomSheetView = LayoutProfileBinding.inflate(getLayoutInflater());
+
+            utilities.blur((BlurView) bottomSheetView.bottomSheetContainer, 10f, false);
+            bottomSheetView.username.setText(user.getName());
+            Glide.with(this).load(user.getProfilePic()).placeholder(R.drawable.ic_person).into(bottomSheetView.profileImage);
+            bottomSheetView.textAbout.setText(user.getAbout());
+            bottomSheetView.textAge.setText(user.getAge());
+            if (user.getGender().equals("0") || user.getGender().isEmpty())
+            {
+                bottomSheetView.textGender.setText("-");
+            }
+            else if (user.getGender().equals("1"))
+            {
+                bottomSheetView.textGender.setText(getString(R.string.man));
+            }
+            else if (user.getGender().equals("2"))
+            {
+                bottomSheetView.textGender.setText(getString(R.string.woman));
+            }
+
+            bottomSheetView.buttonMore.setOnClickListener(view1 -> {
+                Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+                intent.putExtra("receiverUser", user);
+                startActivity(intent);
+                bottomSheetDialog.dismiss();
+            });
+            bottomSheetView.buttonClose.setOnClickListener(view1 -> bottomSheetDialog.dismiss());
+            bottomSheetView.buttonEdit.setVisibility(View.GONE);
+            bottomSheetView.buttonMessage.setVisibility(View.GONE);
+
+            bottomSheetDialog.setContentView(bottomSheetView.getRoot());
+            bottomSheetDialog.show();
+        });
+
+        binding.buttonMessages.setOnClickListener(view -> {
+            showMessageListDialog();
+        });
+    }
+
+    private void setTabs()
+    {
         binding.tabLayout.addTab(binding.tabLayout.newTab().setText(getResources().getString(R.string.homepage)));
         binding.tabLayout.addTab(binding.tabLayout.newTab().setText(""));
         binding.tabLayout.addTab(binding.tabLayout.newTab().setText(""));
@@ -128,60 +194,6 @@ public class MainActivity extends BaseActivity implements UserListener
             public void onTabReselected(TabLayout.Tab tab) {
 
             }
-        });
-        utilities.blur(binding.tabBarBlur, 10f, false);
-
-        mainAdapter = new MainAdapter(getSupportFragmentManager(), this, binding.tabLayout.getTabCount());
-        binding.viewPager.setAdapter(mainAdapter);
-        binding.viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(binding.tabLayout));
-
-        String balloons_showed = utilities.getPreferences(Constants.IS_BALLOONS_SHOWED);
-        if (TextUtils.equals(balloons_showed, Constants.PREF_NO))
-        {
-            new Handler().postDelayed(() -> {
-                showBalloon(getString(R.string.your_profile_here), binding.profileImage, 3);
-                utilities.setPreferences(Constants.IS_BALLOONS_SHOWED, Constants.PREF_YES);
-            }, 2000);
-        }
-
-        binding.profileImage.setOnClickListener(view -> {
-            final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.BottomSheetDialogTheme_Chat);
-            LayoutProfileBinding bottomSheetView = LayoutProfileBinding.inflate(getLayoutInflater());
-
-            utilities.blur((BlurView) bottomSheetView.bottomSheetContainer, 10f, false);
-            bottomSheetView.username.setText(user.getName());
-            Glide.with(this).load(user.getProfilePic()).placeholder(R.drawable.ic_person).into(bottomSheetView.profileImage);
-            bottomSheetView.textAbout.setText(user.getAbout());
-            bottomSheetView.textAge.setText(user.getAge());
-            if (user.getGender().equals("0") || user.getGender().isEmpty())
-            {
-                bottomSheetView.textGender.setText("-");
-            }
-            else if (user.getGender().equals("1"))
-            {
-                bottomSheetView.textGender.setText(getString(R.string.man));
-            }
-            else if (user.getGender().equals("2"))
-            {
-                bottomSheetView.textGender.setText(getString(R.string.woman));
-            }
-
-            bottomSheetView.buttonMore.setOnClickListener(view1 -> {
-                Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
-                intent.putExtra("receiverUser", user);
-                startActivity(intent);
-                bottomSheetDialog.dismiss();
-            });
-            bottomSheetView.buttonClose.setOnClickListener(view1 -> bottomSheetDialog.dismiss());
-            bottomSheetView.buttonEdit.setVisibility(View.GONE);
-            bottomSheetView.buttonMessage.setVisibility(View.GONE);
-
-            bottomSheetDialog.setContentView(bottomSheetView.getRoot());
-            bottomSheetDialog.show();
-        });
-
-        binding.buttonMessages.setOnClickListener(view -> {
-            showMessageListDialog();
         });
     }
 
@@ -256,7 +268,7 @@ public class MainActivity extends BaseActivity implements UserListener
                     }
                 }
             }
-            Collections.sort(messageList, (obj1, obj2) -> obj2.getTimestamp().compareTo(obj1.getTimestamp()));
+            messageList.sort((obj1, obj2) -> obj2.getTimestamp().compareTo(obj1.getTimestamp()));
             adapter.notifyDataSetChanged();
             bottomSheetView.rvMessageList.smoothScrollToPosition(0);
             bottomSheetView.progressbar.setVisibility(View.GONE);
