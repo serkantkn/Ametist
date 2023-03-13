@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -20,6 +21,7 @@ import com.serkantken.ametist.databinding.ActivityIntroBinding;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.utilities.Utilities;
 
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -32,6 +34,7 @@ public class IntroActivity extends AppCompatActivity
     private UserModel user;
     boolean connected = false;
     AlertDialog.Builder alertDialog;
+    Utilities utilities;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -40,9 +43,10 @@ public class IntroActivity extends AppCompatActivity
         binding = ActivityIntroBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
         auth = FirebaseAuth.getInstance();
+        utilities = new Utilities(this, this);
 
         ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
         connected = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
@@ -100,8 +104,8 @@ public class IntroActivity extends AppCompatActivity
 
     private void getUserInfoAndPosts()
     {
+        binding.progressbar.setVisibility(View.VISIBLE);
         database = FirebaseFirestore.getInstance();
-        Utilities utilities = new Utilities(this, this);
         database.collection("Users").get().addOnCompleteListener(task -> {
             if (task.isSuccessful())
             {
@@ -121,7 +125,7 @@ public class IntroActivity extends AppCompatActivity
                         utilities.setPreferences("username", documentSnapshot.getString("name"));
                     }
                 }
-                getToken(utilities);
+                getToken();
 
                 Intent intent = new Intent(IntroActivity.this, MainActivity.class);
                 intent.putExtra("currentUserInfo", user);
@@ -132,15 +136,15 @@ public class IntroActivity extends AppCompatActivity
         });
     }
 
-    private void getToken(Utilities utilities)
+    private void getToken()
     {
-        FirebaseMessaging.getInstance().getToken().addOnSuccessListener(token -> updateToken(token, utilities));
+        FirebaseMessaging.getInstance().getToken().addOnSuccessListener(this::updateToken);
     }
 
-    private void updateToken(String token, Utilities utilities)
+    private void updateToken(String token)
     {
         utilities.setPreferences("token", token);
-        DocumentReference documentReference = database.collection("Users").document(auth.getUid());
+        DocumentReference documentReference = database.collection("Users").document(Objects.requireNonNull(auth.getUid()));
         documentReference.update("token", token).addOnFailureListener(e -> Toast.makeText(this, "Token güncellenemedi", Toast.LENGTH_SHORT).show());
     }
 }

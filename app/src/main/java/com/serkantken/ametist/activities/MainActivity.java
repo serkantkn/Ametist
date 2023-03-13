@@ -55,6 +55,7 @@ public class MainActivity extends BaseActivity implements UserListener
     private ChatListAdapter adapter;
     private BottomSheetDialog bottomSheetDialog;
     private LayoutMessageListBinding bottomSheetView;
+    private boolean isMessageListButtonPressed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -99,7 +100,7 @@ public class MainActivity extends BaseActivity implements UserListener
             final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.BottomSheetDialogTheme_Chat);
             LayoutProfileBinding bottomSheetView = LayoutProfileBinding.inflate(getLayoutInflater());
 
-            utilities.blur((BlurView) bottomSheetView.bottomSheetContainer, 10f, false);
+            utilities.blur(bottomSheetView.bottomSheetContainer, 10f, false);
             bottomSheetView.username.setText(user.getName());
             Glide.with(this).load(user.getProfilePic()).placeholder(R.drawable.ic_person).into(bottomSheetView.profileImage);
             bottomSheetView.textAbout.setText(user.getAbout());
@@ -131,7 +132,9 @@ public class MainActivity extends BaseActivity implements UserListener
             bottomSheetDialog.show();
         });
 
+        listenConversations();
         binding.buttonMessages.setOnClickListener(view -> {
+            isMessageListButtonPressed = true;
             showMessageListDialog();
         });
     }
@@ -201,13 +204,16 @@ public class MainActivity extends BaseActivity implements UserListener
     {
         bottomSheetDialog = new BottomSheetDialog(this, R.style.BottomSheetDialogTheme_Chat);
         bottomSheetView = LayoutMessageListBinding.inflate(getLayoutInflater());
+        bottomSheetDialog.getBehavior().setMaxHeight(utilities.convertDpToPixel(700));
 
         utilities.blur(bottomSheetView.blur, 10f, false);
         adapter = new ChatListAdapter(messageList, MainActivity.this, MainActivity.this, this);
         bottomSheetView.rvMessageList.setAdapter(adapter);
         bottomSheetView.rvMessageList.setLayoutManager(new LinearLayoutManager(this));
         listenConversations();
-        bottomSheetView.imgRefresh.setOnClickListener(view -> listenConversations());
+        bottomSheetView.imgRefresh.setOnClickListener(view -> {
+            listenConversations();
+        });
 
         bottomSheetDialog.setContentView(bottomSheetView.getRoot());
         bottomSheetDialog.show();
@@ -215,7 +221,6 @@ public class MainActivity extends BaseActivity implements UserListener
 
     private void listenConversations()
     {
-        bottomSheetView.progressbar.setVisibility(View.VISIBLE);
         messageList.clear();
         database.collection("conversations")
                 .whereEqualTo("senderId", auth.getUid())
@@ -269,9 +274,12 @@ public class MainActivity extends BaseActivity implements UserListener
                 }
             }
             messageList.sort((obj1, obj2) -> obj2.getTimestamp().compareTo(obj1.getTimestamp()));
-            adapter.notifyDataSetChanged();
-            bottomSheetView.rvMessageList.smoothScrollToPosition(0);
-            bottomSheetView.progressbar.setVisibility(View.GONE);
+            if (isMessageListButtonPressed)
+            {
+                adapter.notifyDataSetChanged();
+                bottomSheetView.rvMessageList.smoothScrollToPosition(0);
+                bottomSheetView.progressbar.setVisibility(View.GONE);
+            }
         }
     });
 

@@ -203,7 +203,11 @@ public class DiscoverFragment extends Fragment implements UserListener
     @Override
     public void onUserClicked(UserModel userModel)
     {
-        final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme_Chat);
+        Intent intent = new Intent(getContext(), ProfileActivity.class);
+        intent.putExtra("receiverUser", userModel);
+        requireContext().startActivity(intent);
+
+        /*final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme_Chat);
         LayoutProfileBinding bottomSheetView = LayoutProfileBinding.inflate(getLayoutInflater());
 
         Utilities utilities = new Utilities(requireContext(), requireActivity());
@@ -242,7 +246,7 @@ public class DiscoverFragment extends Fragment implements UserListener
         bottomSheetView.buttonEdit.setVisibility(View.GONE);
 
         bottomSheetDialog.setContentView(bottomSheetView.getRoot());
-        bottomSheetDialog.show();
+        bottomSheetDialog.show();*/
     }
 
     private void showBalloon(String message, View view, int position)
