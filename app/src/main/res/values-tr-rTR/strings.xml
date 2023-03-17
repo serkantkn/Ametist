@@ -92,4 +92,12 @@
     <string name="what_happened">Neler oldu?</string>
     <string name="ok">Tamam</string>
     <string name="new_post">Yeni Gönderi</string>
+    <string name="back_button">Geri Butonu</string>
+    <string name="looking_for">Şunu Arıyor</string>
+    <string name="height">Boy</string>
+    <string name="weight">Kilo</string>
+    <string name="relationship">İlişki Durumu</string>
+    <string name="role">Rolü</string>
+    <string name="posts">Gönderiler</string>
+    <string name="block_user">Engelle</string>
 </resources>
