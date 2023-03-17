@@ -18,8 +18,8 @@
         <item name="colorAccent">@color/accent_purple_dark</item>
         <item name="android:homeAsUpIndicator">@drawable/ic_back_profile</item>
         <item name="android:statusBarColor" >@color/primary</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar" >true</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" >false</item>
         <item name="android:navigationBarColor">@color/primary</item>
     </style>
 

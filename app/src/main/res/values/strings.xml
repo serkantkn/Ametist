@@ -95,4 +95,12 @@
     <string name="unlike_post">Unlike post</string>
     <string name="ok">OK</string>
     <string name="new_post">New Post</string>
+    <string name="back_button">Back Button</string>
+    <string name="looking_for">Looking For</string>
+    <string name="height">Height</string>
+    <string name="weight">Weight</string>
+    <string name="relationship">Relationship</string>
+    <string name="role">Role</string>
+    <string name="posts">Posts</string>
+    <string name="block_user">Block User</string>
 </resources>

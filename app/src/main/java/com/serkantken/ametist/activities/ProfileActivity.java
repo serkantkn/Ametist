@@ -1,17 +1,24 @@
 package com.serkantken.ametist.activities;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -36,6 +43,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Objects;
 
+import eightbitlab.com.blurview.BlurView;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -48,6 +56,7 @@ public class ProfileActivity extends BaseActivity
     private FirebaseAuth auth;
     private FirebaseFirestore database;
     private UserModel user;
+    private Utilities utilities;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -55,11 +64,24 @@ public class ProfileActivity extends BaseActivity
         super.onCreate(savedInstanceState);
         binding = ActivityProfileBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
-        binding.toolbar.setNavigationIcon(R.drawable.ic_back_profile);
-        binding.toolbar.setNavigationOnClickListener(view -> onBackPressed());
-        setSupportActionBar(binding.toolbar);
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        utilities = new Utilities(this, this);
+        utilities.blur(binding.toolbarBlur, 10f, false);
+
+        binding.navbarBlur.setMinimumHeight(utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT));
+        utilities.blur(binding.navbarBlur, 10f, false);
+
+        binding.toolbarBlur.setPadding(0, utilities.getStatusBarHeight(), 0, 0);
+
+        binding.scrollView.setPadding(0, utilities.getStatusBarHeight()+utilities.convertDpToPixel(64), 0, utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT));
+        binding.scrollView.setClipToPadding(false);
+
+        ConstraintSet constraintSet = new ConstraintSet();
+        constraintSet.clone(binding.profileRoot);
+        constraintSet.connect(R.id.buttonMessage, ConstraintSet.END, R.id.profileRoot, ConstraintSet.END, utilities.convertDpToPixel(16));
+        constraintSet.connect(R.id.buttonMessage, ConstraintSet.BOTTOM, R.id.profileRoot, ConstraintSet.BOTTOM, utilities.convertDpToPixel(16)+utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT));
+        constraintSet.applyTo(binding.profileRoot);
 
         user = (UserModel) getIntent().getSerializableExtra("receiverUser");
         auth = FirebaseAuth.getInstance();
@@ -73,14 +95,29 @@ public class ProfileActivity extends BaseActivity
         binding.posts.setAdapter(adapter);
         binding.posts.setLayoutManager(new LinearLayoutManager(ProfileActivity.this));
 
-        if (!(binding.profileImage.getDrawable() == AppCompatResources.getDrawable(this, R.drawable.ic_person_profile)))
-        {
-            binding.profileImage.setOnClickListener(view -> {
+        binding.buttonBack.setOnClickListener(view -> onBackPressed());
+
+        binding.profileImage.setOnClickListener(view -> {
+            if (!Objects.isNull(binding.profileImage.getTag()))
+            {
                 Intent intent = new Intent(ProfileActivity.this, FullProfilePhotoActivity.class);
                 intent.putExtra("pictureUrl", user.getProfilePic());
                 startActivity(intent);
-            });
-        }
+            }
+        });
+
+        binding.scrollView.setOnScrollChangeListener((View.OnScrollChangeListener) (view, x, y, oldX, oldY) -> {
+            if (y > oldY && binding.buttonMessage.isExtended())
+            {
+                binding.buttonMessage.shrink();
+                binding.buttonFollow.hide();
+            }
+            if (y < oldY && !binding.buttonMessage.isExtended())
+            {
+                binding.buttonMessage.extend();
+                binding.buttonFollow.show();
+            }
+        });
 
         binding.buttonMessage.setOnClickListener(view -> {
             if (user.getUserId().equals(auth.getUid()))
@@ -102,20 +139,21 @@ public class ProfileActivity extends BaseActivity
     }
 
     private void follow() {
-        if (binding.textFollow.getText().equals(getString(R.string.followed)))
+        if (binding.buttonFollow.getContentDescription().equals(getString(R.string.followed)))
         {
             database.collection(Constants.DATABASE_PATH_USERS)
                     .document(user.getUserId())
                     .collection("followers")
-                    .document(FirebaseAuth.getInstance().getUid())
+                    .document(Objects.requireNonNull(auth.getUid()))
                     .delete().addOnCompleteListener(task -> {
                         database.collection(Constants.DATABASE_PATH_USERS)
-                                .document(FirebaseAuth.getInstance().getUid())
+                                .document(auth.getUid())
                                 .collection("followings")
                                 .document(user.getUserId())
                                 .delete().addOnCompleteListener(task12 -> {
-                                    binding.textFollow.setText(getString(R.string.follow));
-                                    binding.buttonFollowBackground.setBackground(AppCompatResources.getDrawable(this, R.drawable.purple_gradient));
+                                    binding.buttonFollow.setContentDescription(getString(R.string.follow));
+                                    binding.buttonFollow.setBackgroundColor(getColor(R.color.accent_purple_dark));
+                                    binding.buttonFollow.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_add_borderless));
                                 });
                     });
         }
@@ -130,7 +168,7 @@ public class ProfileActivity extends BaseActivity
             database.collection(Constants.DATABASE_PATH_USERS)
                     .document(user.getUserId())
                     .collection("followers")
-                    .document(FirebaseAuth.getInstance().getUid())
+                    .document(Objects.requireNonNull(auth.getUid()))
                     .set(followMap).addOnCompleteListener(task -> {
                         //Bildirim gönder
                         database.collection(Constants.DATABASE_PATH_USERS)
@@ -163,13 +201,14 @@ public class ProfileActivity extends BaseActivity
                                     followMap2.put("followedAt", new Date().getTime());
 
                                     database.collection(Constants.DATABASE_PATH_USERS)
-                                            .document(FirebaseAuth.getInstance().getUid())
+                                            .document(auth.getUid())
                                             .collection("followings")
                                             .document(user.getUserId())
                                             .set(followMap2).addOnCompleteListener(task1 -> {
                                                 //Butonu düzenle
-                                                binding.textFollow.setText(getString(R.string.followed));
-                                                binding.buttonFollowBackground.setBackground(AppCompatResources.getDrawable(this, R.drawable.blue_gradient));
+                                                binding.buttonFollow.setContentDescription(getString(R.string.followed));
+                                                binding.buttonFollow.setBackgroundColor(getColor(R.color.accent_blue_dark));
+                                                binding.buttonFollow.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_check));
                                             });
                                 });
                     });
@@ -228,15 +267,13 @@ public class ProfileActivity extends BaseActivity
                         if (documentSnapshot.getId().equals(auth.getUid()))
                         {
                             binding.buttonFollow.setVisibility(View.GONE);
-                            binding.iconMessage.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_edit));
-                            binding.textMessage.setText(getString(R.string.edit));
+                            binding.buttonMessage.setIcon(AppCompatResources.getDrawable(this, R.drawable.ic_edit));
+                            binding.buttonMessage.setText(getString(R.string.edit));
                         }
                     }
                 }
 
-                binding.collapsingToolbar.setTitle(user.getName());
-                binding.collapsingToolbar.setExpandedTitleColor(getResources().getColor(android.R.color.transparent));
-                binding.collapsingToolbar.setCollapsedTitleTextColor(getResources().getColor(R.color.primary_text));
+                binding.username.setText(user.getName());
                 binding.textAbout.setText(user.getAbout());
                 binding.textAge.setText(user.getAge());
                 if (user.getGender().equals("0"))
@@ -252,6 +289,7 @@ public class ProfileActivity extends BaseActivity
                     binding.textGender.setText(getString(R.string.woman));
                 }
                 Glide.with(ProfileActivity.this).load(user.getProfilePic()).placeholder(R.drawable.ic_person_profile).into(binding.profileImage);
+                binding.profileImage.setTag(user.getProfilePic());
             }
         });
     }
