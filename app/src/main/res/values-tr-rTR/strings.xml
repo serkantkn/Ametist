@@ -75,7 +75,7 @@
     <string name="new_follower">Yeni takipçi</string>
     <string name="error_at_sending_text">Mesajınız gönderilirken bir hata oluştu. Tekrar deneyin.</string>
     <string name="sent_you_a_photo">" size bir fotoğraf gönderdi"</string>
-    <string name="photo_uploading">Fotoğraf gönderiliyor...</string>
+    <string name="photo_uploading">Fotoğraf gönderiliyor…</string>
     <string name="photo_preview">Fotoğraf önizleme</string>
     <string name="delete_post_question">Gönderiyi silmek istediğinize emin misiniz?</string>
     <string name="yes">Evet</string>
@@ -100,4 +100,7 @@
     <string name="role">Rolü</string>
     <string name="posts">Gönderiler</string>
     <string name="block_user">Engelle</string>
+    <string name="no_messages">Burada hiç mesaj yok</string>
+    <string name="start_conversation">Sohbete başlamak için aşağıdaki kutuya birşeyler yaz.</string>
+    <string name="only_friends">Sadece arkadaşlarım görebilsin</string>
 </resources>

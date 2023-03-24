@@ -16,6 +16,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.databinding.ActivityIntroBinding;
 import com.serkantken.ametist.models.UserModel;
@@ -46,6 +47,7 @@ public class IntroActivity extends AppCompatActivity
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
         auth = FirebaseAuth.getInstance();
+        Hawk.init(this).build();
         utilities = new Utilities(this, this);
 
         ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
@@ -122,7 +124,7 @@ public class IntroActivity extends AppCompatActivity
                         user.setUserId(documentSnapshot.getId());
                         user.setFollowerCount(Integer.parseInt(String.valueOf(documentSnapshot.get("followerCount"))));
                         user.setFollowingCount(Integer.parseInt(String.valueOf(documentSnapshot.get("followingCount"))));
-                        utilities.setPreferences("username", documentSnapshot.getString("name"));
+                        Hawk.put("username", documentSnapshot.getString("name"));
                     }
                 }
                 getToken();
@@ -143,7 +145,7 @@ public class IntroActivity extends AppCompatActivity
 
     private void updateToken(String token)
     {
-        utilities.setPreferences("token", token);
+        Hawk.put("token", token);
         DocumentReference documentReference = database.collection("Users").document(Objects.requireNonNull(auth.getUid()));
         documentReference.update("token", token).addOnFailureListener(e -> Toast.makeText(this, "Token güncellenemedi", Toast.LENGTH_SHORT).show());
     }

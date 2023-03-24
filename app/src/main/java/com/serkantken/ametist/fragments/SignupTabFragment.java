@@ -18,6 +18,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.activities.MainActivity;
 import com.serkantken.ametist.databinding.FragmentSignupTabBinding;
@@ -47,6 +48,7 @@ public class SignupTabFragment extends Fragment
         auth = FirebaseAuth.getInstance();
         database = FirebaseFirestore.getInstance();
         utilities = new Utilities(requireContext(), requireActivity());
+        Hawk.init(requireContext()).build();
 
         ageList = new ArrayList<>();
         for (int i = 17; i <= 100; i++)
@@ -60,7 +62,7 @@ public class SignupTabFragment extends Fragment
                 ageList.add(i + "");
             }
         }
-        arrayAdapter = new ArrayAdapter<String>(getContext(), R.layout.spinner_item, ageList);
+        arrayAdapter = new ArrayAdapter<>(getContext(), R.layout.spinner_item, ageList);
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spinnerAge.setAdapter(arrayAdapter);
 
@@ -122,9 +124,11 @@ public class SignupTabFragment extends Fragment
                     {
                         loading(false);
                         Intent intent = new Intent(getActivity(), MainActivity.class);
+                        intent.putExtra("currentUserInfo", userModel);
+                        Hawk.put(Constants.IS_BALLOONS_SHOWED, Constants.PREF_NO);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
-                        getActivity().finish();
+                        requireActivity().finish();
                     }
                     else
                     {

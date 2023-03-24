@@ -1,21 +1,27 @@
 package com.serkantken.ametist.utilities;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
+
+import androidx.constraintlayout.widget.ConstraintLayout;
+
+import java.lang.reflect.Method;
+import java.util.Objects;
 
 import eightbitlab.com.blurview.BlurView;
 import eightbitlab.com.blurview.RenderScriptBlur;
 
 public class Utilities
 {
-    SharedPreferences preferences;
     Context context;
     Activity activity;
 
@@ -23,32 +29,11 @@ public class Utilities
     {
         this.context = context;
         this.activity = activity;
-        preferences = context.getSharedPreferences(Constants.PREFERENCES, Context.MODE_PRIVATE);
     }
 
     public Utilities(Context context)
     {
         this.context = context;
-        preferences = context.getSharedPreferences(Constants.PREFERENCES, Context.MODE_PRIVATE);
-    }
-
-    public void setPreferences(String key, String value)
-    {
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(key, value);
-        editor.apply();
-    }
-
-    public String getPreferences(String key)
-    {
-        return preferences.getString(key, null);
-    }
-
-    public void clearPreferences()
-    {
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.clear();
-        editor.apply();
     }
 
     public int getStatusBarHeight()
@@ -74,27 +59,15 @@ public class Utilities
 
     public void setMargins(View view, int start, int top, int end, int bottom)
     {
-        if (view.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
-            ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
-            p.setMargins(start, top, end, bottom);
-            view.requestLayout();
-        }
+        ConstraintLayout.LayoutParams layoutParams = new ConstraintLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        layoutParams.setMargins(start, top, end, bottom);
+        view.setLayoutParams(layoutParams);
     }
 
     public int convertDpToPixel(int dp)
     {
         float density = context.getResources().getDisplayMetrics().density;
         return (int)(dp * density);
-    }
-
-    public int isEdgeToEdgeEnabled()
-    {
-        Resources resources = context.getResources();
-        int resourceId = resources.getIdentifier("config_navBarInteractionMode", "integer", "android");
-        if (resourceId > 0) {
-            return resources.getInteger(resourceId);
-        }
-        return 0;
     }
 
     public void blur(BlurView view, float radius, boolean isRounded)
@@ -117,5 +90,24 @@ public class Utilities
             view.setOutlineProvider(ViewOutlineProvider.BACKGROUND);
             view.setClipToOutline(true);
         }
+    }
+
+    public boolean isMIUI()
+    {
+        String miui = "";
+        String manufacturer = Build.MANUFACTURER;
+        if (manufacturer.equalsIgnoreCase("Xiaomi"))
+        {
+            try {
+                @SuppressLint("PrivateApi") Class<?> systemPropertiesClass = Class.forName("android.os.SystemProperties");
+                Method getMethod = systemPropertiesClass.getMethod("get", String.class);
+                miui = (String) getMethod.invoke(null, "ro.miui.ui.version.name");
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+        return !Objects.equals(miui, "");
     }
 }

@@ -4,9 +4,11 @@ import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -32,6 +34,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
+import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.adapters.ChatAdapter;
 import com.serkantken.ametist.databinding.ActivityChatBinding;
@@ -83,12 +86,14 @@ public class ChatActivity extends BaseActivity {
 
         binding.buttonBack.setOnClickListener(view -> onBackPressed());
 
+        Hawk.init(this).build();
         auth = FirebaseAuth.getInstance();
         database = FirebaseFirestore.getInstance();
         utilities = new Utilities(getApplicationContext(), this);
         receiverUser = (UserModel) getIntent().getSerializableExtra("receiverUser");
 
         utilities.blur(binding.toolbar, 10f, false);
+        utilities.blur(binding.navbarBlur, 10f, false);
 
         messageModels = new ArrayList<>();
         chatAdapter = new ChatAdapter(messageModels, this, ChatActivity.this);
@@ -96,6 +101,19 @@ public class ChatActivity extends BaseActivity {
         LinearLayoutManager manager = new LinearLayoutManager(this);
         manager.setStackFromEnd(true);
         binding.messageRV.setLayoutManager(manager);
+
+        if (utilities.isMIUI())
+        {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            binding.toolbar.setPadding(0, utilities.getStatusBarHeight(), 0, 0);
+            binding.navbarBlur.setPadding(0, 0, 0, utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT));
+            binding.messageRV.setPadding(0, utilities.convertDpToPixel(74), 0, utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT)+utilities.convertDpToPixel(70));
+        }
+        else
+        {
+            binding.messageRV.setPadding(0, utilities.convertDpToPixel(74), 0, utilities.convertDpToPixel(70));
+        }
+        binding.messageRV.setClipToPadding(false);
 
         //Get receiver user's name
         database.collection("Users").get().addOnCompleteListener(task -> {
@@ -110,7 +128,6 @@ public class ChatActivity extends BaseActivity {
                 Glide.with(this).load(receiverUser.getProfilePic()).placeholder(R.drawable.ic_person).into(binding.profileImage);
             }
         });
-
 
         listenMessages();
 
@@ -128,7 +145,7 @@ public class ChatActivity extends BaseActivity {
         });
 
         getContent = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
-            String destUri = new StringBuilder(UUID.randomUUID().toString()).append(".jpg").toString();
+            String destUri = UUID.randomUUID().toString() + ".jpg";
 
             UCrop.Options options = new UCrop.Options();
             options.setLogoColor(getColor(R.color.accent_purple_dark));
@@ -157,9 +174,7 @@ public class ChatActivity extends BaseActivity {
             choosePhotoDialog.dismiss();
         });
 
-        choosePhotoView.buttonSend.setOnClickListener(view -> {
-            sendPhoto();
-        });
+        choosePhotoView.buttonSend.setOnClickListener(view -> sendPhoto());
 
         choosePhotoDialog.setContentView(choosePhotoView.getRoot());
         choosePhotoDialog.show();
@@ -225,8 +240,8 @@ public class ChatActivity extends BaseActivity {
 
                         JSONObject data = new JSONObject();
                         data.put("userId", auth.getUid());
-                        data.put("username", utilities.getPreferences("username"));
-                        data.put("token", utilities.getPreferences("token"));
+                        data.put("username", Hawk.get("username"));
+                        data.put("token", Hawk.get("token"));
                         data.put("messageType", "1");
                         data.put("message", binding.inputMessage.getText().toString());
 
@@ -264,9 +279,9 @@ public class ChatActivity extends BaseActivity {
 
         StorageReference filePath = FirebaseStorage.getInstance()
                 .getReference("Chats")
-                .child(auth.getUid())
+                .child(Objects.requireNonNull(auth.getUid()))
                 .child(receiverUser.getUserId())
-                .child(new StringBuilder(UUID.randomUUID().toString()).append(".jpg").toString());
+                .child(UUID.randomUUID().toString() + ".jpg");
 
         StorageTask uploadTask = filePath.putFile(Uri.parse(photoUri));
         uploadTask.continueWithTask(task -> {
@@ -310,8 +325,8 @@ public class ChatActivity extends BaseActivity {
 
                             JSONObject data = new JSONObject();
                             data.put("userId", auth.getUid());
-                            data.put("username", utilities.getPreferences("username"));
-                            data.put("token", utilities.getPreferences("token"));
+                            data.put("username", Hawk.get("username"));
+                            data.put("token", Hawk.get("token"));
                             data.put("messageType", "3");
                             data.put("message", choosePhotoView.inputMessage.getText().toString());
 
@@ -374,18 +389,20 @@ public class ChatActivity extends BaseActivity {
             }
             if (value != null) {
                 if (value.getBoolean("online") != null) {
-                    Boolean availability = Objects.requireNonNull(value.getBoolean("online")).booleanValue();
-                    isReceiverAvailable = availability == true;
+                    isReceiverAvailable = Objects.requireNonNull(value.getBoolean("online"));
                 }
                 receiverUser.setToken(value.getString("token"));
             }
             if (isReceiverAvailable) {
                 binding.availability.setText(getResources().getString(R.string.online));
+                binding.availability.setTextColor(getColor(R.color.accent_purple_dark));
             } else {
                 if (value.getLong("lastSeen") != null) {
                     binding.availability.setText(String.format("%s%s", getString(R.string.last_seen), TimeAgo.using(Objects.requireNonNull(value.getLong("lastSeen")))));
+                    binding.availability.setTextColor(getColor(R.color.secondary_text));
                 } else {
                     binding.availability.setText(getResources().getString(R.string.offline));
+                    binding.availability.setTextColor(getColor(R.color.secondary_text));
                 }
             }
         }));

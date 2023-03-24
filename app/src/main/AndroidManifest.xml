@@ -57,7 +57,7 @@
             android:resizeableActivity="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Ametist_Chat"
-            android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
+            android:windowSoftInputMode="adjustResize"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".activities.SettingsActivity"

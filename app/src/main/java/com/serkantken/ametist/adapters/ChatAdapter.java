@@ -20,6 +20,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.activities.FullProfilePhotoActivity;
+import com.serkantken.ametist.databinding.LayoutEmptyChatBinding;
 import com.serkantken.ametist.databinding.LayoutReceivedMessageBinding;
 import com.serkantken.ametist.databinding.LayoutReceivedPhotoBinding;
 import com.serkantken.ametist.databinding.LayoutSendMessageBinding;
@@ -36,6 +37,7 @@ public class ChatAdapter extends RecyclerView.Adapter
     Context context;
     Activity activity;
     String receiverId;
+    int EMPTY_VIEW_TYPE = 5;
     int SENDER_VIEW_TYPE = 1;
     int RECEIVER_VIEW_TYPE = 2;
     int PHOTO_SENDER_VIEW_TYPE = 3;
@@ -73,9 +75,16 @@ public class ChatAdapter extends RecyclerView.Adapter
                     parent,
                     false));
         }
-        else
+        else if (viewType == PHOTO_RECEIVER_VIEW_TYPE)
         {
             return new PhotoReceiverViewHolder(LayoutReceivedPhotoBinding.inflate(
+                    LayoutInflater.from(context),
+                    parent,
+                    false));
+        }
+        else
+        {
+            return new EmptyChatViewHolder(LayoutEmptyChatBinding.inflate(
                     LayoutInflater.from(context),
                     parent,
                     false));
@@ -85,26 +94,33 @@ public class ChatAdapter extends RecyclerView.Adapter
     @Override
     public int getItemViewType(int position)
     {
-        if (Objects.equals(messageModels.get(position).getSenderId(), FirebaseAuth.getInstance().getUid()))
+        if (getItemCount() == 0)
         {
-            if (Objects.equals(messageModels.get(position).getPhoto(), "null"))
-            {
-                return SENDER_VIEW_TYPE;
-            }
-            else
-            {
-                return PHOTO_SENDER_VIEW_TYPE;
-            }
+            return EMPTY_VIEW_TYPE;
         }
         else
         {
-            if (Objects.equals(messageModels.get(position).getPhoto(), "null"))
+            if (Objects.equals(messageModels.get(position).getSenderId(), FirebaseAuth.getInstance().getUid()))
             {
-                return RECEIVER_VIEW_TYPE;
+                if (Objects.equals(messageModels.get(position).getPhoto(), "null"))
+                {
+                    return SENDER_VIEW_TYPE;
+                }
+                else
+                {
+                    return PHOTO_SENDER_VIEW_TYPE;
+                }
             }
             else
             {
-                return PHOTO_RECEIVER_VIEW_TYPE;
+                if (Objects.equals(messageModels.get(position).getPhoto(), "null"))
+                {
+                    return RECEIVER_VIEW_TYPE;
+                }
+                else
+                {
+                    return PHOTO_RECEIVER_VIEW_TYPE;
+                }
             }
         }
     }
@@ -264,6 +280,17 @@ public class ChatAdapter extends RecyclerView.Adapter
         LayoutSendPhotoBinding binding;
 
         public PhotoSenderViewHolder(@NonNull LayoutSendPhotoBinding itemView)
+        {
+            super(itemView.getRoot());
+            binding = itemView;
+        }
+    }
+
+    public static class EmptyChatViewHolder extends RecyclerView.ViewHolder
+    {
+        LayoutEmptyChatBinding binding;
+
+        public  EmptyChatViewHolder(@NonNull LayoutEmptyChatBinding itemView)
         {
             super(itemView.getRoot());
             binding = itemView;

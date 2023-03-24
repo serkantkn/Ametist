@@ -35,7 +35,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class CommentActivity extends AppCompatActivity {
+public class CommentActivity extends BaseActivity {
     private ActivityCommentBinding binding;
     private FirebaseFirestore database;
     private ArrayList<CommentModel> comments;
@@ -73,9 +73,7 @@ public class CommentActivity extends AppCompatActivity {
 
         getComments(userId, postId);
 
-        binding.buttonSend.setOnClickListener(view -> {
-            sendComment(userId, postId);
-        });
+        binding.buttonSend.setOnClickListener(view -> sendComment(userId, postId));
     }
 
     private void sendComment(String userId, String postId)

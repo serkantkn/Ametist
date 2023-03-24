@@ -11,6 +11,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.databinding.ActivitySettingsBinding;
 import com.serkantken.ametist.utilities.Constants;
@@ -21,6 +22,7 @@ import com.skydoves.balloon.BalloonAnimation;
 import com.skydoves.balloon.BalloonSizeSpec;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 public class SettingsActivity extends BaseActivity
 {
@@ -38,23 +40,24 @@ public class SettingsActivity extends BaseActivity
         setContentView(binding.getRoot());
 
         utilities = new Utilities(getApplicationContext(), this);
+        Hawk.init(this).build();
         database = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
 
         binding.buttonBack.setOnClickListener(view -> onBackPressed());
 
         binding.resetBalloons.setOnClickListener(view -> {
-            utilities.setPreferences(Constants.IS_BALLOONS_SHOWED, Constants.PREF_NO);
+            Hawk.put(Constants.IS_BALLOONS_SHOWED, Constants.PREF_NO);
             showBalloon(getString(R.string.restart_to_see_changes), binding.resetBalloons, 3);
         });
 
         binding.logout.setOnClickListener(view -> {
-            DocumentReference documentReference = database.collection("Users").document(auth.getUid());
+            DocumentReference documentReference = database.collection("Users").document(Objects.requireNonNull(auth.getUid()));
             HashMap<String, Object> updates = new HashMap<>();
             updates.put("token", FieldValue.delete());
             documentReference.update(updates).addOnSuccessListener(unused -> {
                 FirebaseAuth.getInstance().signOut();
-                utilities.clearPreferences();
+                Hawk.deleteAll();
                 Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);

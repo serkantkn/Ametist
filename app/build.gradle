@@ -11,7 +11,7 @@ android {
         minSdk 28
         targetSdk 33
         versionCode 1
-        versionName "0.1.0"
+        versionName "0.5.0"
         renderscriptTargetApi 28
         renderscriptSupportModeEnabled true
 
@@ -42,8 +42,8 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'com.google.firebase:firebase-auth:21.1.0'
     implementation 'com.google.firebase:firebase-storage:20.1.0'
-    implementation 'com.google.firebase:firebase-firestore:24.4.3'
-    implementation 'com.google.firebase:firebase-messaging:23.1.1'
+    implementation 'com.google.firebase:firebase-firestore:24.4.4'
+    implementation 'com.google.firebase:firebase-messaging:23.1.2'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
@@ -69,4 +69,5 @@ dependencies {
     implementation 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
     implementation 'com.github.yalantis:ucrop:2.2.8'
     implementation 'com.github.dhaval2404:imagepicker:2.1'
+    implementation 'com.orhanobut:hawk:2.0.1'
 }

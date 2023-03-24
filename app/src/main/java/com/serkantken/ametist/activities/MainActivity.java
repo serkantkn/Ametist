@@ -1,7 +1,11 @@
 package com.serkantken.ametist.activities;
 
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -20,6 +24,7 @@ import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.adapters.ChatListAdapter;
 import com.serkantken.ametist.adapters.MainAdapter;
@@ -36,6 +41,7 @@ import com.skydoves.balloon.Balloon;
 import com.skydoves.balloon.BalloonAnimation;
 import com.skydoves.balloon.BalloonSizeSpec;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Objects;
@@ -83,18 +89,16 @@ public class MainActivity extends BaseActivity implements UserListener
         binding.viewPager.setAdapter(mainAdapter);
         binding.viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(binding.tabLayout));
 
-        String balloons_showed = utilities.getPreferences(Constants.IS_BALLOONS_SHOWED);
+        String balloons_showed = Hawk.get(Constants.IS_BALLOONS_SHOWED);
         if (TextUtils.equals(balloons_showed, Constants.PREF_NO))
         {
             new Handler().postDelayed(() -> {
                 showBalloon(getString(R.string.your_profile_here), binding.profileImage, 3);
-                utilities.setPreferences(Constants.IS_BALLOONS_SHOWED, Constants.PREF_YES);
+                Hawk.put(Constants.IS_BALLOONS_SHOWED, Constants.PREF_YES);
             }, 2000);
         }
 
-        binding.buttonSettings.setOnClickListener(view -> {
-            startActivity(new Intent(MainActivity.this, SettingsActivity.class));
-        });
+        binding.buttonSettings.setOnClickListener(view -> startActivity(new Intent(MainActivity.this, SettingsActivity.class)));
 
         binding.profileImage.setOnClickListener(view -> {
             final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.BottomSheetDialogTheme_Chat);
@@ -211,9 +215,7 @@ public class MainActivity extends BaseActivity implements UserListener
         bottomSheetView.rvMessageList.setAdapter(adapter);
         bottomSheetView.rvMessageList.setLayoutManager(new LinearLayoutManager(this));
         listenConversations();
-        bottomSheetView.imgRefresh.setOnClickListener(view -> {
-            listenConversations();
-        });
+        bottomSheetView.imgRefresh.setOnClickListener(view -> listenConversations());
 
         bottomSheetDialog.setContentView(bottomSheetView.getRoot());
         bottomSheetDialog.show();

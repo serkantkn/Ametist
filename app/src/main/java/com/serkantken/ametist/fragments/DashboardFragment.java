@@ -54,6 +54,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DashboardFragment extends Fragment
 {
@@ -117,6 +118,8 @@ public class DashboardFragment extends Fragment
             AlertDialog dialog = builder.create();
             dialogBinding.buttonSubmitBackground.setBackgroundColor(requireContext().getColor(R.color.secondary_text));
             dialogBinding.buttonSubmit.setEnabled(false);
+            AtomicReference<Boolean> isPrivacyLockChecked = new AtomicReference<>(false);
+
             Glide.with(requireContext()).load(currentUser.getProfilePic()).placeholder(AppCompatResources.getDrawable(requireContext(), R.drawable.ic_person_profile)).into(dialogBinding.profileImage);
             dialogBinding.username.setText(currentUser.getName());
             dialogBinding.buttonAddPhoto.setOnClickListener(view1 -> {
@@ -149,6 +152,10 @@ public class DashboardFragment extends Fragment
                     }
                 }
             });
+
+            dialogBinding.privacyLock.setOnClickListener(view1 -> isPrivacyLockChecked.set(selectPrivacyLock(isPrivacyLockChecked.get())));
+            dialogBinding.privacyLockText.setOnClickListener(view1 -> isPrivacyLockChecked.set(selectPrivacyLock(isPrivacyLockChecked.get())));
+
             dialogBinding.buttonSubmit.setOnClickListener(view1 -> {
                 ProgressDialog progressDialog = new ProgressDialog(requireContext());
                 progressDialog.setMessage(getString(R.string.sending));
@@ -222,6 +229,22 @@ public class DashboardFragment extends Fragment
         });
 
         return binding.getRoot();
+    }
+
+    private boolean selectPrivacyLock(boolean isPrivacyLockSelected)
+    {
+        if (!isPrivacyLockSelected)
+        {
+            dialogBinding.privacyLock.setSpeed(3);
+            dialogBinding.privacyLock.playAnimation();
+            return true;
+        }
+        else
+        {
+            dialogBinding.privacyLock.setSpeed(-3);
+            dialogBinding.privacyLock.playAnimation();
+            return false;
+        }
     }
 
     private boolean isPermissionGranted()

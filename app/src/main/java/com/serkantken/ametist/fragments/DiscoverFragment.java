@@ -10,37 +10,21 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.DecelerateInterpolator;
 
 import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.material.behavior.HideBottomViewOnScrollBehavior;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.serkantken.ametist.R;
-import com.serkantken.ametist.activities.ChatActivity;
 import com.serkantken.ametist.activities.ProfileActivity;
 import com.serkantken.ametist.adapters.UsersAdapter;
 import com.serkantken.ametist.databinding.FragmentDiscoverBinding;
-import com.serkantken.ametist.databinding.LayoutProfileBinding;
 import com.serkantken.ametist.models.UserModel;
-import com.serkantken.ametist.utilities.HidingScrollListener;
 import com.serkantken.ametist.utilities.UserListener;
 import com.serkantken.ametist.utilities.Utilities;
 import com.skydoves.balloon.ArrowPositionRules;
@@ -50,10 +34,6 @@ import com.skydoves.balloon.BalloonSizeSpec;
 
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import eightbitlab.com.blurview.BlurView;
 
 public class DiscoverFragment extends Fragment implements UserListener
 {
@@ -88,24 +68,10 @@ public class DiscoverFragment extends Fragment implements UserListener
         utilities.blur(binding.searchBlur, 10f, false);
 
         binding.discoverRV.setPadding(utilities.convertDpToPixel(10), utilities.getStatusBarHeight()+utilities.convertDpToPixel(112), utilities.convertDpToPixel(10), utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT)+utilities.convertDpToPixel(66));
+        binding.discoverRV.setClipToPadding(false);
 
         getUsers();
 
-        /*binding.discoverRV.addOnScrollListener(new HidingScrollListener() {
-            @Override
-            public void onHide() {
-                binding.etSearch.animate().translationY(-binding.etSearch.getHeight()).setInterpolator(new AccelerateInterpolator(2));
-                binding.etSearch.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void onShow() {
-                binding.etSearch.setVisibility(View.VISIBLE);
-                binding.etSearch.animate().translationY(0).setInterpolator(new DecelerateInterpolator(2));
-            }
-        });*/
-
-        final Boolean[] isBalloonShowed = {false};
         binding.etSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -119,13 +85,7 @@ public class DiscoverFragment extends Fragment implements UserListener
 
             @Override
             public void afterTextChanged(Editable editable) {
-                new Handler().postDelayed(() -> {
-                    if (!isBalloonShowed[0])
-                    {
-                        showBalloon(getString(R.string.it_is_case_sensitive), binding.etSearch, 3);
-                        isBalloonShowed[0] = true;
-                    }
-                }, 1500);
+
             }
         });
 
@@ -247,39 +207,5 @@ public class DiscoverFragment extends Fragment implements UserListener
 
         bottomSheetDialog.setContentView(bottomSheetView.getRoot());
         bottomSheetDialog.show();*/
-    }
-
-    private void showBalloon(String message, View view, int position)
-    {
-        balloon = new Balloon.Builder(requireContext())
-                .setArrowSize(10)
-                .setWidth(BalloonSizeSpec.WRAP)
-                .setHeight(BalloonSizeSpec.WRAP)
-                .setText(message)
-                .setTextSize(15f)
-                .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-                .setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.accent_red_dark))
-                .setArrowPosition(0.5f)
-                .setArrowPositionRules(ArrowPositionRules.ALIGN_ANCHOR)
-                .setPadding(12)
-                .setCornerRadius(8f)
-                .setBalloonAnimation(BalloonAnimation.ELASTIC)
-                .setAutoDismissDuration(3000)
-                .build();
-        switch (position)
-        {
-            case 1:
-                balloon.showAlignTop(view);
-                break;
-            case 2:
-                balloon.showAlignRight(view);
-                break;
-            case 3:
-                balloon.showAlignBottom(view);
-                break;
-            case 4:
-                balloon.showAlignLeft(view);
-                break;
-        }
     }
 }

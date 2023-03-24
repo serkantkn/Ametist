@@ -23,6 +23,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.adapters.PostAdapter;
 import com.serkantken.ametist.databinding.ActivityProfileBinding;
@@ -133,9 +134,7 @@ public class ProfileActivity extends BaseActivity
             }
         });
 
-        binding.buttonFollow.setOnClickListener(view -> {
-            follow();
-        });
+        binding.buttonFollow.setOnClickListener(view -> follow());
     }
 
     private void follow() {
@@ -175,7 +174,6 @@ public class ProfileActivity extends BaseActivity
                                 .document(user.getUserId())
                                 .collection("notifications")
                                 .add(followMap).addOnCompleteListener(task13 -> {
-                                    Utilities utilities = new Utilities(this, ProfileActivity.this);
                                     try {
                                         JSONArray tokens = new JSONArray();
                                         tokens.put(user.getToken());
@@ -183,9 +181,9 @@ public class ProfileActivity extends BaseActivity
                                         JSONObject data = new JSONObject();
                                         data.put(Constants.USER_ID, FirebaseAuth.getInstance().getUid());
                                         data.put(Constants.USERNAME, getString(R.string.new_follower));
-                                        data.put(Constants.TOKEN, utilities.getPreferences(Constants.TOKEN));
+                                        data.put(Constants.TOKEN, Hawk.get(Constants.TOKEN));
                                         data.put(Constants.MESSAGE_TYPE, Constants.MESSAGE_TYPE_FOLLOW);
-                                        data.put(Constants.MESSAGE, utilities.getPreferences(Constants.USERNAME));
+                                        data.put(Constants.MESSAGE, Hawk.get(Constants.USERNAME));
 
                                         JSONObject body = new JSONObject();
                                         body.put(Constants.REMOTE_MSG_DATA, data);

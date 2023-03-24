@@ -81,7 +81,7 @@
     <string name="photo_preview">Photo preview</string>
     <string name="error_at_sending_text">Error at sending text message. Try again.</string>
     <string name="sent_you_a_photo">" sent you a photo"</string>
-    <string name="photo_uploading">Uploading photo...</string>
+    <string name="photo_uploading">Uploading photo…</string>
     <string name="delete_post">Delete post</string>
     <string name="delete_post_question">Do you want to detete this post?</string>
     <string name="yes">Yes</string>
@@ -103,4 +103,7 @@
     <string name="role">Role</string>
     <string name="posts">Posts</string>
     <string name="block_user">Block User</string>
+    <string name="no_messages">There are no messages here</string>
+    <string name="start_conversation">Type something in the box below to start the conversation.</string>
+    <string name="only_friends">Only my friends can see</string>
 </resources>
