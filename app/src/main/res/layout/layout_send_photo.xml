@@ -3,8 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/container"
-    android:paddingBottom="5dp">
+    android:id="@+id/container">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/card"
@@ -18,8 +17,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1"
         app:layout_constraintVertical_bias="0"
-        android:layout_marginTop="3dp"
-        android:layout_marginEnd="15dp">
+        android:layout_marginEnd="25dp"
+        android:layout_marginBottom="5dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -86,5 +85,14 @@
         app:layout_constraintHorizontal_bias="1"
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="5dp"/>
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:id="@+id/seen_check"
+        app:lottie_rawRes="@raw/seen_check"
+        app:lottie_autoPlay="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

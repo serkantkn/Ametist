@@ -1,15 +1,22 @@
 package com.serkantken.ametist.activities;
 
+import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -20,6 +27,7 @@ import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.databinding.ActivityIntroBinding;
 import com.serkantken.ametist.models.UserModel;
+import com.serkantken.ametist.utilities.Constants;
 import com.serkantken.ametist.utilities.Utilities;
 
 import java.util.Objects;
@@ -108,7 +116,7 @@ public class IntroActivity extends AppCompatActivity
     {
         binding.progressbar.setVisibility(View.VISIBLE);
         database = FirebaseFirestore.getInstance();
-        database.collection("Users").get().addOnCompleteListener(task -> {
+        database.collection(Constants.DATABASE_PATH_USERS).get().addOnCompleteListener(task -> {
             if (task.isSuccessful())
             {
                 for (QueryDocumentSnapshot documentSnapshot : task.getResult())
@@ -124,7 +132,7 @@ public class IntroActivity extends AppCompatActivity
                         user.setUserId(documentSnapshot.getId());
                         user.setFollowerCount(Integer.parseInt(String.valueOf(documentSnapshot.get("followerCount"))));
                         user.setFollowingCount(Integer.parseInt(String.valueOf(documentSnapshot.get("followingCount"))));
-                        Hawk.put("username", documentSnapshot.getString("name"));
+                        Hawk.put(Constants.USERNAME, documentSnapshot.getString("name"));
                     }
                 }
                 getToken();
@@ -145,8 +153,8 @@ public class IntroActivity extends AppCompatActivity
 
     private void updateToken(String token)
     {
-        Hawk.put("token", token);
-        DocumentReference documentReference = database.collection("Users").document(Objects.requireNonNull(auth.getUid()));
-        documentReference.update("token", token).addOnFailureListener(e -> Toast.makeText(this, "Token güncellenemedi", Toast.LENGTH_SHORT).show());
+        Hawk.put(Constants.TOKEN, token);
+        DocumentReference documentReference = database.collection(Constants.DATABASE_PATH_USERS).document(Objects.requireNonNull(auth.getUid()));
+        documentReference.update(Constants.TOKEN, token).addOnFailureListener(e -> Toast.makeText(this, "Token güncellenemedi", Toast.LENGTH_SHORT).show());
     }
 }

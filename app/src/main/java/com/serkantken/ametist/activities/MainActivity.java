@@ -1,67 +1,48 @@
 package com.serkantken.ametist.activities;
 
-import android.annotation.SuppressLint;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.os.Build;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
-import com.serkantken.ametist.adapters.ChatListAdapter;
 import com.serkantken.ametist.adapters.MainAdapter;
 import com.serkantken.ametist.databinding.ActivityMainBinding;
-import com.serkantken.ametist.databinding.LayoutMessageListBinding;
 import com.serkantken.ametist.databinding.LayoutProfileBinding;
-import com.serkantken.ametist.models.MessageModel;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.utilities.Constants;
-import com.serkantken.ametist.utilities.UserListener;
 import com.serkantken.ametist.utilities.Utilities;
 import com.skydoves.balloon.ArrowPositionRules;
 import com.skydoves.balloon.Balloon;
 import com.skydoves.balloon.BalloonAnimation;
 import com.skydoves.balloon.BalloonSizeSpec;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Objects;
 
-import eightbitlab.com.blurview.BlurView;
-
-public class MainActivity extends BaseActivity implements UserListener
+public class MainActivity extends BaseActivity
 {
     private ActivityMainBinding binding;
     private MainAdapter mainAdapter;
     private FirebaseAuth auth;
     private FirebaseFirestore database;
-    private Balloon balloon;
     private Utilities utilities;
     private UserModel user;
-    private ArrayList<MessageModel> messageList = new ArrayList<>();
-    private ChatListAdapter adapter;
-    private BottomSheetDialog bottomSheetDialog;
-    private LayoutMessageListBinding bottomSheetView;
-    private boolean isMessageListButtonPressed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -85,16 +66,11 @@ public class MainActivity extends BaseActivity implements UserListener
         utilities.blur(binding.tabBarBlur, 10f, false);
         utilities.blur(binding.toolbarBlur, 10f, false);
 
-        mainAdapter = new MainAdapter(getSupportFragmentManager(), this, binding.tabLayout.getTabCount());
-        binding.viewPager.setAdapter(mainAdapter);
-        binding.viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(binding.tabLayout));
-
-        String balloons_showed = Hawk.get(Constants.IS_BALLOONS_SHOWED);
-        if (TextUtils.equals(balloons_showed, Constants.PREF_NO))
+        if (!(Boolean)Hawk.get(Constants.IS_BALLOONS_SHOWED))
         {
             new Handler().postDelayed(() -> {
                 showBalloon(getString(R.string.your_profile_here), binding.profileImage, 3);
-                Hawk.put(Constants.IS_BALLOONS_SHOWED, Constants.PREF_YES);
+                Hawk.put(Constants.IS_BALLOONS_SHOWED, true);
             }, 2000);
         }
 
@@ -135,45 +111,80 @@ public class MainActivity extends BaseActivity implements UserListener
             bottomSheetDialog.setContentView(bottomSheetView.getRoot());
             bottomSheetDialog.show();
         });
-
-        listenConversations();
-        binding.buttonMessages.setOnClickListener(view -> {
-            isMessageListButtonPressed = true;
-            showMessageListDialog();
-        });
     }
 
     private void setTabs()
     {
-        binding.tabLayout.addTab(binding.tabLayout.newTab().setText(getResources().getString(R.string.homepage)));
-        binding.tabLayout.addTab(binding.tabLayout.newTab().setText(""));
-        binding.tabLayout.addTab(binding.tabLayout.newTab().setText(""));
+        mainAdapter = new MainAdapter(this, this);
+        binding.viewPager.setAdapter(mainAdapter);
+
+        binding.tabLayout.addTab(binding.tabLayout.newTab());
+        binding.tabLayout.addTab(binding.tabLayout.newTab());
+        binding.tabLayout.addTab(binding.tabLayout.newTab());
+        binding.tabLayout.addTab(binding.tabLayout.newTab());
         binding.tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
-        binding.tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(binding.viewPager));
-        int[] tabicons = {R.drawable.ic_home, R.drawable.ic_group, R.drawable.ic_notifications};
+
+        new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) -> {
+            tab.setIcon(mainAdapter.getTabIcon(position));
+        }).attach();
+
+        binding.viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                binding.tabLayout.selectTab(binding.tabLayout.getTabAt(position));
+
+                Animation fadeout = AnimationUtils.loadAnimation(MainActivity.this, android.R.anim.fade_out);
+                fadeout.setDuration(500);
+                fadeout.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        binding.username.setText(mainAdapter.getPageTitle(position));
+
+                        Animation fadein = AnimationUtils.loadAnimation(MainActivity.this, android.R.anim.fade_in);
+                        fadein.setDuration(500);
+                        binding.username.startAnimation(fadein);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+                binding.username.startAnimation(fadeout);
+            }
+        });
+
+        int[] tabicons = {R.drawable.ic_home, R.drawable.ic_group, R.drawable.ic_message, R.drawable.ic_notifications};
         binding.tabLayout.getTabAt(1).setIcon(tabicons[1]);
         binding.tabLayout.getTabAt(2).setIcon(tabicons[2]);
+        binding.tabLayout.getTabAt(3).setIcon(tabicons[3]);
         binding.tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 if (tab.getPosition() == 0)
                 {
-                    tab.setText(getResources().getString(R.string.homepage));
-                    tab.setIcon(null);
+                    Objects.requireNonNull(tab.getIcon()).setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.accent_blue_dark), PorterDuff.Mode.SRC_IN);
                     tab.view.performClick();
                 }
                 else if (tab.getPosition() == 1)
                 {
-                    tab.setText(getResources().getString(R.string.discover));
-                    tab.setIcon(null);
+                    Objects.requireNonNull(tab.getIcon()).setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.accent_blue_dark), PorterDuff.Mode.SRC_IN);
                     tab.view.performClick();
                 }
                 else if (tab.getPosition() == 2)
                 {
-                    //tab.setText(getResources().getString(R.string.notifications));
-                    //tab.setIcon(null);
-                    tab.setIcon(AppCompatResources.getDrawable(MainActivity.this, R.drawable.ic_notifications));
-
+                    Objects.requireNonNull(tab.getIcon()).setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.accent_blue_dark), PorterDuff.Mode.SRC_IN);
+                    tab.view.performClick();
+                }
+                else if (tab.getPosition() == 3)
+                {
+                    Objects.requireNonNull(tab.getIcon()).setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.accent_blue_dark), PorterDuff.Mode.SRC_IN);
                     tab.view.performClick();
                 }
             }
@@ -182,18 +193,19 @@ public class MainActivity extends BaseActivity implements UserListener
             public void onTabUnselected(TabLayout.Tab tab) {
                 if (tab.getPosition() == 0)
                 {
-                    tab.setText("");
-                    tab.setIcon(tabicons[0]);
+                    Objects.requireNonNull(tab.getIcon()).setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.accent_purple_light), PorterDuff.Mode.SRC_IN);
                 }
                 else if (tab.getPosition() == 1)
                 {
-                    tab.setText("");
-                    tab.setIcon(tabicons[1]);
+                    Objects.requireNonNull(tab.getIcon()).setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.accent_purple_light), PorterDuff.Mode.SRC_IN);
                 }
                 else if (tab.getPosition() == 2)
                 {
-                    tab.setText("");
-                    tab.setIcon(tabicons[2]);
+                    Objects.requireNonNull(tab.getIcon()).setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.accent_purple_light), PorterDuff.Mode.SRC_IN);
+                }
+                else if (tab.getPosition() == 3)
+                {
+                    Objects.requireNonNull(tab.getIcon()).setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.accent_purple_light), PorterDuff.Mode.SRC_IN);
                 }
             }
 
@@ -203,87 +215,6 @@ public class MainActivity extends BaseActivity implements UserListener
             }
         });
     }
-
-    private void showMessageListDialog()
-    {
-        bottomSheetDialog = new BottomSheetDialog(this, R.style.BottomSheetDialogTheme_Chat);
-        bottomSheetView = LayoutMessageListBinding.inflate(getLayoutInflater());
-        bottomSheetDialog.getBehavior().setMaxHeight(utilities.convertDpToPixel(700));
-
-        utilities.blur(bottomSheetView.blur, 10f, false);
-        adapter = new ChatListAdapter(messageList, MainActivity.this, MainActivity.this, this);
-        bottomSheetView.rvMessageList.setAdapter(adapter);
-        bottomSheetView.rvMessageList.setLayoutManager(new LinearLayoutManager(this));
-        listenConversations();
-        bottomSheetView.imgRefresh.setOnClickListener(view -> listenConversations());
-
-        bottomSheetDialog.setContentView(bottomSheetView.getRoot());
-        bottomSheetDialog.show();
-    }
-
-    private void listenConversations()
-    {
-        messageList.clear();
-        database.collection("conversations")
-                .whereEqualTo("senderId", auth.getUid())
-                .addSnapshotListener(eventListener);
-        database.collection("conversations")
-                .whereEqualTo("receiverId", auth.getUid())
-                .addSnapshotListener(eventListener);
-    }
-
-    private final EventListener<QuerySnapshot> eventListener = ((value, error) -> {
-        if (error != null)
-        {
-            return;
-        }
-        if (value != null)
-        {
-            for (DocumentChange documentChange : value.getDocumentChanges())
-            {
-                if (documentChange.getType() == DocumentChange.Type.ADDED)
-                {
-                    MessageModel model = new MessageModel();
-                    model.setSenderId(documentChange.getDocument().getString("senderId"));
-                    model.setReceiverId(documentChange.getDocument().getString("receiverId"));
-
-                    if (Objects.equals(auth.getUid(), documentChange.getDocument().getString("senderId")))
-                    {
-                        model.setConversationId(documentChange.getDocument().getString("receiverId"));
-                    }
-                    else
-                    {
-                        model.setConversationId(documentChange.getDocument().getString("senderId"));
-                    }
-
-                    model.setMessage(documentChange.getDocument().getString("message"));
-                    model.setTimestamp(documentChange.getDocument().getLong("timestamp"));
-                    messageList.add(model);
-                }
-                else if (documentChange.getType() == DocumentChange.Type.MODIFIED)
-                {
-                    for (int i = 0; i < messageList.size(); i++)
-                    {
-                        String senderId = documentChange.getDocument().getString("senderId");
-                        String receiverId = documentChange.getDocument().getString("receiverId");
-                        if (messageList.get(i).getSenderId().equals(senderId) && messageList.get(i).getReceiverId().equals(receiverId))
-                        {
-                            messageList.get(i).setMessage(documentChange.getDocument().getString("message"));
-                            messageList.get(i).setTimestamp(documentChange.getDocument().getLong("timestamp"));
-                            break;
-                        }
-                    }
-                }
-            }
-            messageList.sort((obj1, obj2) -> obj2.getTimestamp().compareTo(obj1.getTimestamp()));
-            if (isMessageListButtonPressed)
-            {
-                adapter.notifyDataSetChanged();
-                bottomSheetView.rvMessageList.smoothScrollToPosition(0);
-                bottomSheetView.progressbar.setVisibility(View.GONE);
-            }
-        }
-    });
 
     private void getUserInfo()
     {
@@ -315,7 +246,7 @@ public class MainActivity extends BaseActivity implements UserListener
 
     private void showBalloon(String message, View view, int position)
     {
-        balloon = new Balloon.Builder(getApplicationContext())
+        Balloon balloon = new Balloon.Builder(getApplicationContext())
                 .setArrowSize(10)
                 .setWidth(BalloonSizeSpec.WRAP)
                 .setHeight(BalloonSizeSpec.WRAP)
@@ -344,14 +275,5 @@ public class MainActivity extends BaseActivity implements UserListener
                 balloon.showAlignLeft(view);
                 break;
         }
-    }
-
-    @Override
-    public void onUserClicked(UserModel userModel) {
-        Intent intent = new Intent(MainActivity.this, ChatActivity.class);
-        intent.putExtra("receiverUser", userModel);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-        bottomSheetDialog.dismiss();
     }
 }

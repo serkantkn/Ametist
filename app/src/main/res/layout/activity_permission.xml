@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.PermissionActivity"
+    android:background="@color/primary">
+
+    <com.makeramen.roundedimageview.RoundedImageView
+        android:id="@+id/profileImage"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:scaleType="centerCrop"
+        android:src="@mipmap/ametist_logo"
+        app:riv_corner_radius="10dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:contentDescription="@string/profile_photo"/>
+
+    <TextView
+        android:id="@+id/appName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/jost_light"
+        android:text="@string/app_name"
+        android:textColor="@color/primary_text"
+        android:textSize="24sp"
+        app:layout_constraintStart_toEndOf="@id/profileImage"
+        app:layout_constraintTop_toTopOf="@id/profileImage"
+        app:layout_constraintBottom_toBottomOf="@id/profileImage"
+        android:layout_marginStart="10dp"/>
+
+    <TextView
+        android:id="@+id/permission_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/jost_regular"
+        android:gravity="center"
+        android:text="@string/permission_title"
+        android:textColor="@color/primary_text"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/constraintLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/appName"
+        android:layout_marginStart="14dp"
+        android:layout_marginEnd="20dp"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/anim_location"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:lottie_rawRes="@raw/location"
+            app:lottie_autoPlay="true"
+            app:lottie_repeatMode="restart"
+            app:lottie_loop="true"/>
+
+        <TextView
+            android:id="@+id/title_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:fontFamily="@font/jost_bold"
+            android:text="@string/location"
+            android:textColor="@color/accent_blue_dark"
+            android:textSize="17sp"
+            app:layout_constraintStart_toEndOf="@id/anim_location"
+            app:layout_constraintTop_toTopOf="@id/anim_location" />
+
+        <TextView
+            android:id="@+id/text_location"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:fontFamily="@font/jost_regular"
+            android:text="@string/location_perm_text"
+            android:textColor="@color/primary_text"
+            android:textSize="15sp"
+            app:layout_constraintEnd_toStartOf="@id/location_permission_check"
+            app:layout_constraintStart_toEndOf="@id/anim_location"
+            app:layout_constraintTop_toBottomOf="@id/title_location" />
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/location_permission_check"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:layout_marginEnd="10dp"
+            app:layout_constraintBottom_toBottomOf="@id/anim_location"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/anim_location"
+            app:lottie_autoPlay="false"
+            app:lottie_rawRes="@raw/check" />
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/anim_gallery"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginTop="35dp"
+            app:layout_constraintStart_toStartOf="@id/anim_location"
+            app:layout_constraintTop_toBottomOf="@id/anim_location"
+            app:lottie_rawRes="@raw/gallery"
+            app:lottie_autoPlay="true"
+            app:lottie_repeatMode="restart"
+            app:lottie_loop="true"/>
+
+        <TextView
+            android:id="@+id/title_gallery"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:fontFamily="@font/jost_bold"
+            android:text="@string/storage_photos"
+            android:textColor="@color/accent_blue_dark"
+            android:textSize="17sp"
+            app:layout_constraintStart_toEndOf="@id/anim_gallery"
+            app:layout_constraintTop_toTopOf="@id/anim_gallery" />
+
+        <TextView
+            android:id="@+id/text_gallery"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:fontFamily="@font/jost_regular"
+            android:text="@string/storage_perm_text"
+            android:textColor="@color/primary_text"
+            android:textSize="15sp"
+            app:layout_constraintEnd_toStartOf="@id/gallery_permission_check"
+            app:layout_constraintStart_toEndOf="@id/anim_gallery"
+            app:layout_constraintTop_toBottomOf="@id/title_gallery" />
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/gallery_permission_check"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:layout_marginEnd="10dp"
+            app:layout_constraintBottom_toBottomOf="@id/anim_gallery"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/anim_gallery"
+            app:lottie_autoPlay="false"
+            app:lottie_rawRes="@raw/check" />
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/anim_notification"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginTop="35dp"
+            app:layout_constraintStart_toStartOf="@id/anim_gallery"
+            app:layout_constraintTop_toBottomOf="@id/anim_gallery"
+            app:lottie_rawRes="@raw/notification"
+            app:lottie_autoPlay="true"
+            app:lottie_repeatMode="restart"
+            app:lottie_loop="true"/>
+
+        <TextView
+            android:id="@+id/title_notification"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:fontFamily="@font/jost_bold"
+            android:text="@string/notification"
+            android:textColor="@color/accent_blue_dark"
+            android:textSize="17sp"
+            app:layout_constraintStart_toEndOf="@id/anim_notification"
+            app:layout_constraintTop_toTopOf="@id/anim_notification" />
+
+        <TextView
+            android:id="@+id/text_notification"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:fontFamily="@font/jost_regular"
+            android:text="@string/notification_perm_text"
+            android:textColor="@color/primary_text"
+            android:textSize="15sp"
+            app:layout_constraintEnd_toStartOf="@id/notification_permission_check"
+            app:layout_constraintStart_toEndOf="@id/anim_notification"
+            app:layout_constraintTop_toBottomOf="@id/title_notification" />
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/notification_permission_check"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:layout_marginEnd="10dp"
+            app:layout_constraintBottom_toBottomOf="@id/anim_notification"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/anim_notification"
+            app:lottie_autoPlay="false"
+            app:lottie_rawRes="@raw/check" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/skip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/constraintLayout"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:cardCornerRadius="25dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/blue_gradient"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:paddingStart="35dp"
+            android:paddingEnd="35dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/finish"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

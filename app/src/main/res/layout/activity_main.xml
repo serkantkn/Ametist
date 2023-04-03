@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".activities.MainActivity">
 
-    <androidx.viewpager.widget.ViewPager
+    <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -31,7 +31,7 @@
             android:layout_height="64dp">
 
             <com.makeramen.roundedimageview.RoundedImageView
-                android:id="@+id/buttonMessages"
+                android:id="@+id/buttonSettings"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_marginEnd="16dp"
@@ -39,28 +39,10 @@
                 android:layout_marginBottom="5dp"
                 android:background="@drawable/background_toolbar_button"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_message"
-                android:padding="10dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="1"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:contentDescription="@string/messages"/>
-
-            <com.makeramen.roundedimageview.RoundedImageView
-                android:id="@+id/buttonSettings"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="10dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
-                android:background="@drawable/background_toolbar_button"
-                android:scaleType="centerCrop"
                 android:src="@drawable/ic_settings"
                 android:padding="10dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/buttonMessages"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="1"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -112,22 +94,23 @@
         app:layout_constraintStart_toStartOf="parent">
 
         <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tabLayout"
-        android:layout_width="match_parent"
-        android:layout_height="46dp"
-        android:background="@android:color/transparent"
-        app:tabMode="fixed"
-        app:tabGravity="center"
-        app:tabIndicatorGravity="stretch"
-        app:tabSelectedTextColor="@color/accent_purple_dark"
-        app:tabIndicatorAnimationMode="elastic"
-        app:tabIndicator="@drawable/tab_indicator"
-        app:tabIndicatorColor="@color/primary_transparent"
-        app:tabTextColor="@color/primary_text"
-        app:tabInlineLabel="true"
-        app:tabIconTint="@color/accent_purple_light"
-        android:layout_marginStart="15dp"
-        android:layout_marginEnd="15dp"/>
+            android:id="@+id/tabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:background="@android:color/transparent"
+            app:tabMode="fixed"
+            app:tabGravity="fill"
+            app:tabIndicatorGravity="stretch"
+            app:tabSelectedTextColor="@color/accent_purple_dark"
+            app:tabIndicatorAnimationMode="elastic"
+            app:tabIndicator="@drawable/tab_indicator"
+            app:tabIndicatorColor="@color/primary_transparent"
+            app:tabTextColor="@color/primary_text"
+            app:tabInlineLabel="true"
+            app:tabIconTint="@color/accent_purple_light"
+            app:tabTextAppearance="@style/MainTabText"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
     </eightbitlab.com.blurview.BlurView>
 

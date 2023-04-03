@@ -1,14 +1,18 @@
 package com.serkantken.ametist.firebase;
 
+import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -20,8 +24,7 @@ import com.serkantken.ametist.utilities.Utilities;
 
 import java.util.Random;
 
-public class MessagingService extends FirebaseMessagingService
-{
+public class MessagingService extends FirebaseMessagingService {
     UserModel user;
     int notificationId;
     String channelId;
@@ -52,21 +55,20 @@ public class MessagingService extends FirebaseMessagingService
         createNotificationChannel();
 
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
-        notificationManagerCompat.notify(notificationId, notificationBuilder.build());
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED)
+            notificationManagerCompat.notify(notificationId, notificationBuilder.build());
     }
 
     private void createNotificationChannel()
     {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-        {
-            CharSequence channelName = "Chat Message";
-            String channelDescription = getResources().getString(R.string.notif_channel_description);
-            int importance = NotificationManager.IMPORTANCE_HIGH;
-            NotificationChannel channel = new NotificationChannel(channelId, channelName, importance);
-            channel.setDescription(channelDescription);
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-        }
+        CharSequence channelName = "Chat Message";
+        String channelDescription = getResources().getString(R.string.notif_channel_description);
+        int importance = NotificationManager.IMPORTANCE_HIGH;
+        NotificationChannel channel = new NotificationChannel(channelId, channelName, importance);
+        channel.setDescription(channelDescription);
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
     }
 
     private void buildNotification(String username, String message)

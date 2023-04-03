@@ -4,10 +4,7 @@ import java.util.HashMap;
 
 public class Constants
 {
-    public static final String PREFERENCES = "preferences";
     public static final String IS_BALLOONS_SHOWED = "balloons_showed";
-    public static final String PREF_YES = "1";
-    public static final String PREF_NO = "0";
     public static final String REMOTE_MSG_AUTHORIZATION = "Authorization";
     public static final String REMOTE_MSG_CONTENT_TYPE = "Content-Type";
     public static final String REMOTE_MSG_DATA = "data";

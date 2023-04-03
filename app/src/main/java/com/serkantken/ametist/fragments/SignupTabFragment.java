@@ -125,7 +125,7 @@ public class SignupTabFragment extends Fragment
                         loading(false);
                         Intent intent = new Intent(getActivity(), MainActivity.class);
                         intent.putExtra("currentUserInfo", userModel);
-                        Hawk.put(Constants.IS_BALLOONS_SHOWED, Constants.PREF_NO);
+                        Hawk.put(Constants.IS_BALLOONS_SHOWED, false);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
                         requireActivity().finish();

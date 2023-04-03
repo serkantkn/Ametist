@@ -47,7 +47,7 @@ public class SettingsActivity extends BaseActivity
         binding.buttonBack.setOnClickListener(view -> onBackPressed());
 
         binding.resetBalloons.setOnClickListener(view -> {
-            Hawk.put(Constants.IS_BALLOONS_SHOWED, Constants.PREF_NO);
+            Hawk.put(Constants.IS_BALLOONS_SHOWED, false);
             showBalloon(getString(R.string.restart_to_see_changes), binding.resetBalloons, 3);
         });
 

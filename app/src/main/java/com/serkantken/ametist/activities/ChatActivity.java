@@ -1,10 +1,12 @@
 package com.serkantken.ametist.activities;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -77,6 +79,10 @@ public class ChatActivity extends BaseActivity {
     private String photoUri;
     private BottomSheetDialog choosePhotoDialog;
     private LayoutChatPhotoSelectorBinding choosePhotoView;
+    private MediaPlayer mediaPlayer;
+    private long currentTimestamp = new Date().getTime();
+
+    private static final int READ_EXTERNAL_STORAGE_REQUEST_CODE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,6 +161,8 @@ public class ChatActivity extends BaseActivity {
                     .withOptions(options)
                     .start(ChatActivity.this);
         });
+
+        mediaPlayer = MediaPlayer.create(this, R.raw.new_message);
     }
 
     private void selectPhotoFromGallery() {
@@ -200,10 +208,7 @@ public class ChatActivity extends BaseActivity {
                 ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             return true;
         } else {
-            ActivityCompat.requestPermissions(ChatActivity.this, new String[]{
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-            }, 1);
+            ActivityCompat.requestPermissions(ChatActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, READ_EXTERNAL_STORAGE_REQUEST_CODE);
             return ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
                     ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
         }
@@ -240,8 +245,8 @@ public class ChatActivity extends BaseActivity {
 
                         JSONObject data = new JSONObject();
                         data.put("userId", auth.getUid());
-                        data.put("username", Hawk.get("username"));
-                        data.put("token", Hawk.get("token"));
+                        data.put("username", Hawk.get(Constants.USERNAME));
+                        data.put("token", Hawk.get(Constants.TOKEN));
                         data.put("messageType", "1");
                         data.put("message", binding.inputMessage.getText().toString());
 
@@ -325,8 +330,8 @@ public class ChatActivity extends BaseActivity {
 
                             JSONObject data = new JSONObject();
                             data.put("userId", auth.getUid());
-                            data.put("username", Hawk.get("username"));
-                            data.put("token", Hawk.get("token"));
+                            data.put("username", Hawk.get(Constants.USERNAME));
+                            data.put("token", Hawk.get(Constants.TOKEN));
                             data.put("messageType", "3");
                             data.put("message", choosePhotoView.inputMessage.getText().toString());
 
@@ -397,6 +402,7 @@ public class ChatActivity extends BaseActivity {
                 binding.availability.setText(getResources().getString(R.string.online));
                 binding.availability.setTextColor(getColor(R.color.accent_purple_dark));
             } else {
+                assert value != null;
                 if (value.getLong("lastSeen") != null) {
                     binding.availability.setText(String.format("%s%s", getString(R.string.last_seen), TimeAgo.using(Objects.requireNonNull(value.getLong("lastSeen")))));
                     binding.availability.setTextColor(getColor(R.color.secondary_text));
@@ -412,14 +418,15 @@ public class ChatActivity extends BaseActivity {
         database.collection("chats")
                 .whereEqualTo("senderId", auth.getUid())
                 .whereEqualTo("receiverId", receiverUser.getUserId())
-                .addSnapshotListener(eventListener);
+                .addSnapshotListener(eventListenerSentMessages);
         database.collection("chats")
                 .whereEqualTo("senderId", receiverUser.getUserId())
                 .whereEqualTo("receiverId", auth.getUid())
-                .addSnapshotListener(eventListener);
+                .addSnapshotListener(eventListenerReceivedMessages);
     }
 
-    private final EventListener<QuerySnapshot> eventListener = (value, error) -> {
+    @SuppressLint("NotifyDataSetChanged")
+    private final EventListener<QuerySnapshot> eventListenerSentMessages = (value, error) -> {
         if (error != null) {
             return;
         }
@@ -433,6 +440,50 @@ public class ChatActivity extends BaseActivity {
                     model.setPhoto(documentChange.getDocument().getString("photo"));
                     model.setTimestamp(documentChange.getDocument().getLong("timestamp"));
                     messageModels.add(model);
+                }
+            }
+            messageModels.sort(Comparator.comparing(MessageModel::getTimestamp));
+            if (messageModels.size() == 0) {
+                chatAdapter.notifyDataSetChanged();
+            } else {
+                chatAdapter.notifyItemRangeInserted(messageModels.size(), messageModels.size());
+                binding.messageRV.smoothScrollToPosition(messageModels.size() - 1);
+            }
+        }
+        if (conversationId == null) {
+            checkForConversation();
+        }
+    };
+
+    @SuppressLint("NotifyDataSetChanged")
+    private final EventListener<QuerySnapshot> eventListenerReceivedMessages = (value, error) -> {
+        if (error != null) {
+            return;
+        }
+        if (value != null) {
+            for (DocumentChange documentChange : value.getDocumentChanges()) {
+                if (documentChange.getType() == DocumentChange.Type.ADDED) {
+                    MessageModel model = new MessageModel();
+                    model.setSenderId(documentChange.getDocument().getString("senderId"));
+                    model.setReceiverId(documentChange.getDocument().getString("receiverId"));
+                    model.setMessage(documentChange.getDocument().getString("message"));
+                    model.setPhoto(documentChange.getDocument().getString("photo"));
+                    model.setTimestamp(documentChange.getDocument().getLong("timestamp"));
+                    messageModels.add(model);
+                    if (currentTimestamp - model.getTimestamp() < 2000)
+                    {
+                        if (mediaPlayer != null)
+                        {
+                            if (mediaPlayer.isPlaying())
+                            {
+                                mediaPlayer.seekTo(0);
+                            }
+                            else
+                            {
+                                mediaPlayer.start();
+                            }
+                        }
+                    }
                 }
             }
             messageModels.sort(Comparator.comparing(MessageModel::getTimestamp));
@@ -491,11 +542,44 @@ public class ChatActivity extends BaseActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
+            assert data != null;
             Uri resultUri = UCrop.getOutput(data);
             if (resultUri != null) {
                 photoUri = resultUri.toString();
                 sendPhotoFromGallery();
             }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == READ_EXTERNAL_STORAGE_REQUEST_CODE)
+        {
+            if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                Toast.makeText(this, "İzin alındı. Şimdi galeriye gidebilirsiniz.", Toast.LENGTH_SHORT).show();
+            }
+            else
+            {
+                Toast.makeText(this, "İzin verilmedi. Galeri açılamıyor.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        mediaPlayer.release();
+        mediaPlayer = null;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mediaPlayer != null)
+        {
+            mediaPlayer.release();
         }
     }
 }

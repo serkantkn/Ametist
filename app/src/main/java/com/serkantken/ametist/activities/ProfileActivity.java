@@ -3,24 +3,17 @@ package com.serkantken.ametist.activities;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.orhanobut.hawk.Hawk;
@@ -44,7 +37,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Objects;
 
-import eightbitlab.com.blurview.BlurView;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -111,12 +103,14 @@ public class ProfileActivity extends BaseActivity
             if (y > oldY && binding.buttonMessage.isExtended())
             {
                 binding.buttonMessage.shrink();
-                binding.buttonFollow.hide();
+                if (!user.getUserId().equals(auth.getUid()))
+                    binding.buttonFollow.hide();
             }
             if (y < oldY && !binding.buttonMessage.isExtended())
             {
                 binding.buttonMessage.extend();
-                binding.buttonFollow.show();
+                if (!user.getUserId().equals(auth.getUid()))
+                    binding.buttonFollow.show();
             }
         });
 

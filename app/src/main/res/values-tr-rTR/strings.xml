@@ -103,4 +103,12 @@
     <string name="no_messages">Burada hiç mesaj yok</string>
     <string name="start_conversation">Sohbete başlamak için aşağıdaki kutuya birşeyler yaz.</string>
     <string name="only_friends">Sadece arkadaşlarım görebilsin</string>
+    <string name="permission_title">Bazı izinlere ihtiyaç duyabiliriz. İsterseniz şimdi, isterseniz gerekli olduğunda izin verebilirsiniz.</string>
+    <string name="location">Konum</string>
+    <string name="location_perm_text">Arkadaşlarına yerini bildirmek veya yakınındaki kişileri keşfedebilmek için gerekli</string>
+    <string name="storage_photos">Depolama (Fotoğraflar)</string>
+    <string name="storage_perm_text">Fotoğraflarını arkadaşlarınla paylaşmak için gerekli</string>
+    <string name="notification">Bildirim</string>
+    <string name="notification_perm_text">Alınan mesajları, fotoğrafları ve yeni takipçileri sana bildirebilmemiz için gerekli</string>
+    <string name="continue_">Devam Et</string>
 </resources>
