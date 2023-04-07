@@ -111,4 +111,7 @@
     <string name="notification">Bildirim</string>
     <string name="notification_perm_text">Alınan mesajları, fotoğrafları ve yeni takipçileri sana bildirebilmemiz için gerekli</string>
     <string name="continue_">Devam Et</string>
+    <string name="show_qr">QR Kodumu göster</string>
+    <string name="user_height">Boy</string>
+    <string name="user_weight">Kilo</string>
 </resources>

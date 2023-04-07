@@ -2,6 +2,8 @@ package com.serkantken.ametist.activities;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
@@ -13,13 +15,21 @@ import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.adapters.PostAdapter;
 import com.serkantken.ametist.databinding.ActivityProfileBinding;
+import com.serkantken.ametist.databinding.LayoutProfileBinding;
+import com.serkantken.ametist.databinding.LayoutQrCodeBinding;
 import com.serkantken.ametist.models.PostModel;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.network.ApiClient;
@@ -129,6 +139,35 @@ public class ProfileActivity extends BaseActivity
         });
 
         binding.buttonFollow.setOnClickListener(view -> follow());
+
+        binding.buttonQr.setOnClickListener(view -> {
+            final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.BottomSheetDialogTheme_Chat);
+            LayoutQrCodeBinding bottomSheetView = LayoutQrCodeBinding.inflate(getLayoutInflater());
+
+            utilities.blur(bottomSheetView.bottomSheetContainer, 10f, false);
+
+            QRCodeWriter qrCodeWriter = new QRCodeWriter();
+            BitMatrix bitMatrix = null;
+            try {
+                bitMatrix = qrCodeWriter.encode(Objects.requireNonNull(auth.getUid()), BarcodeFormat.QR_CODE, 512, 512);
+            } catch (WriterException e) {
+                throw new RuntimeException(e);
+            }
+
+            int width = bitMatrix.getWidth();
+            int height = bitMatrix.getHeight();
+            Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    bitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
+                }
+            }
+            bottomSheetView.qrView.setImageBitmap(bitmap);
+
+            bottomSheetDialog.setContentView(bottomSheetView.getRoot());
+            bottomSheetDialog.show();
+        });
     }
 
     private void follow() {

@@ -66,14 +66,20 @@ public class MainActivity extends BaseActivity
         utilities.blur(binding.tabBarBlur, 10f, false);
         utilities.blur(binding.toolbarBlur, 10f, false);
 
-        if (!(Boolean)Hawk.get(Constants.IS_BALLOONS_SHOWED))
+        if (Hawk.contains(Constants.IS_BALLOONS_SHOWED))
         {
-            new Handler().postDelayed(() -> {
-                showBalloon(getString(R.string.your_profile_here), binding.profileImage, 3);
-                Hawk.put(Constants.IS_BALLOONS_SHOWED, true);
-            }, 2000);
+            if (!(Boolean)Hawk.get(Constants.IS_BALLOONS_SHOWED))
+            {
+                new Handler().postDelayed(() -> {
+                    showBalloon(getString(R.string.your_profile_here), binding.profileImage, 3);
+                    Hawk.put(Constants.IS_BALLOONS_SHOWED, true);
+                }, 2000);
+            }
         }
-
+        else
+        {
+            Hawk.put(Constants.IS_BALLOONS_SHOWED, false);
+        }
         binding.buttonSettings.setOnClickListener(view -> startActivity(new Intent(MainActivity.this, SettingsActivity.class)));
 
         binding.profileImage.setOnClickListener(view -> {

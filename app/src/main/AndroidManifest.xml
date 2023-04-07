@@ -7,12 +7,15 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-feature android:name="android.hardware.camera" />
+
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -22,16 +25,19 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Ametist">
         <activity
+            android:name=".activities.CameraActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.PermissionActivity"
+            android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Ametist"
-            android:exported="false"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".activities.OnboardingActivity"
+            android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Ametist"
-            android:exported="false"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".activities.CommentActivity"

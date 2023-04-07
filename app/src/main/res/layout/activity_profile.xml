@@ -585,6 +585,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="64dp"
+            android:paddingEnd="6dp"
             android:id="@+id/toolbar">
 
             <ImageView
@@ -623,11 +624,24 @@
                 android:src="@drawable/ic_block"
                 android:background="@drawable/background_toolbar_button"
                 android:padding="10dp"
-                android:layout_marginEnd="16dp"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginEnd="10dp"
+                app:layout_constraintEnd_toStartOf="@id/button_qr"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:contentDescription="@string/block_user" />
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:id="@+id/button_qr"
+                android:src="@drawable/ic_qr_code"
+                android:background="@drawable/background_toolbar_button"
+                android:padding="10dp"
+                android:layout_marginEnd="10dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:contentDescription="@string/show_qr" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
         

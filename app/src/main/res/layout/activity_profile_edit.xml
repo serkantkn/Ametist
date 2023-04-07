@@ -7,308 +7,309 @@
     tools:context=".activities.SettingsActivity"
     android:background="@color/primary">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/toolbar"
+    <eightbitlab.com.blurview.BlurView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/primary"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:id="@+id/toolbarBlur"
         app:layout_constraintTop_toTopOf="parent">
 
-        <com.makeramen.roundedimageview.RoundedImageView
-            android:id="@+id/buttonBack"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
-            android:layout_marginStart="15dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"
-            android:background="@drawable/background_toolbar_button"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_back"
-            android:padding="10dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0" />
-
-        <TextView
-            android:id="@+id/activityName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/jost_light"
-            android:text="@string/edit_profile"
-            android:textColor="@color/primary_text"
-            android:textSize="24sp"
-            app:layout_constraintBottom_toBottomOf="@id/buttonBack"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/buttonBack"
-            app:layout_constraintTop_toTopOf="@id/buttonBack"
-            app:layout_constraintHorizontal_bias="0"
-            android:layout_marginStart="10dp"/>
-
-        <TextView
-            android:id="@+id/buttonDone"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/jost_bold"
-            android:text="@string/save"
-            android:textColor="@color/accent_red_dark"
-            android:textSize="20sp"
-            app:layout_constraintBottom_toBottomOf="@id/buttonBack"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/buttonBack"
-            app:layout_constraintTop_toTopOf="@id/buttonBack"
-            app:layout_constraintHorizontal_bias="1"
-            android:layout_marginEnd="15dp"/>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/toolbar">
-
-        <androidx.core.widget.NestedScrollView
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="64dp"
+            android:background="@color/primary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.makeramen.roundedimageview.RoundedImageView
+                android:id="@+id/buttonBack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="16dp"
+                android:background="@drawable/background_toolbar_button"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_back"
+                android:padding="10dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/activityName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/jost_light"
+                android:text="@string/edit_profile"
+                android:textColor="@color/primary_text"
+                android:textSize="24sp"
+                app:layout_constraintBottom_toBottomOf="@id/buttonBack"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/buttonBack"
+                app:layout_constraintTop_toTopOf="@id/buttonBack"
+                app:layout_constraintHorizontal_bias="0"
+                android:layout_marginStart="10dp"/>
+
+            <TextView
+                android:id="@+id/buttonDone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/jost_bold"
+                android:text="@string/save"
+                android:textColor="@color/accent_red_dark"
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="@id/buttonBack"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/buttonBack"
+                app:layout_constraintTop_toTopOf="@id/buttonBack"
+                app:layout_constraintHorizontal_bias="1"
+                android:layout_marginEnd="15dp"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </eightbitlab.com.blurview.BlurView>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/scrollView">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="10dp">
+
+            <View
+                android:id="@+id/gap"
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
+                android:id="@+id/imageLayout"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingBottom="10dp">
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/gap"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintVertical_bias="0">
 
-                <View
-                    android:id="@+id/gap"
-                    android:layout_width="match_parent"
-                    android:layout_height="10dp"
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/profileImage"
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:src="@drawable/ic_person_profile"
+                    app:civ_border_width="3dp"
+                    app:civ_border_color="@color/accent_purple_light"
+                    android:scaleType="centerCrop"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"/>
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/imageLayout"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/gap"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintVertical_bias="0">
+                    app:layout_constraintVertical_bias="0"/>
 
-                    <de.hdodenhof.circleimageview.CircleImageView
-                        android:id="@+id/profileImage"
-                        android:layout_width="200dp"
-                        android:layout_height="200dp"
-                        android:src="@drawable/ic_person_profile"
-                        app:civ_border_width="3dp"
-                        app:civ_border_color="@color/accent_purple_light"
-                        android:scaleType="centerCrop"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintVertical_bias="0"/>
-
-                    <com.makeramen.roundedimageview.RoundedImageView
-                        android:id="@+id/secondImage"
-                        android:layout_width="95dp"
-                        android:layout_height="95dp"
-                        android:src="@drawable/ic_person_add"
-                        app:riv_border_color="@color/accent_purple_light"
-                        app:riv_border_width="3dp"
-                        app:riv_corner_radius="15dp"
-                        android:scaleType="centerCrop"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/profileImage"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintVertical_bias="0"
-                        android:layout_marginTop="5dp"
-                        android:visibility="gone"/>
-
-                    <com.makeramen.roundedimageview.RoundedImageView
-                        android:id="@+id/thirdImage"
-                        android:layout_width="95dp"
-                        android:layout_height="95dp"
-                        android:src="@drawable/ic_person_add"
-                        app:riv_border_color="@color/accent_purple_light"
-                        app:riv_border_width="3dp"
-                        app:riv_corner_radius="15dp"
-                        android:scaleType="centerCrop"
-                        app:layout_constraintStart_toEndOf="@id/secondImage"
-                        app:layout_constraintTop_toBottomOf="@id/profileImage"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHorizontal_bias="0"
-                        app:layout_constraintVertical_bias="0"
-                        android:layout_marginStart="5dp"
-                        android:layout_marginTop="5dp"
-                        android:visibility="gone"/>
-
-                    <com.makeramen.roundedimageview.RoundedImageView
-                        android:id="@+id/fourthImage"
-                        android:layout_width="95dp"
-                        android:layout_height="95dp"
-                        android:src="@drawable/ic_person_add"
-                        app:riv_border_color="@color/accent_purple_light"
-                        app:riv_border_width="3dp"
-                        app:riv_corner_radius="15dp"
-                        android:scaleType="centerCrop"
-                        app:layout_constraintStart_toEndOf="@id/thirdImage"
-                        app:layout_constraintTop_toBottomOf="@id/profileImage"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHorizontal_bias="0"
-                        app:layout_constraintVertical_bias="0"
-                        android:layout_marginStart="5dp"
-                        android:layout_marginTop="5dp"
-                        android:visibility="gone"/>
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-                <EditText
-                    android:id="@+id/input_name"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="15dp"
-                    android:layout_marginEnd="15dp"
-                    android:background="@drawable/background_edittext_dark"
-                    android:textColorHint="@color/secondary_text"
-                    android:textColor="@color/primary_text"
-                    android:hint="@string/name"
-                    android:fontFamily="@font/jost_regular"
-                    android:textSize="17sp"
-                    android:inputType="text"
-                    android:paddingStart="25dp"
-                    android:paddingTop="15dp"
-                    android:paddingEnd="25dp"
-                    android:paddingBottom="15dp"
-                    android:maxLines="1"
+                <com.makeramen.roundedimageview.RoundedImageView
+                    android:id="@+id/secondImage"
+                    android:layout_width="95dp"
+                    android:layout_height="95dp"
+                    android:src="@drawable/ic_person_add"
+                    app:riv_border_color="@color/accent_purple_light"
+                    app:riv_border_width="3dp"
+                    app:riv_corner_radius="15dp"
+                    android:scaleType="centerCrop"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/profileImage"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/imageLayout"
-                    app:layout_constraintWidth_percent=".9"
-                    app:layout_constraintVertical_bias=".1"
-                    android:importantForAutofill="no" />
-
-                <Spinner
-                    android:id="@+id/spinnerAge"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:background="@drawable/background_edittext_dark"
-                    android:textColor="@color/primary_text"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/input_name"
                     app:layout_constraintVertical_bias="0"
-                    app:layout_constraintWidth_percent=".9"/>
+                    android:layout_marginTop="5dp"
+                    android:visibility="gone"/>
 
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/radioGender"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    app:cardElevation="0dp"
-                    app:cardBackgroundColor="@color/primary_dark"
-                    app:cardCornerRadius="20dp"
+                <com.makeramen.roundedimageview.RoundedImageView
+                    android:id="@+id/thirdImage"
+                    android:layout_width="95dp"
+                    android:layout_height="95dp"
+                    android:src="@drawable/ic_person_add"
+                    app:riv_border_color="@color/accent_purple_light"
+                    app:riv_border_width="3dp"
+                    app:riv_corner_radius="15dp"
+                    android:scaleType="centerCrop"
+                    app:layout_constraintStart_toEndOf="@id/secondImage"
+                    app:layout_constraintTop_toBottomOf="@id/profileImage"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/spinnerAge"
-                    app:layout_constraintWidth_percent=".9"
-                    app:layout_constraintVertical_bias="0">
+                    app:layout_constraintHorizontal_bias="0"
+                    app:layout_constraintVertical_bias="0"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginTop="5dp"
+                    android:visibility="gone"/>
 
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <TextView
-                            android:id="@+id/textGender"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/gender"
-                            android:textColor="@color/accent_purple_dark"
-                            android:textSize="17sp"
-                            android:fontFamily="@font/jost_regular"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            android:layout_marginTop="15dp"
-                            android:layout_marginStart="25dp"/>
-
-                        <RadioGroup
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            app:layout_constraintTop_toTopOf="@id/textGender"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintBottom_toBottomOf="@id/textGender"
-                            android:layout_marginStart="25dp">
-
-                            <RadioButton
-                                android:id="@+id/radioMale"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/man"
-                                android:textColor="@color/primary_text"
-                                android:layout_marginEnd="10dp"
-                                android:fontFamily="@font/jost_regular"
-                                android:textSize="17sp"
-                                android:layout_gravity="center"/>
-
-                            <RadioButton
-                                android:id="@+id/radioFemale"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/woman"
-                                android:textColor="@color/primary_text"
-                                android:layout_marginStart="10dp"
-                                android:fontFamily="@font/jost_regular"
-                                android:textSize="17sp"
-                                android:layout_gravity="center"/>
-
-                        </RadioGroup>
-
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                </androidx.cardview.widget.CardView>
-
-                <EditText
-                    android:id="@+id/input_about"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="15dp"
-                    android:layout_marginEnd="15dp"
-                    android:background="@drawable/background_edittext_dark"
-                    android:textColorHint="@color/secondary_text"
-                    android:textColor="@color/primary_text"
-                    android:hint="@string/about"
-                    android:fontFamily="@font/jost_regular"
-                    android:textSize="17sp"
-                    android:inputType="textMultiLine"
-                    android:paddingStart="25dp"
-                    android:paddingTop="15dp"
-                    android:paddingEnd="25dp"
-                    android:paddingBottom="15dp"
-                    android:maxLines="3"
+                <com.makeramen.roundedimageview.RoundedImageView
+                    android:id="@+id/fourthImage"
+                    android:layout_width="95dp"
+                    android:layout_height="95dp"
+                    android:src="@drawable/ic_person_add"
+                    app:riv_border_color="@color/accent_purple_light"
+                    app:riv_border_width="3dp"
+                    app:riv_corner_radius="15dp"
+                    android:scaleType="centerCrop"
+                    app:layout_constraintStart_toEndOf="@id/thirdImage"
+                    app:layout_constraintTop_toBottomOf="@id/profileImage"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/radioGender"
-                    app:layout_constraintWidth_percent=".9"
-                    app:layout_constraintVertical_bias=".1"
-                    android:layout_marginTop="10dp"
-                    android:importantForAutofill="no" />
+                    app:layout_constraintHorizontal_bias="0"
+                    app:layout_constraintVertical_bias="0"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginTop="5dp"
+                    android:visibility="gone"/>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-        </androidx.core.widget.NestedScrollView>
+            <EditText
+                android:id="@+id/input_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
+                android:background="@drawable/background_edittext_dark"
+                android:textColorHint="@color/secondary_text"
+                android:textColor="@color/primary_text"
+                android:hint="@string/name"
+                android:fontFamily="@font/jost_regular"
+                android:textSize="17sp"
+                android:inputType="text"
+                android:paddingStart="25dp"
+                android:paddingTop="15dp"
+                android:paddingEnd="25dp"
+                android:paddingBottom="15dp"
+                android:maxLines="1"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/imageLayout"
+                app:layout_constraintWidth_percent=".9"
+                app:layout_constraintVertical_bias=".1"
+                android:importantForAutofill="no" />
 
-    </ScrollView>
+            <Spinner
+                android:id="@+id/spinnerAge"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/background_edittext_dark"
+                android:textColor="@color/primary_text"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/input_name"
+                app:layout_constraintVertical_bias="0"
+                app:layout_constraintWidth_percent=".9"/>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/radioGender"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/primary_dark"
+                app:cardCornerRadius="20dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/spinnerAge"
+                app:layout_constraintWidth_percent=".9"
+                app:layout_constraintVertical_bias="0">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/textGender"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/gender"
+                        android:textColor="@color/accent_purple_dark"
+                        android:textSize="17sp"
+                        android:fontFamily="@font/jost_regular"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintHorizontal_bias="0"
+                        android:layout_marginStart="16dp"/>
+
+                    <RadioGroup
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        app:layout_constraintTop_toTopOf="@id/textGender"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintBottom_toBottomOf="@id/textGender"
+                        android:layout_marginStart="25dp">
+
+                        <RadioButton
+                            android:id="@+id/radioMale"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/man"
+                            android:textColor="@color/primary_text"
+                            android:layout_marginEnd="10dp"
+                            android:fontFamily="@font/jost_regular"
+                            android:textSize="17sp"
+                            android:layout_gravity="center"/>
+
+                        <RadioButton
+                            android:id="@+id/radioFemale"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/woman"
+                            android:textColor="@color/primary_text"
+                            android:layout_marginStart="10dp"
+                            android:fontFamily="@font/jost_regular"
+                            android:textSize="17sp"
+                            android:layout_gravity="center"/>
+
+                    </RadioGroup>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <EditText
+                android:id="@+id/input_about"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
+                android:background="@drawable/background_edittext_dark"
+                android:textColorHint="@color/secondary_text"
+                android:textColor="@color/primary_text"
+                android:hint="@string/about"
+                android:fontFamily="@font/jost_regular"
+                android:textSize="17sp"
+                android:inputType="textMultiLine"
+                android:paddingStart="25dp"
+                android:paddingTop="15dp"
+                android:paddingEnd="25dp"
+                android:paddingBottom="15dp"
+                android:maxLines="3"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/radioGender"
+                app:layout_constraintWidth_percent=".9"
+                app:layout_constraintVertical_bias=".1"
+                android:layout_marginTop="10dp"
+                android:importantForAutofill="no" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

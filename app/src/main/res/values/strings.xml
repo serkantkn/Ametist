@@ -114,4 +114,8 @@
     <string name="notification">Notification</string>
     <string name="notification_perm_text">Required so that we can notify you of received messages, photos and new followers</string>
     <string name="continue_">Continue</string>
+    <string name="show_qr">Show my QR Code</string>
+    <string name="cm" translatable="false">cm</string>
+    <string name="user_height">Height</string>
+    <string name="user_weight">Weight</string>
 </resources>
