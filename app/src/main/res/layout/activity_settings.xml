@@ -70,7 +70,7 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="parent"/>
 
-                <androidx.appcompat.widget.SwitchCompat
+                <Switch
                     android:id="@+id/switch_message_on_notif"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

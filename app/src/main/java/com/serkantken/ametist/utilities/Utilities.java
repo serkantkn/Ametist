@@ -80,9 +80,8 @@ public class Utilities
         //gets kinda lost after after blur is applied.
         Drawable windowBackground = decorView.getBackground();
 
-        view.setupWith(rootView)
+        view.setupWith(rootView, new RenderScriptBlur(activity))
                 .setFrameClearDrawable(windowBackground)
-                .setBlurAlgorithm(new RenderScriptBlur(activity))
                 .setBlurRadius(radius)
                 .setBlurAutoUpdate(true);
         if (isRounded)
