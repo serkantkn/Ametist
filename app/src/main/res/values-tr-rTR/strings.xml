@@ -114,4 +114,5 @@
     <string name="show_qr">QR Kodumu göster</string>
     <string name="user_height">Boy</string>
     <string name="user_weight">Kilo</string>
+    <string name="scan_qr_code_message">Kullanıcının QR kodunu okutun...</string>
 </resources>

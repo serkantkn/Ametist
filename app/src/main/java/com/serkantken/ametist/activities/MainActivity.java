@@ -58,6 +58,7 @@ public class MainActivity extends BaseActivity
         binding.tabBarBlur.setPadding(0, utilities.convertDpToPixel(5), 0, utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT)+utilities.convertDpToPixel(5));
 
         auth = FirebaseAuth.getInstance();
+        Hawk.init(this).build();
         database = FirebaseFirestore.getInstance();
         user = new UserModel();
         getUserInfo();

@@ -118,4 +118,5 @@
     <string name="cm" translatable="false">cm</string>
     <string name="user_height">Height</string>
     <string name="user_weight">Weight</string>
+    <string name="scan_qr_code_message">Scan user\'s QR code</string>
 </resources>

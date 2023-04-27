@@ -19,7 +19,7 @@ dependencyResolutionManagement {
                  ** gpr.usr=GITHUB_USER_ID & gpr.key=PERSONAL_ACCESS_TOKEN
                  ** Or set env variable GPR_USER & GPR_API_KEY if not adding a properties file**/
                 username = 40994382
-                password = "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"
+                password = "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"
             }
         }
         maven { url 'https://jitpack.io' }

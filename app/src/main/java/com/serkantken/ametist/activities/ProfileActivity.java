@@ -1,20 +1,31 @@
 package com.serkantken.ametist.activities;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -23,7 +34,10 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
 import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.adapters.PostAdapter;
@@ -140,7 +154,7 @@ public class ProfileActivity extends BaseActivity
 
         binding.buttonFollow.setOnClickListener(view -> follow());
 
-        binding.buttonQr.setOnClickListener(view -> {
+        /*binding.buttonQr.setOnClickListener(view -> {
             final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.BottomSheetDialogTheme_Chat);
             LayoutQrCodeBinding bottomSheetView = LayoutQrCodeBinding.inflate(getLayoutInflater());
 
@@ -164,6 +178,86 @@ public class ProfileActivity extends BaseActivity
                 }
             }
             bottomSheetView.qrView.setImageBitmap(bitmap);
+
+            bottomSheetView.buttonQrScanner.setOnClickListener(v -> {
+                //startActivity(new Intent(ProfileActivity.this, CameraActivity.class));
+
+                IntentIntegrator integrator = new IntentIntegrator(this);
+                integrator.setPrompt("QR kodu taratın"); // Kullanıcıya gösterilecek mesaj
+                integrator.setPrompt(getString(R.string.scan_qr_code_message));
+                integrator.setOrientationLocked(false); // Ekran yönü kilitli değil
+                integrator.setBeepEnabled(false);
+                integrator.initiateScan(); // Tarama işlemini başlat
+
+                bottomSheetDialog.dismiss();
+            });
+
+            bottomSheetDialog.setContentView(bottomSheetView.getRoot());
+            bottomSheetDialog.show();
+        });*/
+
+        binding.buttonQr.setOnClickListener(view -> {
+            final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.BottomSheetDialogTheme_Chat);
+            LayoutQrCodeBinding bottomSheetView = LayoutQrCodeBinding.inflate(getLayoutInflater());
+
+            utilities.blur(bottomSheetView.bottomSheetContainer, 10f, false);
+            WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
+            float oldBrightness = layoutParams.screenBrightness;
+            layoutParams.screenBrightness = 1.0f;
+            getWindow().setAttributes(layoutParams);
+
+            // QR kodunun boyut
+            int qrCodeSize = 512;
+
+            // QR kodunun oluşturulması
+            MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
+                BitMatrix bitMatrix = null;
+                try {
+                    bitMatrix = multiFormatWriter.encode(Objects.requireNonNull(auth.getUid()), BarcodeFormat.QR_CODE, qrCodeSize, qrCodeSize);
+                } catch (WriterException e) {
+                    throw new RuntimeException(e);
+                }
+                int width = bitMatrix.getWidth();
+            int height = bitMatrix.getHeight();
+            Bitmap qrBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    qrBitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
+                }
+            }
+
+            // Logo Bitmap'inin yüklenmesi
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+            Bitmap logoBitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.ametist_logo, options);
+
+            // QR kodu ve logo Bitmap'lerinin üst üste bindirilmesi
+            Bitmap mergedBitmap = Bitmap.createBitmap(qrCodeSize, qrCodeSize, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(mergedBitmap);
+            canvas.drawBitmap(qrBitmap, 0, 0, null);
+            int logoSize = qrCodeSize / 4;
+            logoBitmap = Bitmap.createScaledBitmap(logoBitmap, logoSize, logoSize, false);
+            int centerX = (qrCodeSize - logoSize) / 2;
+            int centerY = (qrCodeSize - logoSize) / 2;
+            canvas.drawBitmap(logoBitmap, centerX, centerY, null);
+
+            // İşlem sonucunda oluşan Bitmap'in ImageView'a set edilmesi
+            bottomSheetView.qrView.setImageBitmap(mergedBitmap);
+
+            bottomSheetView.buttonQrScanner.setOnClickListener(v -> {
+                IntentIntegrator integrator = new IntentIntegrator(this);
+                integrator.setPrompt(getString(R.string.scan_qr_code_message)); // Kullanıcıya gösterilecek mesaj
+                integrator.setOrientationLocked(false); // Ekran yönü kilitli değil
+                integrator.setBeepEnabled(false);
+                integrator.initiateScan(); // Tarama işlemini başlat
+
+                bottomSheetDialog.dismiss();
+            });
+
+            bottomSheetDialog.setOnDismissListener(dialog -> {
+                layoutParams.screenBrightness = oldBrightness;
+                getWindow().setAttributes(layoutParams);
+            });
 
             bottomSheetDialog.setContentView(bottomSheetView.getRoot());
             bottomSheetDialog.show();
@@ -347,6 +441,48 @@ public class ProfileActivity extends BaseActivity
                 adapter.notifyDataSetChanged();
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if (result != null) {
+            if (result.getContents() == null) {
+                Toast.makeText(this, "Tarama iptal edildi", Toast.LENGTH_LONG).show();
+            } else {
+                String qrText = result.getContents();
+                // QR kodu başarıyla tarandı, yapılacak işlemler burada gerçekleştirilebilir
+                Toast.makeText(this, qrText, Toast.LENGTH_SHORT).show();
+
+                database.collection(Constants.DATABASE_PATH_USERS).get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful())
+                    {
+                        UserModel scannedUser = new UserModel();
+                        for (QueryDocumentSnapshot documentSnapshot : task.getResult())
+                        {
+                            if (documentSnapshot.getId().equals(qrText))
+                            {
+                                scannedUser.setName(documentSnapshot.getString("name"));
+                                scannedUser.setProfilePic(documentSnapshot.getString("profilePic"));
+                                scannedUser.setAbout(documentSnapshot.getString("about"));
+                                scannedUser.setGender(documentSnapshot.getString("gender"));
+                                scannedUser.setAge(documentSnapshot.getString("age"));
+                                scannedUser.setUserId(documentSnapshot.getId());
+                                scannedUser.setFollowerCount(Integer.parseInt(String.valueOf(documentSnapshot.get("followerCount"))));
+                                scannedUser.setFollowingCount(Integer.parseInt(String.valueOf(documentSnapshot.get("followingCount"))));
+                            }
+                        }
+                        Intent intent = new Intent(ProfileActivity.this, ProfileActivity.class);
+                        intent.putExtra("receiverUser", scannedUser);
+                        startActivity(intent);
+                    }
+                });
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     @Override

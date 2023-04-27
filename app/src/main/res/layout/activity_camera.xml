@@ -34,7 +34,7 @@
             android:layout_marginStart="10dp"
             android:fontFamily="@font/jost_light"
             android:shadowRadius="10"
-            android:text="Kamera"
+            android:text="@string/camera"
             android:textColor="@color/white"
             android:textSize="24sp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -61,8 +61,29 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintDimensionRatio="3:4"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:layout_constraintBottom_toTopOf="@id/shutter_area"/>
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/shutter_area"
+        app:layout_constraintBottom_toBottomOf="parent">
 
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/button_shutter"
+            android:layout_width="75dp"
+            android:layout_height="0dp"
+            android:src="@drawable/ic_shutter"
+            app:civ_border_width="3dp"
+            app:civ_border_color="@color/accent_purple_dark"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_margin="15dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
