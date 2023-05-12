@@ -119,4 +119,8 @@
     <string name="user_height">Height</string>
     <string name="user_weight">Weight</string>
     <string name="scan_qr_code_message">Scan user\'s QR code</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="instead_of">Instead of...</string>
+    <string name="reply_to">Reply to this message:</string>
 </resources>

@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.app.ActivityOptionsCompat;
-import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -27,9 +26,13 @@ import com.serkantken.ametist.databinding.LayoutSendMessageBinding;
 import com.serkantken.ametist.databinding.LayoutSendPhotoBinding;
 import com.serkantken.ametist.models.MessageModel;
 import com.serkantken.ametist.models.UserModel;
+import com.serkantken.ametist.utilities.MessageListener;
+import com.serkantken.ametist.utilities.OnSwipeTouchListener;
+import com.serkantken.ametist.utilities.SwipeListener;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ChatAdapter extends RecyclerView.Adapter
 {
@@ -37,17 +40,23 @@ public class ChatAdapter extends RecyclerView.Adapter
     Context context;
     Activity activity;
     String receiverId;
+    MessageListener messageListener;
+    SwipeListener swipeListener;
+    private float downX;
+    private boolean isSwiping = false;
     int EMPTY_VIEW_TYPE = 5;
     int SENDER_VIEW_TYPE = 1;
     int RECEIVER_VIEW_TYPE = 2;
     int PHOTO_SENDER_VIEW_TYPE = 3;
     int PHOTO_RECEIVER_VIEW_TYPE = 4;
 
-    public ChatAdapter(ArrayList<MessageModel> messageModels, Context context, Activity activity)
+    public ChatAdapter(ArrayList<MessageModel> messageModels, Context context, Activity activity, MessageListener messageListener, SwipeListener swipeListener)
     {
         this.messageModels = messageModels;
         this.context = context;
         this.activity = activity;
+        this.messageListener = messageListener;
+        this.swipeListener = swipeListener;
     }
 
     @NonNull
@@ -138,6 +147,30 @@ public class ChatAdapter extends RecyclerView.Adapter
             }
             ((SenderViewHolder)holder).binding.sentMessage.setText(messageModel.getMessage());
             ((SenderViewHolder)holder).binding.date.setText(TimeAgo.using(messageModel.getTimestamp()));
+            ((SenderViewHolder)holder).binding.messageContainer.setOnTouchListener(new OnSwipeTouchListener(context, ((SenderViewHolder)holder).binding.messageContainer) {
+                public void onSwipeLeft() {
+                    ((SenderViewHolder)holder).binding.iconDelete.setVisibility(View.VISIBLE);
+                    isSwiping = true;
+                    swipeListener.onSwipeHorizontal(true);
+                }
+
+                public void onSwipeRight() {
+                    if (((SenderViewHolder)holder).binding.iconDelete.getVisibility() == View.VISIBLE)
+                    {
+                        ((SenderViewHolder)holder).binding.iconDelete.setVisibility(View.GONE);
+                        isSwiping = false;
+                        swipeListener.onSwipeHorizontal(false);
+                    }
+                    else
+                    {
+                        messageListener.onMessageReplied(messageModel, null, false);
+                        swipeListener.onSwipeHorizontal(true);
+                    }
+                }
+
+                public void onClick() {
+                }
+            });
         }
         else if (holder.getClass() == ReceiverViewHolder.class)
         {
@@ -147,6 +180,7 @@ public class ChatAdapter extends RecyclerView.Adapter
             }
             ((ReceiverViewHolder)holder).binding.receivedMessage.setText(messageModel.getMessage());
             ((ReceiverViewHolder)holder).binding.date.setText(TimeAgo.using(messageModel.getTimestamp()));
+            AtomicReference<String> profilePic = new AtomicReference<>();
             FirebaseFirestore.getInstance().collection("Users").get().addOnCompleteListener(task -> {
                 if (task.isSuccessful())
                 {
@@ -156,12 +190,26 @@ public class ChatAdapter extends RecyclerView.Adapter
                         if (documentSnapshot.getId().equals(messageModel.getSenderId()))
                         {
                             userModel.setProfilePic(documentSnapshot.getString("profilePic"));
+                            profilePic.set(documentSnapshot.getString("profilePic"));
                             userModel.setName(documentSnapshot.getString("name"));
                         }
                     }
                     Glide.with(context).load(userModel.getProfilePic()).placeholder(AppCompatResources.getDrawable(context, R.drawable.ic_person))
                             .into(((ReceiverViewHolder)holder).binding.profileImage);
                     ((ReceiverViewHolder)holder).binding.username.setText(userModel.getName());
+                }
+            });
+            ((ReceiverViewHolder)holder).binding.getRoot().setOnTouchListener(new OnSwipeTouchListener(context, ((ReceiverViewHolder)holder).binding.getRoot()) {
+                public void onSwipeLeft() {
+                    swipeListener.onSwipeHorizontal(true);
+                }
+
+                public void onSwipeRight() {
+                    messageListener.onMessageReplied(messageModel, profilePic.get(), false);
+                    swipeListener.onSwipeHorizontal(true);
+                }
+
+                public void onClick() {
                 }
             });
         }
@@ -181,11 +229,33 @@ public class ChatAdapter extends RecyclerView.Adapter
             }
             ((PhotoSenderViewHolder)holder).binding.date.setText(TimeAgo.using(messageModel.getTimestamp()));
             Glide.with(context).load(messageModel.getPhoto()).into(((PhotoSenderViewHolder)holder).binding.sentPhoto);
-            ((PhotoSenderViewHolder)holder).binding.sentPhoto.setOnClickListener(view -> {
-                Intent intent = new Intent(context, FullProfilePhotoActivity.class);
-                intent.putExtra("pictureUrl", messageModel.getPhoto());
-                ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, ((PhotoSenderViewHolder) holder).binding.sentPhoto, "photograph");
-                context.startActivity(intent, optionsCompat.toBundle());
+            ((PhotoSenderViewHolder)holder).binding.messageContainer.setOnTouchListener(new OnSwipeTouchListener(context, ((PhotoSenderViewHolder)holder).binding.messageContainer) {
+                public void onSwipeLeft() {
+                    ((PhotoSenderViewHolder)holder).binding.iconDelete.setVisibility(View.VISIBLE);
+                    isSwiping = true;
+                    swipeListener.onSwipeHorizontal(true);
+                }
+
+                public void onSwipeRight() {
+                    if (((PhotoSenderViewHolder)holder).binding.iconDelete.getVisibility() == View.VISIBLE)
+                    {
+                        ((PhotoSenderViewHolder)holder).binding.iconDelete.setVisibility(View.GONE);
+                        isSwiping = false;
+                        swipeListener.onSwipeHorizontal(false);
+                    }
+                    else
+                    {
+                        messageListener.onMessageReplied(messageModel, null, true);
+                        swipeListener.onSwipeHorizontal(true);
+                    }
+                }
+
+                public void onClick() {
+                    Intent intent = new Intent(context, FullProfilePhotoActivity.class);
+                    intent.putExtra("pictureUrl", messageModel.getPhoto());
+                    ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, ((PhotoSenderViewHolder) holder).binding.sentPhoto, "photograph");
+                    context.startActivity(intent, optionsCompat.toBundle());
+                }
             });
         }
         else
@@ -203,6 +273,7 @@ public class ChatAdapter extends RecyclerView.Adapter
                 ((PhotoReceiverViewHolder)holder).binding.receivedMessage.setText(messageModel.getMessage());
             }
             ((PhotoReceiverViewHolder)holder).binding.date.setText(TimeAgo.using(messageModel.getTimestamp()));
+            AtomicReference<String> profilePic = new AtomicReference<>();
             FirebaseFirestore.getInstance().collection("Users").get().addOnCompleteListener(task -> {
                 if (task.isSuccessful())
                 {
@@ -212,6 +283,7 @@ public class ChatAdapter extends RecyclerView.Adapter
                         if (documentSnapshot.getId().equals(messageModel.getSenderId()))
                         {
                             userModel.setProfilePic(documentSnapshot.getString("profilePic"));
+                            profilePic.set(documentSnapshot.getString("profilePic"));
                             userModel.setName(documentSnapshot.getString("name"));
                         }
                     }
@@ -219,12 +291,23 @@ public class ChatAdapter extends RecyclerView.Adapter
                             .into(((PhotoReceiverViewHolder)holder).binding.profileImage);
                     Glide.with(context).load(messageModel.getPhoto()).into(((PhotoReceiverViewHolder)holder).binding.receivedPhoto);
                     ((PhotoReceiverViewHolder)holder).binding.username.setText(userModel.getName());
-                    ((PhotoReceiverViewHolder)holder).binding.receivedPhoto.setOnClickListener(view -> {
-                        Intent intent = new Intent(context, FullProfilePhotoActivity.class);
-                        intent.putExtra("pictureUrl", messageModel.getPhoto());
-                        ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, ((PhotoReceiverViewHolder) holder).binding.receivedPhoto, "photograph");
-                        context.startActivity(intent, optionsCompat.toBundle());
-                    });
+                }
+            });
+            ((PhotoReceiverViewHolder)holder).binding.container.setOnTouchListener(new OnSwipeTouchListener(context, ((PhotoReceiverViewHolder)holder).binding.container) {
+                public void onSwipeLeft() {
+                    swipeListener.onSwipeHorizontal(true);
+                }
+
+                public void onSwipeRight() {
+                    messageListener.onMessageReplied(messageModel, profilePic.get(), true);
+                    swipeListener.onSwipeHorizontal(true);
+                }
+
+                public void onClick() {
+                    Intent intent = new Intent(context, FullProfilePhotoActivity.class);
+                    intent.putExtra("pictureUrl", messageModel.getPhoto());
+                    ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, ((PhotoReceiverViewHolder) holder).binding.receivedPhoto, "photograph");
+                    context.startActivity(intent, optionsCompat.toBundle());
                 }
             });
         }

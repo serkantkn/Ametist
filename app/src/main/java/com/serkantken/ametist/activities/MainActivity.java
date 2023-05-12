@@ -5,7 +5,6 @@ import android.content.res.Configuration;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -225,30 +224,8 @@ public class MainActivity extends BaseActivity
 
     private void getUserInfo()
     {
-        /*database.collection("Users").get().addOnCompleteListener(task -> {
-            if (task.isSuccessful())
-            {
-                for (QueryDocumentSnapshot documentSnapshot : task.getResult())
-                {
-                    if (documentSnapshot.getId().equals(auth.getUid()))
-                    {
-                        user.setName(documentSnapshot.getString("name"));
-                        user.setProfilePic(documentSnapshot.getString("profilePic"));
-                        user.setAbout(documentSnapshot.getString("about"));
-                        user.setGender(documentSnapshot.getString("gender"));
-                        user.setAge(documentSnapshot.getString("age"));
-                        user.setUserId(documentSnapshot.getId());
-                        utilities.setPreferences("username", documentSnapshot.getString("name"));
-                    }
-                }
-
-            }
-        });*/
         user = (UserModel) getIntent().getSerializableExtra("currentUserInfo");
-        if (user != null)
-        {
-            Glide.with(getApplicationContext()).load(user.getProfilePic()).placeholder(R.mipmap.ametist_logo).into(binding.profileImage);
-        }
+        Glide.with(getApplicationContext()).load(user.getProfilePic()).placeholder(R.mipmap.ametist_logo).into(binding.profileImage);
     }
 
     private void showBalloon(String message, View view, int position)

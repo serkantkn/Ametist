@@ -17,6 +17,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -40,13 +41,19 @@ import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.adapters.ChatAdapter;
 import com.serkantken.ametist.databinding.ActivityChatBinding;
+import com.serkantken.ametist.databinding.LayoutChatContentSourceBinding;
 import com.serkantken.ametist.databinding.LayoutChatPhotoSelectorBinding;
 import com.serkantken.ametist.models.MessageModel;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.network.ApiClient;
 import com.serkantken.ametist.network.ApiService;
+import com.serkantken.ametist.utilities.ChatRecyclerView;
 import com.serkantken.ametist.utilities.Constants;
+import com.serkantken.ametist.utilities.MessageListener;
 import com.serkantken.ametist.utilities.Utilities;
+import com.skydoves.balloon.Balloon;
+import com.skydoves.balloon.BalloonAnimation;
+import com.skydoves.balloon.BalloonSizeSpec;
 import com.yalantis.ucrop.UCrop;
 
 import org.json.JSONArray;
@@ -61,11 +68,12 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
 
+import eightbitlab.com.blurview.BlurView;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ChatActivity extends BaseActivity {
+public class ChatActivity extends BaseActivity implements MessageListener {
     private ActivityChatBinding binding;
     private FirebaseAuth auth;
     private FirebaseFirestore database;
@@ -75,14 +83,17 @@ public class ChatActivity extends BaseActivity {
     private ChatAdapter chatAdapter;
     private String conversationId;
     private Boolean isReceiverAvailable = false;
+    private Boolean isReply = false;
     private ActivityResultLauncher<String> getContent;
     private String photoUri;
-    private BottomSheetDialog choosePhotoDialog;
-    private LayoutChatPhotoSelectorBinding choosePhotoView;
+    private BottomSheetDialog photoPreviewDialog;
+    private LayoutChatPhotoSelectorBinding photoPreviewView;
     private MediaPlayer mediaPlayer;
+    private Balloon balloon;
     private long currentTimestamp = new Date().getTime();
 
     private static final int READ_EXTERNAL_STORAGE_REQUEST_CODE = 1;
+    private static final int CAMERA_REQUEST_CODE = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,11 +113,12 @@ public class ChatActivity extends BaseActivity {
         utilities.blur(binding.navbarBlur, 10f, false);
 
         messageModels = new ArrayList<>();
-        chatAdapter = new ChatAdapter(messageModels, this, ChatActivity.this);
+        chatAdapter = new ChatAdapter(messageModels, this, ChatActivity.this, this, new ChatRecyclerView(this));
         binding.messageRV.setAdapter(chatAdapter);
         LinearLayoutManager manager = new LinearLayoutManager(this);
         manager.setStackFromEnd(true);
         binding.messageRV.setLayoutManager(manager);
+        binding.messageRV.setClipToPadding(false);
 
         if (utilities.isMIUI())
         {
@@ -119,7 +131,6 @@ public class ChatActivity extends BaseActivity {
         {
             binding.messageRV.setPadding(0, utilities.convertDpToPixel(74), 0, utilities.convertDpToPixel(70));
         }
-        binding.messageRV.setClipToPadding(false);
 
         //Get receiver user's name
         database.collection("Users").get().addOnCompleteListener(task -> {
@@ -163,47 +174,82 @@ public class ChatActivity extends BaseActivity {
         });
 
         mediaPlayer = MediaPlayer.create(this, R.raw.new_message);
+
+        binding.buttonCancel.setOnClickListener(v -> {
+            binding.replyMessageContainer.setVisibility(View.GONE);
+            isReply = false;
+        });
     }
 
     private void selectPhotoFromGallery() {
-        choosePhotoDialog = new BottomSheetDialog(ChatActivity.this, R.style.BottomSheetDialogTheme_Chat);
-        choosePhotoView = LayoutChatPhotoSelectorBinding.inflate(getLayoutInflater());
+        showBalloon(binding.addPhoto, 1);
+        BlurView blurView = balloon.getContentView().findViewById(R.id.blur);
+        utilities.blur(blurView, 10f, false);
 
-        utilities.blur(choosePhotoView.blur, 10f, false);
+        CardView cameraButton = balloon.getContentView().findViewById(R.id.buttonCamera);
+        cameraButton.setOnClickListener(v -> {
+            if (isCameraPermissionGranted())
+            {
 
-        choosePhotoView.buttonGallery.setOnClickListener(view -> {
-            if (isPermissionGranted()) {
-                getContent.launch("image/*");
             }
         });
 
-        choosePhotoView.buttonDelete.setOnClickListener(view -> {
-            photoUri = "";
-            choosePhotoDialog.dismiss();
+        CardView galleryButton = balloon.getContentView().findViewById(R.id.buttonGallery);
+        galleryButton.setOnClickListener(v -> {
+            if (isStoragePermissionGranted()) {
+                getContent.launch("image/*");
+                balloon.dismiss();
+            }
         });
 
-        choosePhotoView.buttonSend.setOnClickListener(view -> sendPhoto());
+
+        /*
+        choosePhotoDialog = new BottomSheetDialog(ChatActivity.this, R.style.BottomSheetDialogTheme_Chat);
+        choosePhotoView = LayoutChatContentSourceBinding.inflate(getLayoutInflater());
+
+        choosePhotoView.buttonGallery.setOnClickListener(view -> {
+            if (isStoragePermissionGranted()) {
+                getContent.launch("image/*");
+                choosePhotoDialog.dismiss();
+            }
+        });
+
+        choosePhotoView.buttonCamera.setOnClickListener(v -> {
+            if (isCameraPermissionGranted())
+            {
+
+            }
+        });
+
+        utilities.blur(choosePhotoView.blur, 10f, false);
 
         choosePhotoDialog.setContentView(choosePhotoView.getRoot());
-        choosePhotoDialog.show();
+        choosePhotoDialog.show();*/
     }
 
     private void sendPhotoFromGallery() {
         if (!photoUri.isEmpty()) {
-            Glide.with(this).load(photoUri).into(choosePhotoView.postImage);
-            choosePhotoView.titleMessageBox.setText(getString(R.string.photo_preview));
-            choosePhotoView.buttonCamera.setVisibility(View.GONE);
-            choosePhotoView.textCamera.setVisibility(View.GONE);
-            choosePhotoView.buttonGallery.setVisibility(View.GONE);
-            choosePhotoView.textGallery.setVisibility(View.GONE);
-            choosePhotoView.buttonDelete.setVisibility(View.VISIBLE);
-            choosePhotoView.buttonSend.setVisibility(View.VISIBLE);
-            choosePhotoView.postImage.setVisibility(View.VISIBLE);
-            choosePhotoView.messageLayout.setVisibility(View.VISIBLE);
+            photoPreviewDialog = new BottomSheetDialog(this, R.style.BottomSheetDialogTheme_Chat);
+            photoPreviewView = LayoutChatPhotoSelectorBinding.inflate(getLayoutInflater());
+
+            utilities.blur(photoPreviewView.blur, 10f, false);
+
+            Glide.with(this).load(photoUri).into(photoPreviewView.postImage);
+            photoPreviewView.titleMessageBox.setText(getString(R.string.photo_preview));
+
+            photoPreviewView.buttonDelete.setOnClickListener(view -> {
+                photoUri = "";
+                photoPreviewDialog.dismiss();
+            });
+
+            photoPreviewView.buttonSend.setOnClickListener(view -> sendPhoto());
+
+            photoPreviewDialog.setContentView(photoPreviewView.getRoot());
+            photoPreviewDialog.show();
         }
     }
 
-    private Boolean isPermissionGranted() {
+    private Boolean isStoragePermissionGranted() {
         if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             return true;
@@ -211,6 +257,15 @@ public class ChatActivity extends BaseActivity {
             ActivityCompat.requestPermissions(ChatActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, READ_EXTERNAL_STORAGE_REQUEST_CODE);
             return ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
                     ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        }
+    }
+
+    private Boolean isCameraPermissionGranted() {
+        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        } else {
+            ActivityCompat.requestPermissions(ChatActivity.this, new String[]{Manifest.permission.CAMERA}, CAMERA_REQUEST_CODE);
+            return ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
         }
     }
 
@@ -232,6 +287,7 @@ public class ChatActivity extends BaseActivity {
                     updateConversation(binding.inputMessage.getText().toString());
                 } else {
                     MessageModel messageModel = new MessageModel();
+                    messageModel.setMessageId(task.getResult().getId());
                     messageModel.setSenderId(auth.getUid());
                     messageModel.setReceiverId(receiverUser.getUserId());
                     messageModel.setMessage(binding.inputMessage.getText().toString());
@@ -275,7 +331,7 @@ public class ChatActivity extends BaseActivity {
         progressDialog.create();
         progressDialog.show();
 
-        String message = choosePhotoView.inputMessage.getText().toString();
+        String message = photoPreviewView.inputMessage.getText().toString();
         HashMap<String, Object> model = new HashMap<>();
         model.put("timestamp", new Date().getTime());
         model.put("message", message);
@@ -307,18 +363,18 @@ public class ChatActivity extends BaseActivity {
                     database.collection("chats").document(task1.getResult().getId()).update(model);
 
                     if (conversationId != null) {
-                        updateConversation(choosePhotoView.inputMessage.getText().toString());
+                        updateConversation(photoPreviewView.inputMessage.getText().toString());
                     } else {
                         MessageModel messageModel = new MessageModel();
                         messageModel.setSenderId(auth.getUid());
                         messageModel.setReceiverId(receiverUser.getUserId());
-                        if (Objects.equals(choosePhotoView.inputMessage.getText().toString(), ""))
+                        if (Objects.equals(photoPreviewView.inputMessage.getText().toString(), ""))
                         {
                             messageModel.setMessage("Photo");
                         }
                         else
                         {
-                            messageModel.setMessage(choosePhotoView.inputMessage.getText().toString());
+                            messageModel.setMessage(photoPreviewView.inputMessage.getText().toString());
                         }
                         messageModel.setTimestamp(new Date().getTime());
                         addConversation(messageModel);
@@ -333,7 +389,7 @@ public class ChatActivity extends BaseActivity {
                             data.put("username", Hawk.get(Constants.USERNAME));
                             data.put("token", Hawk.get(Constants.TOKEN));
                             data.put("messageType", "3");
-                            data.put("message", choosePhotoView.inputMessage.getText().toString());
+                            data.put("message", photoPreviewView.inputMessage.getText().toString());
 
                             JSONObject body = new JSONObject();
                             body.put(Constants.REMOTE_MSG_DATA, data);
@@ -347,7 +403,7 @@ public class ChatActivity extends BaseActivity {
 
                     progressDialog.dismiss();
                     binding.inputMessage.setText("");
-                    choosePhotoDialog.dismiss();
+                    photoPreviewDialog.dismiss();
                 }
             });
         });
@@ -532,6 +588,27 @@ public class ChatActivity extends BaseActivity {
     };
 
     @Override
+    public void onMessageReplied(MessageModel messageModel, String profilePic, boolean isPhoto)
+    {
+        binding.replyMessageContainer.setVisibility(View.VISIBLE);
+        isReply = true;
+        Glide.with(this).load(profilePic).placeholder(R.drawable.ic_person).into(binding.replyProfileImage);
+        if (!Objects.equals(messageModel.getMessage(), ""))
+        {
+            binding.repliedMessage.setText(messageModel.getMessage());
+        }
+        else
+        {
+            binding.repliedMessage.setVisibility(View.GONE);
+        }
+        if (isPhoto)
+        {
+            binding.repliedPhoto.setVisibility(View.VISIBLE);
+            Glide.with(this).load(messageModel.getPhoto()).into(binding.repliedPhoto);
+        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         listenAvailabilityOfReceiver();
@@ -564,6 +641,44 @@ public class ChatActivity extends BaseActivity {
             {
                 Toast.makeText(this, "İzin verilmedi. Galeri açılamıyor.", Toast.LENGTH_SHORT).show();
             }
+        }
+        else if (requestCode == CAMERA_REQUEST_CODE)
+        {
+            if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                Toast.makeText(this, "İzin alındı. Şimdi kamerayı açabilirsiniz.", Toast.LENGTH_SHORT).show();
+            }
+            else
+            {
+                Toast.makeText(this, "İzin verilmedi. kamera açılamıyor.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void showBalloon(View view, int position)
+    {
+        balloon = new Balloon.Builder(getApplicationContext())
+                .setLayout(R.layout.layout_chat_content_source)
+                .setArrowSize(0)
+                .setWidth(BalloonSizeSpec.WRAP)
+                .setHeight(BalloonSizeSpec.WRAP)
+                .setBackgroundColor(ContextCompat.getColor(this, android.R.color.transparent))
+                .setBalloonAnimation(BalloonAnimation.CIRCULAR)
+                .build();
+        switch (position)
+        {
+            case 1:
+                balloon.showAlignTop(view);
+                break;
+            case 2:
+                balloon.showAlignRight(view);
+                break;
+            case 3:
+                balloon.showAlignBottom(view);
+                break;
+            case 4:
+                balloon.showAlignLeft(view);
+                break;
         }
     }
 

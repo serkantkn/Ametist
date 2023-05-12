@@ -115,4 +115,8 @@
     <string name="user_height">Boy</string>
     <string name="user_weight">Kilo</string>
     <string name="scan_qr_code_message">Kullanıcının QR kodunu okutun...</string>
+    <string name="forgot_password">Parolanızı mı unuttunuz?</string>
+    <string name="sign_in_with_google">Google hesabınla giriş yap</string>
+    <string name="instead_of">Bunun yerine...</string>
+    <string name="reply_to">Şu mesaja cevap veriliyor:</string>
 </resources>

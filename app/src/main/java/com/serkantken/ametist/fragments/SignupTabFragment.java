@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -49,6 +50,8 @@ public class SignupTabFragment extends Fragment
         database = FirebaseFirestore.getInstance();
         utilities = new Utilities(requireContext(), requireActivity());
         Hawk.init(requireContext()).build();
+
+        binding.backButton.setOnClickListener(v -> requireActivity().onBackPressed());
 
         ageList = new ArrayList<>();
         for (int i = 17; i <= 100; i++)

@@ -9,11 +9,17 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.activities.MainActivity;
 import com.serkantken.ametist.databinding.FragmentLoginTabBinding;
+import com.serkantken.ametist.models.UserModel;
 
 public class LoginTabFragment extends Fragment
 {
@@ -27,6 +33,12 @@ public class LoginTabFragment extends Fragment
 
         auth = FirebaseAuth.getInstance();
 
+        binding.buttonSignup.setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.action_loginTab_to_signupTab));
+        binding.forgotPassword.setOnClickListener(v -> {
+            LoginTabFragmentDirections.ActionLoginTabToPasswordReset actionLoginTabToPasswordReset = LoginTabFragmentDirections.actionLoginTabToPasswordReset(binding.inputMail.getText().toString());
+            Navigation.findNavController(v).navigate(actionLoginTabToPasswordReset);
+        });
+
         binding.buttonLogin.setOnClickListener(view -> {
             if (isInformationCorrect())
             {
@@ -36,10 +48,30 @@ public class LoginTabFragment extends Fragment
                 auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
                     if (task.isSuccessful())
                     {
-                        Intent intent = new Intent(getActivity(), MainActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
-                        requireActivity().finish();
+                        FirebaseFirestore.getInstance().collection("Users").get().addOnCompleteListener(task1 -> {
+                            if (task1.isSuccessful())
+                            {
+                                UserModel user = new UserModel();
+                                for (QueryDocumentSnapshot documentSnapshot : task1.getResult())
+                                {
+                                    if (documentSnapshot.getId().equals(auth.getUid()))
+                                    {
+                                        user.setName(documentSnapshot.getString("name"));
+                                        user.setProfilePic(documentSnapshot.getString("profilePic"));
+                                        user.setAbout(documentSnapshot.getString("about"));
+                                        user.setGender(documentSnapshot.getString("gender"));
+                                        user.setAge(documentSnapshot.getString("age"));
+                                        user.setUserId(documentSnapshot.getId());
+                                        Hawk.put("username", documentSnapshot.getString("name"));
+                                    }
+                                }
+                                Intent intent = new Intent(getActivity(), MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                intent.putExtra("currentUserInfo", user);
+                                startActivity(intent);
+                                requireActivity().finish();
+                            }
+                        });
                     }
                     else
                     {
@@ -86,6 +118,9 @@ public class LoginTabFragment extends Fragment
             binding.inputMail.setEnabled(false);
             binding.inputPassword.setEnabled(false);
             binding.buttonLogin.setVisibility(View.GONE);
+            binding.forgotPassword.setVisibility(View.GONE);
+            binding.buttonSignup.setVisibility(View.GONE);
+            binding.buttonSigninWithGoogle.setVisibility(View.GONE);
             binding.progressbar.setVisibility(View.VISIBLE);
         }
         else
@@ -93,6 +128,9 @@ public class LoginTabFragment extends Fragment
             binding.inputMail.setEnabled(true);
             binding.inputPassword.setEnabled(true);
             binding.buttonLogin.setVisibility(View.VISIBLE);
+            binding.forgotPassword.setVisibility(View.VISIBLE);
+            binding.buttonSignup.setVisibility(View.VISIBLE);
+            binding.buttonSigninWithGoogle.setVisibility(View.VISIBLE);
             binding.progressbar.setVisibility(View.GONE);
         }
     }

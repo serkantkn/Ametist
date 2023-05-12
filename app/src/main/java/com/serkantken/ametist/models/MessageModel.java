@@ -2,7 +2,7 @@ package com.serkantken.ametist.models;
 
 public class MessageModel
 {
-    String messageId, senderId, receiverId, message, photo, conversationId;
+    String messageId, senderId, receiverId, message, photo, conversationId, repliedUserId, repliedMessage, repliedPhoto;
     Long timestamp;
 
     public MessageModel() {
@@ -62,5 +62,29 @@ public class MessageModel
 
     public void setConversationId(String conversationId) {
         this.conversationId = conversationId;
+    }
+
+    public String getRepliedUserId() {
+        return repliedUserId;
+    }
+
+    public void setRepliedUserId(String repliedUserId) {
+        this.repliedUserId = repliedUserId;
+    }
+
+    public String getRepliedMessage() {
+        return repliedMessage;
+    }
+
+    public void setRepliedMessage(String repliedMessage) {
+        this.repliedMessage = repliedMessage;
+    }
+
+    public String getRepliedPhoto() {
+        return repliedPhoto;
+    }
+
+    public void setRepliedPhoto(String repliedPhoto) {
+        this.repliedPhoto = repliedPhoto;
     }
 }

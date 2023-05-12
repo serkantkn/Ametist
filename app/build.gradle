@@ -11,7 +11,7 @@ android {
         minSdk 28
         targetSdk 33
         versionCode 1
-        versionName "0.5.0"
+        versionName "0.6.0"
         renderscriptTargetApi 28
         renderscriptSupportModeEnabled true
 
@@ -34,6 +34,8 @@ android {
     }
     namespace 'com.serkantken.ametist'
 }
+
+apply plugin: "androidx.navigation.safeargs"
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
