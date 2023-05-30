@@ -13,6 +13,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.serkantken.ametist.utilities.Utilities;
 
 import java.util.Date;
+import java.util.Objects;
 
 public class BaseActivity extends AppCompatActivity
 {
@@ -27,7 +28,7 @@ public class BaseActivity extends AppCompatActivity
         database = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
 
-        documentReference = database.collection("Users").document(auth.getUid());
+        documentReference = database.collection("Users").document(Objects.requireNonNull(auth.getUid()));
     }
 
     @Override

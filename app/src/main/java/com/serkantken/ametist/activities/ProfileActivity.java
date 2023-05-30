@@ -8,10 +8,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.VectorDrawable;
 import android.os.Bundle;
+import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -89,9 +91,17 @@ public class ProfileActivity extends BaseActivity
         binding.navbarBlur.setMinimumHeight(utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT));
         utilities.blur(binding.navbarBlur, 10f, false);
 
+        utilities.blur(binding.photoBlur, 10f, false);
+        binding.photoBlur.setVisibility(View.GONE);
+
         binding.toolbarBlur.setPadding(0, utilities.getStatusBarHeight(), 0, 0);
 
-        binding.scrollView.setPadding(0, utilities.getStatusBarHeight()+utilities.convertDpToPixel(64), 0, utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT));
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int screenHeight = size.y;
+
+        binding.scrollView.setPadding(0, utilities.getStatusBarHeight()+(screenHeight-(screenHeight/4)), 0, utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT));
         binding.scrollView.setClipToPadding(false);
 
         ConstraintSet constraintSet = new ConstraintSet();
@@ -114,6 +124,11 @@ public class ProfileActivity extends BaseActivity
 
         binding.buttonBack.setOnClickListener(view -> onBackPressed());
 
+        if (Objects.equals(user.getUserId(), auth.getUid()))
+        {
+            binding.buttonBlock.setVisibility(View.GONE);
+        }
+
         binding.profileImage.setOnClickListener(view -> {
             if (!Objects.isNull(binding.profileImage.getTag()))
             {
@@ -126,15 +141,34 @@ public class ProfileActivity extends BaseActivity
         binding.scrollView.setOnScrollChangeListener((View.OnScrollChangeListener) (view, x, y, oldX, oldY) -> {
             if (y > oldY && binding.buttonMessage.isExtended())
             {
+                binding.photoBlur.setVisibility(View.VISIBLE);
+                binding.profileImage.setElevation(0);
                 binding.buttonMessage.shrink();
                 if (!user.getUserId().equals(auth.getUid()))
                     binding.buttonFollow.hide();
             }
             if (y < oldY && !binding.buttonMessage.isExtended())
             {
+                binding.photoBlur.setVisibility(View.VISIBLE);
+                binding.profileImage.setElevation(0);
                 binding.buttonMessage.extend();
                 if (!user.getUserId().equals(auth.getUid()))
                     binding.buttonFollow.show();
+            }
+            if (y > screenHeight/1.5)
+            {
+                binding.username.setVisibility(View.VISIBLE);
+                binding.username2.setVisibility(View.INVISIBLE);
+            }
+            else
+            {
+                binding.username.setVisibility(View.INVISIBLE);
+                binding.username2.setVisibility(View.VISIBLE);
+            }
+            if (y == 0)
+            {
+                binding.photoBlur.setVisibility(View.GONE);
+                binding.profileImage.setElevation(5f);
             }
         });
 
@@ -153,48 +187,6 @@ public class ProfileActivity extends BaseActivity
         });
 
         binding.buttonFollow.setOnClickListener(view -> follow());
-
-        /*binding.buttonQr.setOnClickListener(view -> {
-            final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.BottomSheetDialogTheme_Chat);
-            LayoutQrCodeBinding bottomSheetView = LayoutQrCodeBinding.inflate(getLayoutInflater());
-
-            utilities.blur(bottomSheetView.bottomSheetContainer, 10f, false);
-
-            QRCodeWriter qrCodeWriter = new QRCodeWriter();
-            BitMatrix bitMatrix = null;
-            try {
-                bitMatrix = qrCodeWriter.encode(Objects.requireNonNull(auth.getUid()), BarcodeFormat.QR_CODE, 512, 512);
-            } catch (WriterException e) {
-                throw new RuntimeException(e);
-            }
-
-            int width = bitMatrix.getWidth();
-            int height = bitMatrix.getHeight();
-            Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
-
-            for (int x = 0; x < width; x++) {
-                for (int y = 0; y < height; y++) {
-                    bitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
-                }
-            }
-            bottomSheetView.qrView.setImageBitmap(bitmap);
-
-            bottomSheetView.buttonQrScanner.setOnClickListener(v -> {
-                //startActivity(new Intent(ProfileActivity.this, CameraActivity.class));
-
-                IntentIntegrator integrator = new IntentIntegrator(this);
-                integrator.setPrompt("QR kodu taratın"); // Kullanıcıya gösterilecek mesaj
-                integrator.setPrompt(getString(R.string.scan_qr_code_message));
-                integrator.setOrientationLocked(false); // Ekran yönü kilitli değil
-                integrator.setBeepEnabled(false);
-                integrator.initiateScan(); // Tarama işlemini başlat
-
-                bottomSheetDialog.dismiss();
-            });
-
-            bottomSheetDialog.setContentView(bottomSheetView.getRoot());
-            bottomSheetDialog.show();
-        });*/
 
         binding.buttonQr.setOnClickListener(view -> {
             final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.BottomSheetDialogTheme_Chat);
@@ -399,6 +391,7 @@ public class ProfileActivity extends BaseActivity
                 }
 
                 binding.username.setText(user.getName());
+                binding.username2.setText(user.getName());
                 binding.textAbout.setText(user.getAbout());
                 binding.textAge.setText(user.getAge());
                 if (user.getGender().equals("0"))

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
+    android:background="@color/primary_dark"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/button_delete"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        app:layout_constraintHorizontal_bias="0"
+        android:id="@+id/button_answer">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/icon_answer"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:cardCornerRadius="500dp"
+            app:cardElevation="0dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/accent_purple_dark">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_answer"
+                    android:padding="10dp"
+                    tools:ignore="ContentDescription" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/title_answer"
+            android:text="@string/answer"
+            android:textColor="@color/primary_text"
+            android:fontFamily="@font/jost_regular"
+            android:textSize="15sp"
+            android:layout_marginTop="3dp"
+            app:layout_constraintTop_toBottomOf="@id/icon_answer"
+            app:layout_constraintStart_toStartOf="@id/icon_answer"
+            app:layout_constraintEnd_toEndOf="@id/icon_answer"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/button_answer"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="20dp"
+        android:id="@+id/button_delete"
+        android:visibility="gone">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/icon_delete"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:cardCornerRadius="500dp"
+            app:cardElevation="0dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/accent_red_dark">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_delete"
+                    android:padding="10dp"
+                    tools:ignore="ContentDescription" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/title_delete"
+            android:text="@string/delete"
+            android:textColor="@color/primary_text"
+            android:fontFamily="@font/jost_regular"
+            android:textSize="15sp"
+            android:layout_marginTop="3dp"
+            app:layout_constraintTop_toBottomOf="@id/icon_delete"
+            app:layout_constraintStart_toStartOf="@id/icon_delete"
+            app:layout_constraintEnd_toEndOf="@id/icon_delete"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

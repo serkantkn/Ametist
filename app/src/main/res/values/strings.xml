@@ -54,6 +54,8 @@
     <string name="your_profile_here">Your profile page is here!</string>
     <string name="edit">Edit</string>
     <string name="crop">Crop</string>
+    <string name="crop_portrait">Crop for portrait</string>
+    <string name="crop_square">Crop for discover</string>
     <string name="saving">Saving</string>
     <string name="please_wait">Please wait…</string>
     <string name="restart_to_see_changes">You may need to restart app to see the changes.</string>
@@ -123,4 +125,6 @@
     <string name="sign_in_with_google">Sign in with Google</string>
     <string name="instead_of">Instead of...</string>
     <string name="reply_to">Reply to this message:</string>
+    <string name="answer">Answer</string>
+    <string name="delete">Delete</string>
 </resources>

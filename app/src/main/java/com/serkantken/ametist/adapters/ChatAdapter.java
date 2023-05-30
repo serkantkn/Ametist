@@ -6,16 +6,23 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
-import androidx.core.app.ActivityOptionsCompat;
+import androidx.cardview.widget.CardView;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.github.marlonlom.utilities.timeago.TimeAgo;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.activities.FullProfilePhotoActivity;
@@ -27,12 +34,17 @@ import com.serkantken.ametist.databinding.LayoutSendPhotoBinding;
 import com.serkantken.ametist.models.MessageModel;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.utilities.MessageListener;
-import com.serkantken.ametist.utilities.OnSwipeTouchListener;
-import com.serkantken.ametist.utilities.SwipeListener;
+import com.serkantken.ametist.utilities.Utilities;
+import com.skydoves.balloon.Balloon;
+import com.skydoves.balloon.BalloonAnimation;
+import com.skydoves.balloon.BalloonSizeSpec;
+import com.skydoves.balloon.OnBalloonDismissListener;
 
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
+
+import eightbitlab.com.blurview.BlurView;
 
 public class ChatAdapter extends RecyclerView.Adapter
 {
@@ -40,23 +52,25 @@ public class ChatAdapter extends RecyclerView.Adapter
     Context context;
     Activity activity;
     String receiverId;
-    MessageListener messageListener;
-    SwipeListener swipeListener;
-    private float downX;
-    private boolean isSwiping = false;
+
+    FirebaseFirestore database;
+    private Balloon balloon;
+    private Utilities utilities;
+    private MessageListener messageListener;
     int EMPTY_VIEW_TYPE = 5;
     int SENDER_VIEW_TYPE = 1;
     int RECEIVER_VIEW_TYPE = 2;
     int PHOTO_SENDER_VIEW_TYPE = 3;
     int PHOTO_RECEIVER_VIEW_TYPE = 4;
 
-    public ChatAdapter(ArrayList<MessageModel> messageModels, Context context, Activity activity, MessageListener messageListener, SwipeListener swipeListener)
+    public ChatAdapter(ArrayList<MessageModel> messageModels, Context context, Activity activity, MessageListener messageListener, FirebaseFirestore database)
     {
         this.messageModels = messageModels;
         this.context = context;
         this.activity = activity;
         this.messageListener = messageListener;
-        this.swipeListener = swipeListener;
+        this.database = database;
+        utilities = new Utilities(context, activity);
     }
 
     @NonNull
@@ -145,30 +159,42 @@ public class ChatAdapter extends RecyclerView.Adapter
             {
                 ((SenderViewHolder) holder).binding.container.setPadding(0, sizeInPixel(70), 0, 0);
             }
+
+            if (messageModel.hasReply())
+            {
+                ((SenderViewHolder)holder).binding.replyMessageContainer.setVisibility(View.VISIBLE);
+                ((SenderViewHolder)holder).binding.repliedMessage.setText(messageModel.getRepliedMessage());
+                if (messageModel.isReplyHasPhoto())
+                {
+                    Glide.with(context).load(messageModel.getRepliedPhoto()).into(((SenderViewHolder)holder).binding.repliedPhoto);
+                    ((SenderViewHolder)holder).binding.repliedPhoto.setVisibility(View.VISIBLE);
+                }
+            }
             ((SenderViewHolder)holder).binding.sentMessage.setText(messageModel.getMessage());
             ((SenderViewHolder)holder).binding.date.setText(TimeAgo.using(messageModel.getTimestamp()));
-            ((SenderViewHolder)holder).binding.messageContainer.setOnTouchListener(new OnSwipeTouchListener(context, ((SenderViewHolder)holder).binding.messageContainer) {
-                public void onSwipeLeft() {
-                    ((SenderViewHolder)holder).binding.iconDelete.setVisibility(View.VISIBLE);
-                    isSwiping = true;
-                    swipeListener.onSwipeHorizontal(true);
-                }
 
-                public void onSwipeRight() {
-                    if (((SenderViewHolder)holder).binding.iconDelete.getVisibility() == View.VISIBLE)
-                    {
-                        ((SenderViewHolder)holder).binding.iconDelete.setVisibility(View.GONE);
-                        isSwiping = false;
-                        swipeListener.onSwipeHorizontal(false);
-                    }
-                    else
-                    {
-                        messageListener.onMessageReplied(messageModel, null, false);
-                        swipeListener.onSwipeHorizontal(true);
-                    }
-                }
+            ((SenderViewHolder)holder).binding.container.setOnLongClickListener(v -> {
+                showOptions(((SenderViewHolder)holder).binding.card, ((SenderViewHolder)holder).binding.cardBackground, true, messageModel, null, false);
+                return true;
+            });
 
-                public void onClick() {
+            //Görüldü kontrolü
+            database.collection("chats").document(messageModel.getMessageId()).addSnapshotListener(activity, (value, error) -> {
+                if (error != null) {
+                    return;
+                }
+                if (value != null) {
+                    if (value.getBoolean("isSeen") != null) {
+                        if (Boolean.TRUE.equals(value.getBoolean("isSeen")))
+                        {
+                            ((SenderViewHolder)holder).binding.seenCheck.setVisibility(View.VISIBLE);
+                            ((SenderViewHolder)holder).binding.seenCheck.playAnimation();
+                        }
+                        else
+                        {
+                            ((SenderViewHolder)holder).binding.seenCheck.setVisibility(View.INVISIBLE);
+                        }
+                    }
                 }
             });
         }
@@ -177,6 +203,17 @@ public class ChatAdapter extends RecyclerView.Adapter
             if (position == 0)
             {
                 ((ReceiverViewHolder) holder).binding.container.setPadding(0, sizeInPixel(70), 0, 0);
+            }
+
+            if (messageModel.hasReply())
+            {
+                ((ReceiverViewHolder)holder).binding.replyMessageContainer.setVisibility(View.VISIBLE);
+                ((ReceiverViewHolder)holder).binding.repliedMessage.setText(messageModel.getRepliedMessage());
+                if (messageModel.isReplyHasPhoto())
+                {
+                    Glide.with(context).load(messageModel.getRepliedPhoto()).into(((ReceiverViewHolder)holder).binding.repliedPhoto);
+                    ((ReceiverViewHolder)holder).binding.repliedPhoto.setVisibility(View.VISIBLE);
+                }
             }
             ((ReceiverViewHolder)holder).binding.receivedMessage.setText(messageModel.getMessage());
             ((ReceiverViewHolder)holder).binding.date.setText(TimeAgo.using(messageModel.getTimestamp()));
@@ -199,18 +236,9 @@ public class ChatAdapter extends RecyclerView.Adapter
                     ((ReceiverViewHolder)holder).binding.username.setText(userModel.getName());
                 }
             });
-            ((ReceiverViewHolder)holder).binding.getRoot().setOnTouchListener(new OnSwipeTouchListener(context, ((ReceiverViewHolder)holder).binding.getRoot()) {
-                public void onSwipeLeft() {
-                    swipeListener.onSwipeHorizontal(true);
-                }
-
-                public void onSwipeRight() {
-                    messageListener.onMessageReplied(messageModel, profilePic.get(), false);
-                    swipeListener.onSwipeHorizontal(true);
-                }
-
-                public void onClick() {
-                }
+            ((ReceiverViewHolder)holder).binding.container.setOnLongClickListener(v -> {
+                showOptions(((ReceiverViewHolder)holder).binding.card, ((ReceiverViewHolder)holder).binding.cardBackground, false, messageModel, profilePic.get(), false);
+                return true;
             });
         }
         else if (holder.getClass() == PhotoSenderViewHolder.class)
@@ -218,6 +246,17 @@ public class ChatAdapter extends RecyclerView.Adapter
             if (position == 0)
             {
                 ((PhotoSenderViewHolder) holder).binding.container.setPadding(0, sizeInPixel(70), 0, 0);
+            }
+
+            if (messageModel.hasReply())
+            {
+                ((PhotoSenderViewHolder)holder).binding.replyMessageContainer.setVisibility(View.VISIBLE);
+                ((PhotoSenderViewHolder)holder).binding.repliedMessage.setText(messageModel.getRepliedMessage());
+                if (messageModel.isReplyHasPhoto())
+                {
+                    Glide.with(context).load(messageModel.getRepliedPhoto()).into(((PhotoSenderViewHolder)holder).binding.repliedPhoto);
+                    ((PhotoSenderViewHolder)holder).binding.repliedPhoto.setVisibility(View.VISIBLE);
+                }
             }
             if (Objects.equals(messageModel.getMessage(), ""))
             {
@@ -229,32 +268,34 @@ public class ChatAdapter extends RecyclerView.Adapter
             }
             ((PhotoSenderViewHolder)holder).binding.date.setText(TimeAgo.using(messageModel.getTimestamp()));
             Glide.with(context).load(messageModel.getPhoto()).into(((PhotoSenderViewHolder)holder).binding.sentPhoto);
-            ((PhotoSenderViewHolder)holder).binding.messageContainer.setOnTouchListener(new OnSwipeTouchListener(context, ((PhotoSenderViewHolder)holder).binding.messageContainer) {
-                public void onSwipeLeft() {
-                    ((PhotoSenderViewHolder)holder).binding.iconDelete.setVisibility(View.VISIBLE);
-                    isSwiping = true;
-                    swipeListener.onSwipeHorizontal(true);
-                }
+            ((PhotoSenderViewHolder)holder).binding.sentPhoto.setOnClickListener(v -> {
+                Intent intent = new Intent(context, FullProfilePhotoActivity.class);
+                intent.putExtra("pictureUrl", messageModel.getPhoto());
+                context.startActivity(intent);
+            });
 
-                public void onSwipeRight() {
-                    if (((PhotoSenderViewHolder)holder).binding.iconDelete.getVisibility() == View.VISIBLE)
-                    {
-                        ((PhotoSenderViewHolder)holder).binding.iconDelete.setVisibility(View.GONE);
-                        isSwiping = false;
-                        swipeListener.onSwipeHorizontal(false);
-                    }
-                    else
-                    {
-                        messageListener.onMessageReplied(messageModel, null, true);
-                        swipeListener.onSwipeHorizontal(true);
-                    }
-                }
+            ((PhotoSenderViewHolder)holder).binding.container.setOnLongClickListener(v -> {
+                showOptions(((PhotoSenderViewHolder)holder).binding.card, ((PhotoSenderViewHolder)holder).binding.cardBackground, true, messageModel, null, true);
+                return true;
+            });
 
-                public void onClick() {
-                    Intent intent = new Intent(context, FullProfilePhotoActivity.class);
-                    intent.putExtra("pictureUrl", messageModel.getPhoto());
-                    ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, ((PhotoSenderViewHolder) holder).binding.sentPhoto, "photograph");
-                    context.startActivity(intent, optionsCompat.toBundle());
+            //Görüldü kontrolü
+            database.collection("chats").document(messageModel.getMessageId()).addSnapshotListener(activity, (value, error) -> {
+                if (error != null) {
+                    return;
+                }
+                if (value != null) {
+                    if (value.getBoolean("isSeen") != null) {
+                        if (Boolean.TRUE.equals(value.getBoolean("isSeen")))
+                        {
+                            ((PhotoSenderViewHolder)holder).binding.seenCheck.setVisibility(View.VISIBLE);
+                            ((PhotoSenderViewHolder)holder).binding.seenCheck.playAnimation();
+                        }
+                        else
+                        {
+                            ((PhotoSenderViewHolder)holder).binding.seenCheck.setVisibility(View.INVISIBLE);
+                        }
+                    }
                 }
             });
         }
@@ -263,6 +304,17 @@ public class ChatAdapter extends RecyclerView.Adapter
             if (position == 0)
             {
                 ((PhotoReceiverViewHolder)holder).binding.container.setPadding(0, sizeInPixel(70), 0, 0);
+            }
+
+            if (messageModel.hasReply())
+            {
+                ((PhotoReceiverViewHolder)holder).binding.replyMessageContainer.setVisibility(View.VISIBLE);
+                ((PhotoReceiverViewHolder)holder).binding.repliedMessage.setText(messageModel.getRepliedMessage());
+                if (messageModel.isReplyHasPhoto())
+                {
+                    Glide.with(context).load(messageModel.getRepliedPhoto()).into(((PhotoReceiverViewHolder)holder).binding.repliedPhoto);
+                    ((PhotoReceiverViewHolder)holder).binding.repliedPhoto.setVisibility(View.VISIBLE);
+                }
             }
             if (Objects.equals(messageModel.getMessage(), ""))
             {
@@ -293,22 +345,14 @@ public class ChatAdapter extends RecyclerView.Adapter
                     ((PhotoReceiverViewHolder)holder).binding.username.setText(userModel.getName());
                 }
             });
-            ((PhotoReceiverViewHolder)holder).binding.container.setOnTouchListener(new OnSwipeTouchListener(context, ((PhotoReceiverViewHolder)holder).binding.container) {
-                public void onSwipeLeft() {
-                    swipeListener.onSwipeHorizontal(true);
-                }
-
-                public void onSwipeRight() {
-                    messageListener.onMessageReplied(messageModel, profilePic.get(), true);
-                    swipeListener.onSwipeHorizontal(true);
-                }
-
-                public void onClick() {
-                    Intent intent = new Intent(context, FullProfilePhotoActivity.class);
-                    intent.putExtra("pictureUrl", messageModel.getPhoto());
-                    ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, ((PhotoReceiverViewHolder) holder).binding.receivedPhoto, "photograph");
-                    context.startActivity(intent, optionsCompat.toBundle());
-                }
+            ((PhotoReceiverViewHolder)holder).binding.receivedPhoto.setOnClickListener(v -> {
+                Intent intent = new Intent(context, FullProfilePhotoActivity.class);
+                intent.putExtra("pictureUrl", messageModel.getPhoto());
+                context.startActivity(intent);
+            });
+            ((PhotoReceiverViewHolder)holder).binding.container.setOnLongClickListener(v -> {
+                showOptions(((PhotoReceiverViewHolder)holder).binding.card, ((PhotoReceiverViewHolder)holder).binding.cardBackground, false, messageModel, profilePic.get(), true);
+                return true;
             });
         }
     }
@@ -317,6 +361,70 @@ public class ChatAdapter extends RecyclerView.Adapter
     {
         float density = context.getResources().getDisplayMetrics().density;
         return (int)(sizeInDp * density);
+    }
+
+    private void showOptions(View view, View background, boolean isSender, MessageModel messageModel, String profilePic, boolean isPhoto)
+    {
+        showBalloon(view, 1);
+        BlurView blurView = balloon.getContentView().findViewById(R.id.blur);
+        //utilities.blur(blurView, 10f, false);
+
+        ConstraintLayout buttonAnswer = balloon.getContentView().findViewById(R.id.button_answer);
+        ConstraintLayout buttonDelete = balloon.getContentView().findViewById(R.id.button_delete);
+        background.setBackground(context.getResources().getDrawable(R.drawable.yellow_gradient, null));
+
+        if (isSender)
+        {
+            buttonDelete.setVisibility(View.VISIBLE);
+
+            buttonDelete.setOnClickListener(v -> {
+                Toast.makeText(context, "Çok yakında", Toast.LENGTH_SHORT).show();
+                balloon.dismiss();
+            });
+        }
+
+        buttonAnswer.setOnClickListener(v -> {
+            messageListener.onMessageReplied(messageModel, profilePic, isPhoto);
+            balloon.dismiss();
+        });
+
+        balloon.setOnBalloonDismissListener(() -> {
+            if (isSender)
+            {
+                background.setBackground(context.getResources().getDrawable(R.drawable.purple_gradient, null));
+            }
+            else
+            {
+                background.setBackground(context.getResources().getDrawable(R.drawable.blue_gradient, null));
+            }
+        });
+    }
+
+    private void showBalloon(View view, int position)
+    {
+        balloon = new Balloon.Builder(context)
+                .setLayout(R.layout.layout_message_options)
+                .setArrowSize(0)
+                .setWidth(BalloonSizeSpec.WRAP)
+                .setHeight(BalloonSizeSpec.WRAP)
+                .setBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent))
+                .setBalloonAnimation(BalloonAnimation.CIRCULAR)
+                .build();
+        switch (position)
+        {
+            case 1:
+                balloon.showAlignTop(view);
+                break;
+            case 2:
+                balloon.showAlignRight(view);
+                break;
+            case 3:
+                balloon.showAlignBottom(view);
+                break;
+            case 4:
+                balloon.showAlignLeft(view);
+                break;
+        }
     }
 
     @Override

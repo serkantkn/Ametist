@@ -2,7 +2,8 @@ package com.serkantken.ametist.models;
 
 public class MessageModel
 {
-    String messageId, senderId, receiverId, message, photo, conversationId, repliedUserId, repliedMessage, repliedPhoto;
+    String messageId, senderId, receiverId, message, photo, conversationId, repliedMessage, repliedPhoto;
+    boolean hasReply, isReplyHasPhoto, isSeen;
     Long timestamp;
 
     public MessageModel() {
@@ -64,14 +65,6 @@ public class MessageModel
         this.conversationId = conversationId;
     }
 
-    public String getRepliedUserId() {
-        return repliedUserId;
-    }
-
-    public void setRepliedUserId(String repliedUserId) {
-        this.repliedUserId = repliedUserId;
-    }
-
     public String getRepliedMessage() {
         return repliedMessage;
     }
@@ -86,5 +79,33 @@ public class MessageModel
 
     public void setRepliedPhoto(String repliedPhoto) {
         this.repliedPhoto = repliedPhoto;
+    }
+
+    public boolean hasReply() {
+        return hasReply;
+    }
+
+    public void setHasReply(boolean hasReply) {
+        this.hasReply = hasReply;
+    }
+
+    public boolean isReplyHasPhoto() {
+        return isReplyHasPhoto;
+    }
+
+    public void setReplyHasPhoto(boolean replyHasPhoto) {
+        isReplyHasPhoto = replyHasPhoto;
+    }
+
+    public boolean isHasReply() {
+        return hasReply;
+    }
+
+    public boolean isSeen() {
+        return isSeen;
+    }
+
+    public void setSeen(boolean seen) {
+        isSeen = seen;
     }
 }

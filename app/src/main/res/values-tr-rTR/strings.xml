@@ -119,4 +119,8 @@
     <string name="sign_in_with_google">Google hesabınla giriş yap</string>
     <string name="instead_of">Bunun yerine...</string>
     <string name="reply_to">Şu mesaja cevap veriliyor:</string>
+    <string name="answer">Cevapla</string>
+    <string name="crop_portrait">Büyük resmi kırp</string>
+    <string name="crop_square">Keşfet için kırp</string>
+    <string name="delete">Sil</string>
 </resources>

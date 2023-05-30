@@ -119,6 +119,7 @@ public class ChatListFragment extends Fragment implements UserListener
 
             adapter.notifyDataSetChanged();
             binding.rvMessageList.smoothScrollToPosition(0);
+            binding.conversationRefresher.setRefreshing(false);
         }
     });
 

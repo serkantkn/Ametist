@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class UserModel implements Serializable
 {
-    String userId, name, email, password, profilePic, picSecond, picThird, picFourth, about, gender, age, token;
+    String userId, name, email, password, profilePic, profilePicSquare, picSecond, picThird, picFourth, about, gender, age, token;
     int followerCount, followingCount;
     Boolean isOnline;
     Long lastSeen, signupDate;
@@ -55,6 +55,14 @@ public class UserModel implements Serializable
 
     public String getPicSecond() {
         return picSecond;
+    }
+
+    public String getProfilePicSquare() {
+        return profilePicSquare;
+    }
+
+    public void setProfilePicSquare(String profilePicSquare) {
+        this.profilePicSquare = profilePicSquare;
     }
 
     public void setPicSecond(String picSecond) {

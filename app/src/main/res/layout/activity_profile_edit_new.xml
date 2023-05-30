@@ -207,6 +207,27 @@
                 app:layout_constraintStart_toEndOf="@id/np_weight"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
+            <EditText
+                android:id="@+id/input_about"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:background="@drawable/background_edittext_dark"
+                android:textColorHint="@color/secondary_text"
+                android:textColor="@color/primary_text"
+                android:hint="@string/about"
+                android:fontFamily="@font/jost_regular"
+                android:textSize="17sp"
+                android:inputType="textMultiLine"
+                android:paddingStart="25dp"
+                android:paddingTop="15dp"
+                android:paddingEnd="25dp"
+                android:paddingBottom="15dp"
+                android:maxLines="3"
+                app:layout_constraintTop_toBottomOf="@id/np_height"
+                app:layout_constraintStart_toStartOf="@id/input_name"
+                app:layout_constraintEnd_toEndOf="@id/input_name"
+                android:importantForAutofill="no" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </ScrollView>
