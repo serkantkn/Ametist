@@ -13,12 +13,13 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.widget.Toast;
 
+import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.databinding.ActivityPermissionBinding;
+import com.serkantken.ametist.utilities.Constants;
 import com.serkantken.ametist.utilities.Utilities;
 
 public class PermissionActivity extends AppCompatActivity {
     private ActivityPermissionBinding binding;
-    private Utilities utilities;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,29 +27,25 @@ public class PermissionActivity extends AppCompatActivity {
         binding = ActivityPermissionBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        utilities = new Utilities(PermissionActivity.this, PermissionActivity.this);
+        Utilities utilities = new Utilities(PermissionActivity.this, PermissionActivity.this);
+        Hawk.init(this).build();
 
-        binding.getRoot().setPadding(utilities.convertDpToPixel(16), utilities.getStatusBarHeight()+utilities.convertDpToPixel(10), 0, 0);
+        binding.getRoot().setPadding(utilities.convertDpToPixel(16), utilities.getStatusBarHeight()+ utilities.convertDpToPixel(10), 0, 0);
 
         checkPermissions();
 
         binding.notificationPermissionCheck.setOnClickListener(view -> {
-            boolean sdk = Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2;
-            if (!sdk)
+            if (!(Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2))
             {
                 getNotificationPermission();
             }
         });
         binding.animNotification.setOnClickListener(view -> {
-            boolean sdk = Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2;
-            if (!sdk)
+            if (!(Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2))
             {
                 getNotificationPermission();
             }
         });
-
-        binding.animGallery.setOnClickListener(view -> getPermissions());
-        binding.galleryPermissionCheck.setOnClickListener(view -> getPermissions());
 
         binding.animLocation.setOnClickListener(view -> getLocationPermission());
         binding.locationPermissionCheck.setOnClickListener(view -> getLocationPermission());
@@ -65,11 +62,6 @@ public class PermissionActivity extends AppCompatActivity {
             ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
         {
             binding.locationPermissionCheck.playAnimation();
-        }
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
-        {
-            binding.galleryPermissionCheck.playAnimation();
         }
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2)
         {
@@ -99,6 +91,11 @@ public class PermissionActivity extends AppCompatActivity {
         Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
         intent.putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
         startActivity(intent);
+    }
+
+    private void setDefaultPreferences()
+    {
+        Hawk.put(Constants.IS_BALLOONS_SHOWED, false);
     }
 
     @Override

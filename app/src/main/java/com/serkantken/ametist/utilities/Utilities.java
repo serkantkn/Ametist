@@ -3,9 +3,7 @@ package com.serkantken.ametist.utilities;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.view.View;
@@ -57,17 +55,17 @@ public class Utilities
         return result;
     }
 
+    public int convertDpToPixel(int dp)
+    {
+        float density = context.getResources().getDisplayMetrics().density;
+        return (int)(dp * density);
+    }
+
     public void setMargins(View view, int start, int top, int end, int bottom)
     {
         ConstraintLayout.LayoutParams layoutParams = new ConstraintLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         layoutParams.setMargins(start, top, end, bottom);
         view.setLayoutParams(layoutParams);
-    }
-
-    public int convertDpToPixel(int dp)
-    {
-        float density = context.getResources().getDisplayMetrics().density;
-        return (int)(dp * density);
     }
 
     public void blur(BlurView view, float radius, boolean isRounded)

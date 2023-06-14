@@ -1,16 +1,13 @@
 package com.serkantken.ametist.fragments;
 
-import static android.app.Activity.RESULT_OK;
-
-import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -24,39 +21,41 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.cardview.widget.CardView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
+import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.StorageTask;
+import com.google.firebase.storage.UploadTask;
 import com.serkantken.ametist.R;
-import com.serkantken.ametist.activities.ProfileEditActivity;
 import com.serkantken.ametist.adapters.PostAdapter;
 import com.serkantken.ametist.databinding.FragmentDashboardBinding;
 import com.serkantken.ametist.databinding.LayoutNewPostDialogBinding;
 import com.serkantken.ametist.models.PostModel;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.utilities.Utilities;
-import com.yalantis.ucrop.UCrop;
+import com.skydoves.balloon.Balloon;
+import com.skydoves.balloon.BalloonAnimation;
+import com.skydoves.balloon.BalloonSizeSpec;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+
+import eightbitlab.com.blurview.BlurView;
 
 public class DashboardFragment extends Fragment
 {
@@ -68,11 +67,12 @@ public class DashboardFragment extends Fragment
     FirebaseAuth auth;
     UserModel currentUser;
     Utilities utilities;
-    ActivityResultLauncher<String> getContent;
+    ActivityResultLauncher<Intent> getContent;
     LayoutNewPostDialogBinding dialogBinding;
     String postUri;
     Uri resultUri;
     Boolean isPhotoSelected = false;
+    Balloon balloon;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -125,10 +125,27 @@ public class DashboardFragment extends Fragment
             Glide.with(requireContext()).load(currentUser.getProfilePic()).placeholder(AppCompatResources.getDrawable(requireContext(), R.drawable.ic_person_profile)).into(dialogBinding.profileImage);
             dialogBinding.username.setText(currentUser.getName());
             dialogBinding.buttonAddPhoto.setOnClickListener(view1 -> {
-                if (isPermissionGranted())
-                {
-                    getContent.launch("image/*");
-                }
+                showBalloon(dialogBinding.buttonAddPhoto, 3);
+                BlurView blurView = balloon.getContentView().findViewById(R.id.blur);
+                utilities.blur(blurView, 10f, false);
+
+                CardView cameraButton = balloon.getContentView().findViewById(R.id.buttonCamera);
+                cameraButton.setOnClickListener(v -> {
+                    ImagePicker.with(this).cameraOnly().cropSquare().createIntent(intent -> {
+                        getContent.launch(intent);
+                        return null;
+                    });
+                    balloon.dismiss();
+                });
+
+                CardView galleryButton = balloon.getContentView().findViewById(R.id.buttonGallery);
+                galleryButton.setOnClickListener(v -> {
+                    ImagePicker.with(this).galleryOnly().cropSquare().createIntent(intent -> {
+                        getContent.launch(intent);
+                        return null;
+                    });
+                    balloon.dismiss();
+                });
             });
             dialogBinding.postText.addTextChangedListener(new TextWatcher() {
                 @Override
@@ -162,6 +179,8 @@ public class DashboardFragment extends Fragment
                 ProgressDialog progressDialog = new ProgressDialog(requireContext());
                 progressDialog.setMessage(getString(R.string.sending));
                 progressDialog.setCanceledOnTouchOutside(false);
+                progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                progressDialog.setIndeterminate(false);
                 progressDialog.create();
                 progressDialog.show();
                 PostModel postModel = new PostModel();
@@ -175,27 +194,22 @@ public class DashboardFragment extends Fragment
                 if (isPhotoSelected)
                 {
                     StorageReference filePath = FirebaseStorage.getInstance().getReference("Users").child(Objects.requireNonNull(auth.getUid())).child("postPics").child(UUID.randomUUID().toString() + ".jpg");
-                    StorageTask uploadTask = filePath.putFile(resultUri);
-                    uploadTask.continueWithTask(task -> {
-                        if (!task.isSuccessful())
-                        {
-                            throw task.getException();
-                        }
-                        return filePath.getDownloadUrl();
-                    }).addOnCompleteListener((OnCompleteListener<Uri>) task -> {
-                        Uri downloadUri = task.getResult();
-                        String downloadUrl = downloadUri.toString();
+                    UploadTask uploadTask = filePath.putFile(resultUri, new StorageMetadata.Builder().build());
+                    uploadTask.addOnProgressListener(snapshot -> {
+                        double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
+                        progressDialog.setProgress((int) progress);
+                    }).addOnSuccessListener(taskSnapshot -> filePath.getDownloadUrl().addOnSuccessListener(uri -> {
+                        String downloadUrl = uri.toString();
                         postModel.setPostPicture(downloadUrl);
                         database.collection("Users").document(auth.getUid()).collection("Posts").document(postId).set(postModel).addOnCompleteListener(task1 -> {
-                            if (task1.isSuccessful())
-                            {
+                            if (task1.isSuccessful()) {
                                 isPhotoSelected = false;
                                 progressDialog.dismiss();
                                 dialog.dismiss();
                                 getPosts();
                             }
                         });
-                    });
+                    }));
                 }
                 else
                 {
@@ -217,20 +231,49 @@ public class DashboardFragment extends Fragment
             dialog.show();
         });
 
-        getContent = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
-            String destUri = UUID.randomUUID().toString() + ".jpg";
-
-            UCrop.Options options = new UCrop.Options();
-            options.setLogoColor(getResources().getColor(R.color.accent_purple_dark, null));
-            options.setFreeStyleCropEnabled(false);
-            options.setToolbarTitle(getString(R.string.crop));
-            options.withAspectRatio(1, 1);
-            UCrop.of(result, Uri.fromFile(new File(requireContext().getCacheDir(), destUri)))
-                    .withOptions(options)
-                    .start(requireActivity(), this);
+        getContent = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() == Activity.RESULT_OK) {
+                assert result.getData() != null;
+                resultUri = result.getData().getData();
+                if (resultUri != null) {
+                    postUri = resultUri.toString();
+                    isPhotoSelected = true;
+                    dialogBinding.postImage.setVisibility(View.VISIBLE);
+                    Glide.with(requireContext()).load(postUri).into(dialogBinding.postImage);
+                    dialogBinding.buttonSubmitBackground.setBackground(AppCompatResources.getDrawable(requireContext(), R.drawable.background_post_footer_buttons));
+                    dialogBinding.buttonSubmit.setEnabled(true);
+                }
+            }
         });
 
         return binding.getRoot();
+    }
+
+    private void showBalloon(View view, int position)
+    {
+        balloon = new Balloon.Builder(requireContext())
+                .setLayout(R.layout.layout_chat_content_source)
+                .setArrowSize(0)
+                .setWidth(BalloonSizeSpec.WRAP)
+                .setHeight(BalloonSizeSpec.WRAP)
+                .setBackgroundColor(ContextCompat.getColor(requireContext(), android.R.color.transparent))
+                .setBalloonAnimation(BalloonAnimation.CIRCULAR)
+                .build();
+        switch (position)
+        {
+            case 1:
+                balloon.showAlignTop(view);
+                break;
+            case 2:
+                balloon.showAlignRight(view);
+                break;
+            case 3:
+                balloon.showAlignBottom(view);
+                break;
+            case 4:
+                balloon.showAlignLeft(view);
+                break;
+        }
     }
 
     private boolean selectPrivacyLock(boolean isPrivacyLockSelected)
@@ -246,41 +289,6 @@ public class DashboardFragment extends Fragment
             dialogBinding.privacyLock.setSpeed(-3);
             dialogBinding.privacyLock.playAnimation();
             return false;
-        }
-    }
-
-    private boolean isPermissionGranted()
-    {
-        if (!(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q))
-        {
-            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
-                    ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
-            {
-                return true;
-            }
-            else
-            {
-                ActivityCompat.requestPermissions(requireActivity(), new String[]{
-                        Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                }, 1);
-                return ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
-                        ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-            }
-        }
-        else
-        {
-            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_MEDIA_LOCATION) == PackageManager.PERMISSION_GRANTED)
-            {
-                return true;
-            }
-            else
-            {
-                ActivityCompat.requestPermissions(requireActivity(), new String[]{
-                        Manifest.permission.ACCESS_MEDIA_LOCATION
-                }, 1);
-                return ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_MEDIA_LOCATION) == PackageManager.PERMISSION_GRANTED;
-            }
         }
     }
 
@@ -302,9 +310,11 @@ public class DashboardFragment extends Fragment
         });
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void getPosts()
     {
-        binding.dashboardRefresher.setRefreshing(true);
+        binding.dashboardRefresher.setRefreshing(false);
+        binding.dashboardRV.showShimmerAdapter();
         followingUsers.clear();
         followingUsers.add(auth.getUid());
         database.collection("Users").document(Objects.requireNonNull(auth.getUid())).collection("followings").get().addOnCompleteListener(task -> {
@@ -348,26 +358,7 @@ public class DashboardFragment extends Fragment
                 }
             }
         });
-
-
         binding.dashboardRefresher.setRefreshing(false);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
-    {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
-            assert data != null;
-            resultUri = UCrop.getOutput(data);
-            if (resultUri != null) {
-                postUri = resultUri.toString();
-                isPhotoSelected = true;
-                dialogBinding.postImage.setVisibility(View.VISIBLE);
-                Glide.with(requireContext()).load(postUri).into(dialogBinding.postImage);
-                dialogBinding.buttonSubmitBackground.setBackground(AppCompatResources.getDrawable(requireContext(), R.drawable.background_post_footer_buttons));
-                dialogBinding.buttonSubmit.setEnabled(true);
-            }
-        }
+        binding.dashboardRV.hideShimmerAdapter();
     }
 }

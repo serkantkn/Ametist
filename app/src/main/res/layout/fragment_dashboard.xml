@@ -12,14 +12,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.recyclerview.widget.RecyclerView
+        <com.cooltechworks.views.shimmer.ShimmerRecyclerView
             android:id="@+id/dashboardRV"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:nestedScrollingEnabled="true"
             android:clipToPadding="false"
             android:paddingTop="80dp"
-            android:paddingBottom="60dp"/>
+            android:paddingBottom="60dp"
+            app:shimmer_demo_child_count="10"
+            app:shimmer_demo_layout="@layout/layout_post"
+            app:shimmer_demo_layout_manager_type="linear_vertical"
+            app:shimmer_demo_angle="20"/>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

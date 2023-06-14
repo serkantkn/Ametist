@@ -44,7 +44,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/accent_purple_dark">
+                android:background="@drawable/purple_gradient">
 
                 <ImageView
                     android:layout_width="match_parent"
@@ -89,7 +89,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/accent_blue_dark">
+                android:background="@drawable/blue_gradient">
 
                 <ImageView
                     android:layout_width="match_parent"

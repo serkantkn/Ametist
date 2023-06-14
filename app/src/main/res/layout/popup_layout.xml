@@ -1,86 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<eightbitlab.com.blurview.BlurView
+    android:id="@+id/blur"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:background="@color/primary_dark_transparent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/post_delete"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:background="@drawable/menu_item_top"
-        android:paddingBottom="10dp"
-        android:paddingTop="10dp"
-        android:paddingStart="15dp"
-        android:paddingEnd="20dp">
+        android:paddingBottom="25dp">
 
-        <ImageView
-            android:id="@+id/ic_delete"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:src="@drawable/ic_delete"
-            android:padding="3dp"
-            android:scaleType="centerCrop"
-            app:layout_constraintStart_toStartOf="parent"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/buttonDelete"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:cardCornerRadius="500dp"
+            app:cardElevation="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0"
+            android:layout_marginStart="25dp">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/red_gradient">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_delete"
+                    android:padding="10dp"
+                    tools:ignore="ContentDescription" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.cardview.widget.CardView>
 
         <TextView
-            android:id="@+id/text_delete"
+            android:id="@+id/textCamera"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/delete_post"
+            android:text="@string/delete"
             android:textColor="@color/primary_text"
-            android:textSize="17sp"
             android:fontFamily="@font/jost_regular"
-            app:layout_constraintTop_toTopOf="@id/ic_delete"
-            app:layout_constraintStart_toEndOf="@id/ic_delete"
-            app:layout_constraintBottom_toBottomOf="@id/ic_delete"
-            android:layout_marginStart="10dp"/>
+            android:textSize="15sp"
+            app:layout_constraintTop_toBottomOf="@id/buttonDelete"
+            app:layout_constraintStart_toStartOf="@id/buttonDelete"
+            app:layout_constraintEnd_toEndOf="@id/buttonDelete"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintVertical_bias="0"
+            android:layout_marginTop="3dp"/>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/post_edit"
-        app:layout_constraintTop_toBottomOf="@id/post_delete"
-        app:layout_constraintStart_toStartOf="@id/post_delete"
-        app:layout_constraintEnd_toEndOf="@id/post_delete"
-        android:background="@drawable/menu_item_bottom"
-        android:layout_marginTop="2dp"
-        android:paddingBottom="10dp"
-        android:paddingTop="10dp"
-        android:paddingStart="15dp"
-        android:paddingEnd="20dp">
-
-        <ImageView
-            android:id="@+id/ic_edit"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:src="@drawable/ic_edit"
-            android:padding="3dp"
-            android:scaleType="centerCrop"
-            app:layout_constraintStart_toStartOf="parent"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/buttonEdit"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:cardCornerRadius="500dp"
+            app:cardElevation="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintStart_toEndOf="@id/buttonDelete"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0"
+            android:layout_marginStart="25dp"
+            android:layout_marginEnd="25dp">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/blue_gradient">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_edit"
+                    android:padding="10dp"
+                    tools:ignore="ContentDescription" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.cardview.widget.CardView>
 
         <TextView
-            android:id="@+id/text_edit"
+            android:id="@+id/textGallery"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/edit"
             android:textColor="@color/primary_text"
-            android:textSize="17sp"
             android:fontFamily="@font/jost_regular"
-            app:layout_constraintTop_toTopOf="@id/ic_edit"
-            app:layout_constraintStart_toEndOf="@id/ic_edit"
-            app:layout_constraintBottom_toBottomOf="@id/ic_edit"
-            android:layout_marginStart="10dp"/>
+            android:textSize="15sp"
+            app:layout_constraintTop_toBottomOf="@id/buttonEdit"
+            app:layout_constraintStart_toStartOf="@id/buttonEdit"
+            app:layout_constraintEnd_toEndOf="@id/buttonEdit"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintVertical_bias="0"
+            android:layout_marginTop="3dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</eightbitlab.com.blurview.BlurView>

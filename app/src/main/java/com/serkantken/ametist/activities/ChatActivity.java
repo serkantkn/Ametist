@@ -1,15 +1,11 @@
 package com.serkantken.ametist.activities;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
@@ -20,17 +16,13 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
+import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.github.marlonlom.utilities.timeago.TimeAgo;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentChange;
@@ -42,10 +34,8 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
 import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
@@ -73,7 +63,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -95,6 +84,7 @@ public class ChatActivity extends BaseActivity implements MessageListener {
     private Boolean isReply = false;
     private Boolean isReplyWithPhoto = false;
     private Boolean isPhotoUploading = false;
+    private Boolean isNotification = false;
     private ActivityResultLauncher<String> getContent;
     private String photoUri;
     private BottomSheetDialog photoPreviewDialog;
@@ -105,9 +95,6 @@ public class ChatActivity extends BaseActivity implements MessageListener {
     private ListenerRegistration senderRegistration;
     private ListenerRegistration receiverRegistration;
     private long currentTimestamp = new Date().getTime();
-
-    private static final int READ_EXTERNAL_STORAGE_REQUEST_CODE = 1;
-    private static final int CAMERA_REQUEST_CODE = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,6 +109,7 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         database = FirebaseFirestore.getInstance();
         utilities = new Utilities(getApplicationContext(), this);
         receiverUser = (UserModel) getIntent().getSerializableExtra("receiverUser");
+        isNotification = getIntent().getBooleanExtra("messageNotification", false);
 
         utilities.blur(binding.toolbar, 10f, false);
         utilities.blur(binding.navbarBlur, 10f, false);
@@ -147,7 +135,7 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         }
 
         //Get receiver user's name
-        database.collection("Users").get().addOnCompleteListener(task -> {
+        database.collection(Constants.DATABASE_PATH_USERS).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
                     if (documentSnapshot.getId().equals(receiverUser.getUserId())) {
@@ -203,18 +191,14 @@ public class ChatActivity extends BaseActivity implements MessageListener {
 
         CardView cameraButton = balloon.getContentView().findViewById(R.id.buttonCamera);
         cameraButton.setOnClickListener(v -> {
-            if (isCameraPermissionGranted())
-            {
-
-            }
+            ImagePicker.with(this).cameraOnly().crop().start();
+            balloon.dismiss();
         });
 
         CardView galleryButton = balloon.getContentView().findViewById(R.id.buttonGallery);
         galleryButton.setOnClickListener(v -> {
-            if (isStoragePermissionGranted()) {
-                getContent.launch("image/*");
-                balloon.dismiss();
-            }
+            ImagePicker.with(this).galleryOnly().crop().start();
+            balloon.dismiss();
         });
     }
 
@@ -248,49 +232,6 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         }
     }
 
-    private Boolean isStoragePermissionGranted() {
-        if (!(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q))
-        {
-            if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
-                    ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
-            {
-                return true;
-            }
-            else
-            {
-                ActivityCompat.requestPermissions(ChatActivity.this, new String[]{
-                        Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                }, READ_EXTERNAL_STORAGE_REQUEST_CODE);
-                return ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
-                        ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-            }
-        }
-        else
-        {
-            if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_MEDIA_LOCATION) == PackageManager.PERMISSION_GRANTED)
-            {
-                return true;
-            }
-            else
-            {
-                ActivityCompat.requestPermissions(ChatActivity.this, new String[]{
-                        Manifest.permission.ACCESS_MEDIA_LOCATION
-                }, READ_EXTERNAL_STORAGE_REQUEST_CODE);
-                return ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_MEDIA_LOCATION) == PackageManager.PERMISSION_GRANTED;
-            }
-        }
-    }
-
-    private Boolean isCameraPermissionGranted() {
-        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        } else {
-            ActivityCompat.requestPermissions(ChatActivity.this, new String[]{Manifest.permission.CAMERA}, CAMERA_REQUEST_CODE);
-            return ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
-        }
-    }
-
     private void sendMessage() {
         String message = binding.inputMessage.getText().toString();
         HashMap<String, Object> model = new HashMap<>();
@@ -320,10 +261,10 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         }
         model.put("isSeen", false);
 
-        database.collection("chats").add(model).addOnCompleteListener(task -> {
+        database.collection(Constants.DATABASE_PATH_CHATS).add(model).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 model.put("messageId", task.getResult().getId());
-                database.collection("chats").document(task.getResult().getId()).update(model);
+                database.collection(Constants.DATABASE_PATH_CHATS).document(task.getResult().getId()).update(model);
 
                 if (conversationId != null) {
                     updateConversation(binding.inputMessage.getText().toString());
@@ -342,11 +283,11 @@ public class ChatActivity extends BaseActivity implements MessageListener {
                         tokens.put(receiverUser.getToken());
 
                         JSONObject data = new JSONObject();
-                        data.put("userId", auth.getUid());
-                        data.put("username", Hawk.get(Constants.USERNAME));
-                        data.put("token", Hawk.get(Constants.TOKEN));
-                        data.put("messageType", "1");
-                        data.put("message", binding.inputMessage.getText().toString());
+                        data.put(Constants.USER_ID, auth.getUid());
+                        data.put(Constants.USERNAME, Hawk.get(Constants.USERNAME));
+                        data.put(Constants.TOKEN, Hawk.get(Constants.TOKEN));
+                        data.put(Constants.MESSAGE_TYPE, Constants.MESSAGE_TYPE_TEXT);
+                        data.put(Constants.MESSAGE, binding.inputMessage.getText().toString());
 
                         JSONObject body = new JSONObject();
                         body.put(Constants.REMOTE_MSG_DATA, data);
@@ -419,11 +360,11 @@ public class ChatActivity extends BaseActivity implements MessageListener {
                 String downloadUrl = uri.toString();
                 model.put("photo", downloadUrl);
 
-                database.collection("chats").add(model).addOnCompleteListener(task1 -> {
+                database.collection(Constants.DATABASE_PATH_CHATS).add(model).addOnCompleteListener(task1 -> {
                     if (task1.isSuccessful()) {
                         model.put("messageId", task1.getResult().getId());
 
-                        database.collection("chats").document(task1.getResult().getId()).update(model);
+                        database.collection(Constants.DATABASE_PATH_CHATS).document(task1.getResult().getId()).update(model);
 
                         if (conversationId != null) {
                             updateConversation(photoPreviewView.inputMessage.getText().toString());
@@ -448,11 +389,11 @@ public class ChatActivity extends BaseActivity implements MessageListener {
                                 tokens.put(receiverUser.getToken());
 
                                 JSONObject data = new JSONObject();
-                                data.put("userId", auth.getUid());
-                                data.put("username", Hawk.get(Constants.USERNAME));
-                                data.put("token", Hawk.get(Constants.TOKEN));
-                                data.put("messageType", "3");
-                                data.put("message", photoPreviewView.inputMessage.getText().toString());
+                                data.put(Constants.USER_ID, auth.getUid());
+                                data.put(Constants.USERNAME, Hawk.get(Constants.USERNAME));
+                                data.put(Constants.TOKEN, Hawk.get(Constants.TOKEN));
+                                data.put(Constants.MESSAGE_TYPE, Constants.MESSAGE_TYPE_PHOTO);
+                                data.put(Constants.MESSAGE, photoPreviewView.inputMessage.getText().toString());
 
                                 JSONObject body = new JSONObject();
                                 body.put(Constants.REMOTE_MSG_DATA, data);
@@ -467,6 +408,8 @@ public class ChatActivity extends BaseActivity implements MessageListener {
                         binding.inputMessage.setText("");
                         isPhotoUploading = false;
                         photoPreviewDialog.dismiss();
+                        messageModels.clear();
+                        listenMessages();
                     }
                 });
             });
@@ -521,7 +464,7 @@ public class ChatActivity extends BaseActivity implements MessageListener {
     }
 
     private void listenAvailabilityOfReceiver() {
-        database.collection("Users").document(receiverUser.getUserId()).addSnapshotListener(ChatActivity.this, ((value, error) -> {
+        database.collection(Constants.DATABASE_PATH_USERS).document(receiverUser.getUserId()).addSnapshotListener(ChatActivity.this, ((value, error) -> {
             if (error != null) {
                 return;
             }
@@ -554,18 +497,19 @@ public class ChatActivity extends BaseActivity implements MessageListener {
     }
 
     private void listenMessages() {
-        senderRegistration = database.collection("chats")
+        binding.messageRV.showShimmerAdapter();
+        senderRegistration = database.collection(Constants.DATABASE_PATH_CHATS)
                 .whereEqualTo("senderId", auth.getUid())
                 .whereEqualTo("receiverId", receiverUser.getUserId())
-                .addSnapshotListener(eventListenerSentMessages);
-        receiverRegistration = database.collection("chats")
+                .addSnapshotListener(eventListenerMessages);
+        receiverRegistration = database.collection(Constants.DATABASE_PATH_CHATS)
                 .whereEqualTo("senderId", receiverUser.getUserId())
                 .whereEqualTo("receiverId", auth.getUid())
-                .addSnapshotListener(eventListenerReceivedMessages);
+                .addSnapshotListener(eventListenerMessages);
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private final EventListener<QuerySnapshot> eventListenerSentMessages = (value, error) -> {
+    private final EventListener<QuerySnapshot> eventListenerMessages = (value, error) -> {
         if (error != null) {
             return;
         }
@@ -583,64 +527,31 @@ public class ChatActivity extends BaseActivity implements MessageListener {
                     model.setRepliedMessage(documentChange.getDocument().getString("repliedMessage"));
                     model.setReplyHasPhoto(Boolean.TRUE.equals(documentChange.getDocument().getBoolean("isReplyHasPhoto")));
                     model.setRepliedPhoto(documentChange.getDocument().getString("repliedPhoto"));
-                    model.setSeen(Boolean.TRUE.equals(documentChange.getDocument().getBoolean("isSeen")));
-                    messageModels.add(model);
-                }
-            }
-            messageModels.sort(Comparator.comparing(MessageModel::getTimestamp));
-            if (messageModels.size() == 0) {
-                chatAdapter.notifyDataSetChanged();
-            } else {
-                chatAdapter.notifyItemRangeInserted(messageModels.size(), messageModels.size());
-                binding.messageRV.smoothScrollToPosition(messageModels.size() - 1);
-            }
-        }
-        if (conversationId == null) {
-            checkForConversation();
-        }
-    };
-
-    @SuppressLint("NotifyDataSetChanged")
-    private final EventListener<QuerySnapshot> eventListenerReceivedMessages = (value, error) -> {
-        if (error != null) {
-            return;
-        }
-        if (value != null) {
-            for (DocumentChange documentChange : value.getDocumentChanges()) {
-                if (documentChange.getType() == DocumentChange.Type.ADDED) {
-                    MessageModel model = new MessageModel();
-                    model.setMessageId(documentChange.getDocument().getId());
-                    model.setSenderId(documentChange.getDocument().getString("senderId"));
-                    model.setReceiverId(documentChange.getDocument().getString("receiverId"));
-                    model.setMessage(documentChange.getDocument().getString("message"));
-                    model.setPhoto(documentChange.getDocument().getString("photo"));
-                    model.setTimestamp(documentChange.getDocument().getLong("timestamp"));
-                    model.setHasReply(Boolean.TRUE.equals(documentChange.getDocument().getBoolean("hasReply")));
-                    model.setRepliedMessage(documentChange.getDocument().getString("repliedMessage"));
-                    model.setReplyHasPhoto(Boolean.TRUE.equals(documentChange.getDocument().getBoolean("isReplyHasPhoto")));
-                    model.setRepliedPhoto(documentChange.getDocument().getString("repliedPhoto"));
-                    if (!Boolean.TRUE.equals(documentChange.getDocument().getBoolean("isSeen")))
+                    if (Objects.equals(documentChange.getDocument().getString("receiverId"), auth.getUid()))
                     {
-                        database.collection("chats").document(Objects.requireNonNull(documentChange.getDocument().getId())).update("isSeen", true);
-                        model.setSeen(true);
-                    }
-                    else
-                        model.setSeen(true);
-                    messageModels.add(model);
-                    if (currentTimestamp - model.getTimestamp() < 2000)
-                    {
-                        if (mediaPlayer != null)
+                        if (!Boolean.TRUE.equals(documentChange.getDocument().getBoolean("isSeen")))
                         {
-                            if (mediaPlayer.isPlaying())
+                            database.collection(Constants.DATABASE_PATH_CHATS).document(Objects.requireNonNull(documentChange.getDocument().getId())).update("isSeen", true);
+                            model.setSeen(true);
+                        }
+                        else
+                            model.setSeen(true);
+                        if (currentTimestamp - model.getTimestamp() < 2000)
+                        {
+                            if (mediaPlayer != null)
                             {
-                                mediaPlayer.seekTo(0);
-                            }
-                            else
-                            {
-                                mediaPlayer.start();
+                                if (mediaPlayer.isPlaying())
+                                {
+                                    mediaPlayer.seekTo(0);
+                                }
+                                else
+                                {
+                                    mediaPlayer.start();
+                                }
                             }
                         }
                     }
+                    messageModels.add(model);
                 }
             }
 
@@ -655,15 +566,16 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         if (conversationId == null) {
             checkForConversation();
         }
+        binding.messageRV.hideShimmerAdapter();
     };
 
     private void addConversation(MessageModel conversation) {
-        database.collection("conversations")
+        database.collection(Constants.DATABASE_PATH_CONVERSATIONS)
                 .add(conversation).addOnCompleteListener(task -> conversationId = task.getResult().getId());
     }
 
     private void updateConversation(String message) {
-        DocumentReference documentReference = database.collection("conversations").document(conversationId);
+        DocumentReference documentReference = database.collection(Constants.DATABASE_PATH_CONVERSATIONS).document(conversationId);
         documentReference.update("message", message, "timestamp", new Date().getTime()
                 , "senderId", auth.getUid(), "receiverId", receiverUser.getUserId());
     }
@@ -676,18 +588,16 @@ public class ChatActivity extends BaseActivity implements MessageListener {
     }
 
     private void checkForConversationRemotely(String senderId, String receiverId) {
-        database.collection("conversations")
+        database.collection(Constants.DATABASE_PATH_CONVERSATIONS)
                 .whereEqualTo("senderId", senderId)
                 .whereEqualTo("receiverId", receiverId)
-                .get().addOnCompleteListener(conversationOnCompleteListener);
+                .get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null && task.getResult().getDocuments().size() > 0) {
+                        DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
+                        conversationId = documentSnapshot.getId();
+                    }
+                });
     }
-
-    private final OnCompleteListener<QuerySnapshot> conversationOnCompleteListener = task -> {
-        if (task.isSuccessful() && task.getResult() != null && task.getResult().getDocuments().size() > 0) {
-            DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
-            conversationId = documentSnapshot.getId();
-        }
-    };
 
     @Override
     public void onMessageReplied(MessageModel messageModel, String profilePic, boolean isPhoto)
@@ -713,48 +623,15 @@ public class ChatActivity extends BaseActivity implements MessageListener {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        listenAvailabilityOfReceiver();
-    }
-
-    @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
+        if (resultCode == RESULT_OK) {
             assert data != null;
-            Uri resultUri = UCrop.getOutput(data);
-            if (resultUri != null) {
+            Uri resultUri = data.getData();
+            if (resultUri != null)
+            {
                 photoUri = resultUri.toString();
                 sendPhotoFromGallery();
-            }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == READ_EXTERNAL_STORAGE_REQUEST_CODE)
-        {
-            if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-            {
-                Toast.makeText(this, "İzin alındı. Şimdi galeriye gidebilirsiniz.", Toast.LENGTH_SHORT).show();
-            }
-            else
-            {
-                Toast.makeText(this, "İzin verilmedi. Galeri açılamıyor.", Toast.LENGTH_SHORT).show();
-            }
-        }
-        else if (requestCode == CAMERA_REQUEST_CODE)
-        {
-            if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-            {
-                Toast.makeText(this, "İzin alındı. Şimdi kamerayı açabilirsiniz.", Toast.LENGTH_SHORT).show();
-            }
-            else
-            {
-                Toast.makeText(this, "İzin verilmedi. kamera açılamıyor.", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -791,16 +668,16 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         super.onBackPressed();
         mediaPlayer.release();
         mediaPlayer = null;
-        finish();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
         if (senderRegistration != null && receiverRegistration != null) {
             senderRegistration.remove();
             receiverRegistration.remove();
         }
+        if (isNotification)
+        {
+            Intent intent = new Intent(ChatActivity.this, IntroActivity.class);
+            startActivity(intent);
+        }
+        finish();
     }
 
     @Override
@@ -810,5 +687,11 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         {
             mediaPlayer.release();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        listenAvailabilityOfReceiver();
     }
 }

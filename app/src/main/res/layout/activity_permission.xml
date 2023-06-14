@@ -104,60 +104,12 @@
             app:lottie_rawRes="@raw/check" />
 
         <com.airbnb.lottie.LottieAnimationView
-            android:id="@+id/anim_gallery"
+            android:id="@+id/anim_notification"
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:layout_marginTop="35dp"
             app:layout_constraintStart_toStartOf="@id/anim_location"
             app:layout_constraintTop_toBottomOf="@id/anim_location"
-            app:lottie_rawRes="@raw/gallery"
-            app:lottie_autoPlay="true"
-            app:lottie_repeatMode="restart"
-            app:lottie_loop="true"/>
-
-        <TextView
-            android:id="@+id/title_gallery"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:fontFamily="@font/jost_bold"
-            android:text="@string/storage_photos"
-            android:textColor="@color/accent_blue_dark"
-            android:textSize="17sp"
-            app:layout_constraintStart_toEndOf="@id/anim_gallery"
-            app:layout_constraintTop_toTopOf="@id/anim_gallery" />
-
-        <TextView
-            android:id="@+id/text_gallery"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:fontFamily="@font/jost_regular"
-            android:text="@string/storage_perm_text"
-            android:textColor="@color/primary_text"
-            android:textSize="15sp"
-            app:layout_constraintEnd_toStartOf="@id/gallery_permission_check"
-            app:layout_constraintStart_toEndOf="@id/anim_gallery"
-            app:layout_constraintTop_toBottomOf="@id/title_gallery" />
-
-        <com.airbnb.lottie.LottieAnimationView
-            android:id="@+id/gallery_permission_check"
-            android:layout_width="46dp"
-            android:layout_height="46dp"
-            android:layout_marginEnd="10dp"
-            app:layout_constraintBottom_toBottomOf="@id/anim_gallery"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/anim_gallery"
-            app:lottie_autoPlay="false"
-            app:lottie_rawRes="@raw/check" />
-
-        <com.airbnb.lottie.LottieAnimationView
-            android:id="@+id/anim_notification"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_marginTop="35dp"
-            app:layout_constraintStart_toStartOf="@id/anim_gallery"
-            app:layout_constraintTop_toBottomOf="@id/anim_gallery"
             app:lottie_rawRes="@raw/notification"
             app:lottie_autoPlay="true"
             app:lottie_repeatMode="restart"

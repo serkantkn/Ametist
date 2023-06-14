@@ -1,9 +1,9 @@
 package com.serkantken.ametist.fragments;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Gravity;
@@ -13,24 +13,20 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.serkantken.ametist.R;
 import com.serkantken.ametist.activities.ProfileActivity;
 import com.serkantken.ametist.adapters.UsersAdapter;
 import com.serkantken.ametist.databinding.FragmentDiscoverBinding;
 import com.serkantken.ametist.models.UserModel;
+import com.serkantken.ametist.utilities.Constants;
 import com.serkantken.ametist.utilities.UserListener;
 import com.serkantken.ametist.utilities.Utilities;
-import com.skydoves.balloon.ArrowPositionRules;
 import com.skydoves.balloon.Balloon;
-import com.skydoves.balloon.BalloonAnimation;
-import com.skydoves.balloon.BalloonSizeSpec;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -92,6 +88,7 @@ public class DiscoverFragment extends Fragment implements UserListener
         return binding.getRoot();
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void getUsers() {
         binding.discoverRefresher.setRefreshing(true);
         database.collection("Users").get().addOnCompleteListener(task -> {
@@ -103,35 +100,8 @@ public class DiscoverFragment extends Fragment implements UserListener
                     }
                     userModel = new UserModel();
                     userModel.setUserId(queryDocumentSnapshot.getId());
-                    userModel.setToken(queryDocumentSnapshot.getString("token"));
                     userModel.setName(queryDocumentSnapshot.getString("name"));
-                    userModel.setEmail(queryDocumentSnapshot.getString("email"));
                     userModel.setProfilePic(queryDocumentSnapshot.getString("profilePic"));
-                    userModel.setGender(queryDocumentSnapshot.getString("gender"));
-                    userModel.setAge(queryDocumentSnapshot.getString("age"));
-                    userModel.setAbout(queryDocumentSnapshot.getString("about"));
-                    database.collection("Users").document(queryDocumentSnapshot.getId()).collection("followers").get().addOnCompleteListener(task1 -> {
-                        if (task1.isSuccessful() && !task1.getResult().isEmpty())
-                        {
-                            ArrayList<String> followers = new ArrayList<>();
-                            for (QueryDocumentSnapshot queryDocumentSnapshot1 : task1.getResult())
-                            {
-                                followers.add(queryDocumentSnapshot1.getId());
-                            }
-                            userModel.setFollowerCount(followers.size());
-                        }
-                    });
-                    database.collection("Users").document(queryDocumentSnapshot.getId()).collection("followings").get().addOnCompleteListener(task12 -> {
-                        if (task12.isSuccessful() && !task12.getResult().isEmpty())
-                        {
-                            ArrayList<String> followings = new ArrayList<>();
-                            for (QueryDocumentSnapshot queryDocumentSnapshot2 : task12.getResult())
-                            {
-                                followings.add(queryDocumentSnapshot2.getId());
-                            }
-                            userModel.setFollowingCount(followings.size());
-                        }
-                    });
                     userList.add(userModel);
                 }
                 adapter.notifyDataSetChanged();
@@ -140,9 +110,10 @@ public class DiscoverFragment extends Fragment implements UserListener
         });
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void searchUser(String s)
     {
-        database.collection("Users").orderBy("name").startAt(s).endAt(s + "\uf8ff").get().addOnCompleteListener(task -> {
+        database.collection(Constants.DATABASE_PATH_USERS).orderBy("name").startAt(s).endAt(s + "\uf8ff").get().addOnCompleteListener(task -> {
             userList.clear();
             for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult())
             {
@@ -166,46 +137,5 @@ public class DiscoverFragment extends Fragment implements UserListener
         Intent intent = new Intent(getContext(), ProfileActivity.class);
         intent.putExtra("receiverUser", userModel);
         requireContext().startActivity(intent);
-
-        /*final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme_Chat);
-        LayoutProfileBinding bottomSheetView = LayoutProfileBinding.inflate(getLayoutInflater());
-
-        Utilities utilities = new Utilities(requireContext(), requireActivity());
-        utilities.blur((BlurView) bottomSheetView.bottomSheetContainer, 10f, false);
-        bottomSheetView.username.setText(userModel.getName());
-        Glide.with(this).load(userModel.getProfilePic()).placeholder(R.drawable.ic_person).into(bottomSheetView.profileImage);
-        bottomSheetView.textAbout.setText(userModel.getAbout());
-        bottomSheetView.textAge.setText(userModel.getAge());
-        bottomSheetView.followCount.setText(""+userModel.getFollowingCount());
-        bottomSheetView.followerCount.setText(""+userModel.getFollowerCount());
-        switch (userModel.getGender()) {
-            case "0":
-                bottomSheetView.textGender.setText("-");
-                break;
-            case "1":
-                bottomSheetView.textGender.setText(getString(R.string.man));
-                break;
-            case "2":
-                bottomSheetView.textGender.setText(getString(R.string.woman));
-                break;
-        }
-
-        bottomSheetView.buttonMore.setOnClickListener(view1 -> {
-            Intent intent = new Intent(getContext(), ProfileActivity.class);
-            intent.putExtra("receiverUser", userModel);
-            requireContext().startActivity(intent);
-            bottomSheetDialog.dismiss();
-        });
-        bottomSheetView.buttonMessage.setOnClickListener(view -> {
-            Intent intent = new Intent(getContext(), ChatActivity.class);
-            intent.putExtra("receiverUser", userModel);
-            requireContext().startActivity(intent);
-            bottomSheetDialog.dismiss();
-        });
-        bottomSheetView.buttonClose.setOnClickListener(view1 -> bottomSheetDialog.dismiss());
-        bottomSheetView.buttonEdit.setVisibility(View.GONE);
-
-        bottomSheetDialog.setContentView(bottomSheetView.getRoot());
-        bottomSheetDialog.show();*/
     }
 }

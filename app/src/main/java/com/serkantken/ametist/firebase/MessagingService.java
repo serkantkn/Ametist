@@ -13,9 +13,11 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.activities.ChatActivity;
 import com.serkantken.ametist.models.UserModel;
@@ -44,6 +46,8 @@ public class MessagingService extends FirebaseMessagingService {
         user.setName(message.getData().get(Constants.USERNAME));
         user.setToken(message.getData().get(Constants.TOKEN));
         messageType = message.getData().get(Constants.MESSAGE_TYPE);
+
+        Hawk.init(this).build();
 
         notificationId = new Random().nextInt();
         channelId = "chat_message";
@@ -75,22 +79,23 @@ public class MessagingService extends FirebaseMessagingService {
     {
         notificationBuilder = new NotificationCompat.Builder(this, channelId);
         notificationBuilder.setSmallIcon(R.mipmap.ametist_logo);
-        notificationBuilder.setContentTitle(username);
-        if (messageType.equals(Constants.MESSAGE_TYPE_TEXT))
-        {
-            notificationBuilder.setContentText(message);
-        }
-        else if (messageType.equals(Constants.MESSAGE_TYPE_FOLLOW))
-        {
-            notificationBuilder.setContentText(message+getApplicationContext().getResources().getString(R.string.is_now_following_you));
-        }
-        else if (messageType.equals(Constants.MESSAGE_TYPE_PHOTO))
-        {
-            notificationBuilder.setContentText(message+getApplicationContext().getResources().getString(R.string.sent_you_a_photo));
+        switch (messageType) {
+            case Constants.MESSAGE_TYPE_TEXT:
+                notificationBuilder.setContentTitle(username);
+                notificationBuilder.setContentText(message);
+                break;
+            case Constants.MESSAGE_TYPE_FOLLOW:
+                notificationBuilder.setContentText(username + getApplicationContext().getResources().getString(R.string.is_now_following_you));
+                break;
+            case Constants.MESSAGE_TYPE_PHOTO:
+                notificationBuilder.setContentText(username + getApplicationContext().getResources().getString(R.string.sent_you_a_photo));
+                break;
         }
         notificationBuilder.setStyle(new NotificationCompat.BigTextStyle().bigText(message));
         notificationBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
         notificationBuilder.setContentIntent(createPendingIntent());
+        notificationBuilder.setGroup("Ametist");
+        notificationBuilder.setGroupSummary(true);
         notificationBuilder.setAutoCancel(true);
     }
 
@@ -98,6 +103,7 @@ public class MessagingService extends FirebaseMessagingService {
     {
         Intent intent = new Intent(this, ChatActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.putExtra("messageNotification", true);
         intent.putExtra("receiverUser", user);
         PendingIntent pendingIntent;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
@@ -106,7 +112,7 @@ public class MessagingService extends FirebaseMessagingService {
         }
         else
         {
-            pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+            pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
         }
         return pendingIntent;
     }

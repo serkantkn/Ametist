@@ -15,11 +15,14 @@ import android.widget.PopupWindow;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityOptionsCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.github.marlonlom.utilities.timeago.TimeAgo;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -43,6 +46,9 @@ import com.serkantken.ametist.models.PostModel;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.utilities.Constants;
 import com.serkantken.ametist.utilities.Utilities;
+import com.skydoves.balloon.Balloon;
+import com.skydoves.balloon.BalloonAnimation;
+import com.skydoves.balloon.BalloonSizeSpec;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -50,12 +56,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Objects;
 
+import eightbitlab.com.blurview.BlurView;
+
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
     ArrayList<PostModel> postModels;
     Context context;
     Activity activity;
     FirebaseFirestore database;
     String currentUserId;
+    Balloon balloon;
     int likeCount;
     ArrayList<CommentModel> comments = new ArrayList<>();
     boolean result;
@@ -125,25 +134,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
             });
         }
 
-        holder.binding.buttonMenu.setOnClickListener(view -> {
-            View popupview = View.inflate(context, R.layout.popup_layout, null);
-            ConstraintLayout buttonDelete = popupview.findViewById(R.id.post_delete);
-            ConstraintLayout buttonEdit = popupview.findViewById(R.id.post_edit);
-
-            int width = ConstraintLayout.LayoutParams.WRAP_CONTENT;
-            int height = ConstraintLayout.LayoutParams.WRAP_CONTENT;
-            PopupWindow popupWindow = new PopupWindow(popupview, width, height, false);
-
-            popupWindow.showAsDropDown(holder.binding.buttonMenu);
-            popupWindow.setElevation(20f);
-            popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            popupWindow.setOutsideTouchable(true);
-            popupWindow.setFocusable(true);
-
-            buttonDelete.setOnClickListener(view1 -> postDelete(postModel.getPostId(), popupWindow));
-            buttonEdit.setOnClickListener(view1 -> postEdit(postModel.getPostId(), position, popupWindow));
-        });
-
         holder.binding.buttonLike.setOnClickListener(view -> {
             if (holder.binding.buttonLike.getTag().equals("Liked"))
             {
@@ -164,6 +154,25 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
         });
 
         //getComment(postModel.getPostedBy(), postModel.getPostId(), holder);
+
+        holder.binding.buttonMenu.setOnClickListener(view -> {
+            showBalloon(holder.binding.buttonMenu, 4);
+            BlurView blurView = balloon.getContentView().findViewById(R.id.blur);
+            Utilities utilities = new Utilities(context, activity);
+            utilities.blur(blurView, 10f, false);
+
+            CardView deleteButton = balloon.getContentView().findViewById(R.id.buttonDelete);
+            deleteButton.setOnClickListener(v -> {
+                postDelete(postModel.getPostId());
+                balloon.dismiss();
+            });
+
+            CardView editButton = balloon.getContentView().findViewById(R.id.buttonEdit);
+            editButton.setOnClickListener(v -> {
+                postEdit(postModel.getPostId(), position);
+                balloon.dismiss();
+            });
+        });
     }
 
     private void likePost(PostModel postModel, ViewHolder holder)
@@ -315,9 +324,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                 });
     }
 
-    private void postDelete(String postId, PopupWindow window)
+    private void postDelete(String postId)
     {
-        window.dismiss();
+        balloon.dismiss();
         AlertDialog.Builder dialog = new AlertDialog.Builder(context);
         dialog.setMessage(R.string.delete_post_question);
         dialog.setPositiveButton(R.string.yes, (dialogInterface, i) -> {
@@ -332,9 +341,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
         dialog.show();
     }
 
-    private void postEdit(String postId, int position, PopupWindow window)
+    private void postEdit(String postId, int position)
     {
-        window.dismiss();
+        balloon.dismiss();
         database.collection("Users").document(currentUserId).collection("Posts").get().addOnCompleteListener(task -> {
             if (task.isSuccessful())
             {
@@ -408,6 +417,33 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                 dialog.show();
             }
         });
+    }
+
+    private void showBalloon(View view, int position)
+    {
+        balloon = new Balloon.Builder(context)
+                .setLayout(R.layout.popup_layout)
+                .setArrowSize(0)
+                .setWidth(BalloonSizeSpec.WRAP)
+                .setHeight(BalloonSizeSpec.WRAP)
+                .setBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent))
+                .setBalloonAnimation(BalloonAnimation.CIRCULAR)
+                .build();
+        switch (position)
+        {
+            case 1:
+                balloon.showAlignTop(view);
+                break;
+            case 2:
+                balloon.showAlignRight(view);
+                break;
+            case 3:
+                balloon.showAlignBottom(view);
+                break;
+            case 4:
+                balloon.showAlignLeft(view);
+                break;
+        }
     }
 
     public void onUserClicked(UserModel userModel) {

@@ -9,11 +9,15 @@
     tools:context=".activities.ChatActivity"
     android:background="@color/primary">
 
-    <androidx.recyclerview.widget.RecyclerView
+    <com.cooltechworks.views.shimmer.ShimmerRecyclerView
         android:id="@+id/messageRV"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:stackFromEnd="true"
+        app:shimmer_demo_child_count="10"
+        app:shimmer_demo_layout="@layout/layout_post"
+        app:shimmer_demo_layout_manager_type="linear_vertical"
+        app:shimmer_demo_angle="20"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 

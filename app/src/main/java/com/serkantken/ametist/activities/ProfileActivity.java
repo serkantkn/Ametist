@@ -1,7 +1,5 @@
 package com.serkantken.ametist.activities;
 
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -9,25 +7,18 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.VectorDrawable;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.constraintlayout.widget.ConstraintSet;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -38,13 +29,10 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
-import com.google.zxing.qrcode.QRCodeWriter;
-import com.journeyapps.barcodescanner.BarcodeEncoder;
 import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.adapters.PostAdapter;
 import com.serkantken.ametist.databinding.ActivityProfileBinding;
-import com.serkantken.ametist.databinding.LayoutProfileBinding;
 import com.serkantken.ametist.databinding.LayoutQrCodeBinding;
 import com.serkantken.ametist.models.PostModel;
 import com.serkantken.ametist.models.UserModel;
@@ -394,17 +382,16 @@ public class ProfileActivity extends BaseActivity
                 binding.username2.setText(user.getName());
                 binding.textAbout.setText(user.getAbout());
                 binding.textAge.setText(user.getAge());
-                if (user.getGender().equals("0"))
-                {
-                    binding.textGender.setText("-");
-                }
-                else if (user.getGender().equals("1"))
-                {
-                    binding.textGender.setText(getString(R.string.man));
-                }
-                else if (user.getGender().equals("2"))
-                {
-                    binding.textGender.setText(getString(R.string.woman));
+                switch (user.getGender()) {
+                    case "0":
+                        binding.textGender.setText("-");
+                        break;
+                    case "1":
+                        binding.textGender.setText(getString(R.string.man));
+                        break;
+                    case "2":
+                        binding.textGender.setText(getString(R.string.woman));
+                        break;
                 }
                 Glide.with(ProfileActivity.this).load(user.getProfilePic()).placeholder(R.drawable.ic_person_profile).into(binding.profileImage);
                 binding.profileImage.setTag(user.getProfilePic());
@@ -426,8 +413,8 @@ public class ProfileActivity extends BaseActivity
                     postModel.setPostPicture(documentSnapshot.getString("postPicture"));
                     postModel.setPostedBy(documentSnapshot.getString("postedBy"));
                     postModel.setPostedAt(documentSnapshot.getLong("postedAt"));
-                    postModel.setCommentCount(Integer.parseInt(documentSnapshot.get("commentCount").toString()));
-                    postModel.setLikeCount(Integer.parseInt(documentSnapshot.get("likeCount").toString()));
+                    postModel.setCommentCount(Integer.parseInt(Objects.requireNonNull(documentSnapshot.get("commentCount")).toString()));
+                    postModel.setLikeCount(Integer.parseInt(Objects.requireNonNull(documentSnapshot.get("likeCount")).toString()));
                     postModels.add(postModel);
                 }
                 postModels.sort(Comparator.comparing(PostModel::getPostedAt).reversed());

@@ -19,8 +19,6 @@ public class FullProfilePhotoActivity extends BaseActivity
     ActivityFullProfilePhotoBinding binding;
     ArrayList<String> pictureUris;
     PicturesAdapter adapter;
-    FirebaseFirestore database;
-    FirebaseAuth auth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,9 +34,6 @@ public class FullProfilePhotoActivity extends BaseActivity
         fade.excludeTarget(decor.findViewById(R.id.container), true);
         getWindow().setEnterTransition(fade);
         getWindow().setExitTransition(fade);
-
-        database = FirebaseFirestore.getInstance();
-        auth = FirebaseAuth.getInstance();
 
         pictureUris = new ArrayList<>();
         String url = getIntent().getStringExtra("pictureUrl");

@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
@@ -19,6 +20,9 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.adapters.MainAdapter;
@@ -81,6 +85,14 @@ public class MainActivity extends BaseActivity
             Hawk.put(Constants.IS_BALLOONS_SHOWED, false);
         }
         binding.buttonSettings.setOnClickListener(view -> startActivity(new Intent(MainActivity.this, SettingsActivity.class)));
+
+        binding.buttonQrScanner.setOnClickListener(v -> {
+            IntentIntegrator integrator = new IntentIntegrator(this);
+            integrator.setPrompt(getString(R.string.scan_qr_code_message)); // Kullanıcıya gösterilecek mesaj
+            integrator.setOrientationLocked(false); // Ekran yönü kilitli değil
+            integrator.setBeepEnabled(false);
+            integrator.initiateScan(); // Tarama işlemini başlat
+        });
 
         binding.profileImage.setOnClickListener(view -> {
             final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.BottomSheetDialogTheme_Chat);
@@ -226,6 +238,48 @@ public class MainActivity extends BaseActivity
     {
         user = (UserModel) getIntent().getSerializableExtra("currentUserInfo");
         Glide.with(getApplicationContext()).load(user.getProfilePic()).placeholder(R.mipmap.ametist_logo).into(binding.profileImage);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if (result != null) {
+            if (result.getContents() == null) {
+                Toast.makeText(this, "Tarama iptal edildi", Toast.LENGTH_LONG).show();
+            } else {
+                String qrText = result.getContents();
+                // QR kodu başarıyla tarandı, yapılacak işlemler burada gerçekleştirilebilir
+                Toast.makeText(this, qrText, Toast.LENGTH_SHORT).show();
+
+                database.collection(Constants.DATABASE_PATH_USERS).get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful())
+                    {
+                        UserModel scannedUser = new UserModel();
+                        for (QueryDocumentSnapshot documentSnapshot : task.getResult())
+                        {
+                            if (documentSnapshot.getId().equals(qrText))
+                            {
+                                scannedUser.setName(documentSnapshot.getString("name"));
+                                scannedUser.setProfilePic(documentSnapshot.getString("profilePic"));
+                                scannedUser.setAbout(documentSnapshot.getString("about"));
+                                scannedUser.setGender(documentSnapshot.getString("gender"));
+                                scannedUser.setAge(documentSnapshot.getString("age"));
+                                scannedUser.setUserId(documentSnapshot.getId());
+                                scannedUser.setFollowerCount(Integer.parseInt(String.valueOf(documentSnapshot.get("followerCount"))));
+                                scannedUser.setFollowingCount(Integer.parseInt(String.valueOf(documentSnapshot.get("followingCount"))));
+                            }
+                        }
+                        Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+                        intent.putExtra("receiverUser", scannedUser);
+                        startActivity(intent);
+                    }
+                });
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     private void showBalloon(String message, View view, int position)
