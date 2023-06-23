@@ -202,17 +202,19 @@
         app:layout_constraintEnd_toStartOf="@id/card"
         app:layout_constraintHorizontal_bias="1"
         android:layout_marginEnd="10dp"
-        android:layout_marginBottom="5dp"/>
+        android:layout_marginBottom="2dp"/>
 
     <com.airbnb.lottie.LottieAnimationView
-        android:layout_width="42dp"
-        android:layout_height="42dp"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
         android:id="@+id/seen_check"
         app:lottie_rawRes="@raw/seen_check"
         app:lottie_autoPlay="false"
         app:lottie_loop="false"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/card"
+        app:layout_constraintBottom_toBottomOf="@id/card"
+        android:layout_marginEnd="-10dp"
+        android:layout_marginBottom="-5dp"
         android:visibility="invisible"
         android:elevation="10dp"/>
 

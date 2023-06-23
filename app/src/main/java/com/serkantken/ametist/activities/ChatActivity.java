@@ -1,6 +1,7 @@
 package com.serkantken.ametist.activities;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
@@ -9,6 +10,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -181,6 +185,15 @@ public class ChatActivity extends BaseActivity implements MessageListener {
             binding.replyMessageContainer.setVisibility(View.GONE);
             repliedMessage = null;
             isReply = false;
+        });
+
+        binding.inputMessage.setOnTouchListener((v, event) -> {
+            if (Objects.equals(binding.inputMessage.getText().toString(), "")) {
+                animateEditText(binding.inputMessage);
+                return true;
+            } else {
+                return false;
+            }
         });
     }
 
@@ -620,6 +633,32 @@ public class ChatActivity extends BaseActivity implements MessageListener {
             binding.repliedPhoto.setVisibility(View.VISIBLE);
             Glide.with(this).load(messageModel.getPhoto()).into(binding.repliedPhoto);
         }
+    }
+
+    private void animateEditText(View editText) {
+        Animation anim = AnimationUtils.loadAnimation(this, R.anim.scale);
+        anim.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                // Animasyon başladığında yapılacaklar
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                Animation reverseAnim = AnimationUtils.loadAnimation(ChatActivity.this, R.anim.scale_reverse);
+                editText.startAnimation(reverseAnim);
+
+                editText.requestFocus();
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+                // Animasyon tekrarlandığında yapılacaklar
+            }
+        });
+        editText.startAnimation(anim);
     }
 
     @Override

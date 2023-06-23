@@ -237,6 +237,6 @@
         app:layout_constraintHorizontal_bias="0"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="15dp"
-        android:layout_marginBottom="5dp"/>
+        android:layout_marginBottom="2dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

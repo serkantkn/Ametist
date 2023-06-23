@@ -7,7 +7,7 @@ public class UserModel implements Serializable
     String userId, name, email, password, profilePic, profilePicSquare, picSecond, picThird, picFourth, about, gender, age, token;
     int followerCount, followingCount;
     Boolean isOnline;
-    Long lastSeen, signupDate;
+    Long lastSeen, signupDate, latitude, longitude;
 
     public UserModel()
     {
