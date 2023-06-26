@@ -3,7 +3,10 @@ package com.serkantken.ametist.adapters;
 import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -45,7 +48,35 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Glide.with(context).load(list.get(position).getProfilePic()).placeholder(R.drawable.ic_person).into(holder.binding.profileImage);
         holder.binding.username.setText(list.get(position).getName());
-        holder.binding.getRoot().setOnClickListener(view -> listener.onUserClicked(list.get(position)));
+        holder.binding.getRoot().setOnClickListener(v -> {
+            Animation anim = AnimationUtils.loadAnimation(context, R.anim.scale);
+            holder.binding.getRoot().startAnimation(anim);
+            anim.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+                }
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    Animation anim = AnimationUtils.loadAnimation(context, R.anim.scale_reverse);
+                    holder.binding.getRoot().startAnimation(anim);
+                    anim.setAnimationListener(new Animation.AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
+                        }
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            listener.onUserClicked(list.get(holder.getAdapterPosition()));
+                        }
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
+                        }
+                    });
+                }
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+                }
+            });
+        });
     }
 
     @Override

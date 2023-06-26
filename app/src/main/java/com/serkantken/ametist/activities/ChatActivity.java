@@ -8,11 +8,14 @@ import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.ScaleAnimation;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -58,6 +61,7 @@ import com.skydoves.balloon.BalloonAnimation;
 import com.skydoves.balloon.BalloonSizeSpec;
 import com.yalantis.ucrop.UCrop;
 
+import org.checkerframework.checker.units.qual.A;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -99,6 +103,7 @@ public class ChatActivity extends BaseActivity implements MessageListener {
     private ListenerRegistration senderRegistration;
     private ListenerRegistration receiverRegistration;
     private long currentTimestamp = new Date().getTime();
+    private Boolean isPressed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -157,14 +162,40 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         binding.addPhoto.setOnClickListener(view -> selectPhotoFromGallery());
 
         binding.buttonSend.setOnClickListener(view -> {
-            if (!Objects.equals(binding.inputMessage.getText().toString(), ""))
-            {
-                sendMessage();
-            }
-            else
-            {
-                Toast.makeText(this, R.string.messagebox_empty, Toast.LENGTH_SHORT).show();
-            }
+            Animation anim = AnimationUtils.loadAnimation(ChatActivity.this, R.anim.scale);
+            binding.sendCard.startAnimation(anim);
+            anim.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+                }
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    Animation anim = AnimationUtils.loadAnimation(ChatActivity.this, R.anim.scale_reverse);
+                    binding.sendCard.startAnimation(anim);
+                    anim.setAnimationListener(new Animation.AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
+                        }
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            if (!Objects.equals(binding.inputMessage.getText().toString(), ""))
+                            {
+                                sendMessage();
+                            }
+                            else
+                            {
+                                Toast.makeText(ChatActivity.this, R.string.messagebox_empty, Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
+                        }
+                    });
+                }
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+                }
+            });
         });
 
         getContent = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
@@ -188,12 +219,24 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         });
 
         binding.inputMessage.setOnTouchListener((v, event) -> {
-            if (Objects.equals(binding.inputMessage.getText().toString(), "")) {
-                animateEditText(binding.inputMessage);
-                return true;
-            } else {
-                return false;
+            if (Objects.equals(binding.inputMessage.getText().toString(), ""))
+            {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        isPressed = true;
+                        animateEditText(true);
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        if (isPressed)
+                        {
+                            animateEditText(false);
+                        }
+                        isPressed = false;
+                        showKeyboard(binding.inputMessage);
+                        return true;
+                }
             }
+            return false;
         });
     }
 
@@ -635,30 +678,24 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         }
     }
 
-    private void animateEditText(View editText) {
-        Animation anim = AnimationUtils.loadAnimation(this, R.anim.scale);
-        anim.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-                // Animasyon başladığında yapılacaklar
-            }
+    private void animateEditText(boolean isPressed) {
+        if (isPressed)
+        {
+            Animation anim = AnimationUtils.loadAnimation(ChatActivity.this, R.anim.scale);
+            anim.setFillAfter(true);
+            binding.inputMessage.startAnimation(anim);
+        }
+        else
+        {
+            Animation anim = AnimationUtils.loadAnimation(ChatActivity.this, R.anim.scale_reverse);
+            binding.inputMessage.startAnimation(anim);
+        }
+    }
 
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                Animation reverseAnim = AnimationUtils.loadAnimation(ChatActivity.this, R.anim.scale_reverse);
-                editText.startAnimation(reverseAnim);
-
-                editText.requestFocus();
-                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-                // Animasyon tekrarlandığında yapılacaklar
-            }
-        });
-        editText.startAnimation(anim);
+    private void showKeyboard(EditText editText) {
+        editText.requestFocus();
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
     }
 
     @Override

@@ -2,7 +2,10 @@ package com.serkantken.ametist.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -68,12 +71,37 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                 Glide.with(context).load(userModel.getProfilePic()).placeholder(R.drawable.ic_person).into(holder.binding.profileImage);
                 holder.binding.message.setText(userModel.getName() + context.getResources().getString(R.string.is_now_following_you));
                 holder.binding.date.setText(TimeAgo.using(notification.getNotifDate()));
-                holder.binding.getRoot().setOnClickListener(view -> {
-                    userListener.onUserClicked(userModel);
+                holder.binding.getRoot().setOnClickListener(v -> {
+                    Animation anim = AnimationUtils.loadAnimation(context, R.anim.scale);
+                    holder.binding.getRoot().startAnimation(anim);
+                    anim.setAnimationListener(new Animation.AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
+                        }
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            Animation anim2 = AnimationUtils.loadAnimation(context, R.anim.scale_reverse);
+                            holder.binding.getRoot().startAnimation(anim2);
+                            anim2.setAnimationListener(new Animation.AnimationListener() {
+                                @Override
+                                public void onAnimationStart(Animation animation) {
+                                }
+                                @Override
+                                public void onAnimationEnd(Animation animation) {
+                                    userListener.onUserClicked(userModel);
+                                }
+                                @Override
+                                public void onAnimationRepeat(Animation animation) {
+                                }
+                            });
+                        }
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
+                        }
+                    });
                 });
             }
         });
-
     }
 
     @Override

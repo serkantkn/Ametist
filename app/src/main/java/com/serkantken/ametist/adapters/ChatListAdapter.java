@@ -4,8 +4,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -76,7 +79,36 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ViewHo
             }
         });
 
-        holder.binding.userCard.setOnClickListener(view -> listener.onUserClicked(receiverUser));
+        holder.binding.userCard.setOnClickListener(v -> {
+            Animation anim = AnimationUtils.loadAnimation(context, R.anim.scale);
+            holder.binding.userCard.startAnimation(anim);
+            anim.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    Animation anim = AnimationUtils.loadAnimation(context, R.anim.scale_reverse);
+                    holder.binding.userCard.startAnimation(anim);
+                    anim.setAnimationListener(new Animation.AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
+                        }
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            listener.onUserClicked(receiverUser);
+                        }
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
+                        }
+                    });
+                }
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+                }
+            });
+        });
     }
 
     @Override

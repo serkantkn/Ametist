@@ -1,11 +1,17 @@
 package com.serkantken.ametist.activities;
 
+import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.transition.Fade;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -24,8 +30,10 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.type.DateTime;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.adapters.CommentAdapter;
+import com.serkantken.ametist.adapters.NotificationsAdapter;
 import com.serkantken.ametist.databinding.ActivityCommentBinding;
 import com.serkantken.ametist.models.CommentModel;
+import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.utilities.Constants;
 import com.serkantken.ametist.utilities.Utilities;
 
@@ -41,6 +49,7 @@ public class CommentActivity extends BaseActivity {
     private ArrayList<CommentModel> comments;
     private CommentAdapter adapter;
     private Utilities utilities;
+    private Boolean isPressed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -73,7 +82,46 @@ public class CommentActivity extends BaseActivity {
 
         getComments(userId, postId);
 
-        binding.buttonSend.setOnClickListener(view -> sendComment(userId, postId));
+        binding.inputMessage.setOnTouchListener((v, event) -> {
+            if (Objects.equals(binding.inputMessage.getText().toString(), ""))
+            {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        isPressed = true;
+                        animateEditText(true);
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        if (isPressed)
+                        {
+                            animateEditText(false);
+                        }
+                        isPressed = false;
+                        showKeyboard(binding.inputMessage);
+                        return true;
+                }
+            }
+            return false;
+        });
+
+        binding.buttonSend.setOnTouchListener((v, event) -> {
+            if (Objects.equals(binding.inputMessage.getText().toString(), ""))
+            {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        isPressed = true;
+                        animateCard(true, userId, postId);
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        if (isPressed)
+                        {
+                            animateCard(false, userId, postId);
+                        }
+                        isPressed = false;
+                        return true;
+                }
+            }
+            return false;
+        });
     }
 
     private void sendComment(String userId, String postId)
@@ -171,6 +219,57 @@ public class CommentActivity extends BaseActivity {
                         adapter.notifyDataSetChanged();
                     }
                 });
+    }
+
+    private void animateCard(boolean isPressed, String userId, String postId)
+    {
+        if (isPressed)
+        {
+            Animation anim = AnimationUtils.loadAnimation(CommentActivity.this, R.anim.scale);
+            anim.setFillAfter(true);
+            binding.sendCard.startAnimation(anim);
+        }
+        else
+        {
+            Animation anim = AnimationUtils.loadAnimation(CommentActivity.this, R.anim.scale_reverse);
+            binding.sendCard.startAnimation(anim);
+            anim.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    sendComment(userId, postId);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+        }
+    }
+
+    private void animateEditText(boolean isPressed) {
+        if (isPressed)
+        {
+            Animation anim = AnimationUtils.loadAnimation(CommentActivity.this, R.anim.scale);
+            anim.setFillAfter(true);
+            binding.inputMessage.startAnimation(anim);
+        }
+        else
+        {
+            Animation anim = AnimationUtils.loadAnimation(CommentActivity.this, R.anim.scale_reverse);
+            binding.inputMessage.startAnimation(anim);
+        }
+    }
+
+    private void showKeyboard(EditText editText) {
+        editText.requestFocus();
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
     }
 
     @Override

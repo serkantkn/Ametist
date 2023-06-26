@@ -11,6 +11,8 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.PopupWindow;
 
 import androidx.annotation.NonNull;
@@ -67,7 +69,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
     Balloon balloon;
     int likeCount;
     ArrayList<CommentModel> comments = new ArrayList<>();
-    boolean result;
+    boolean result, isPressed = false;
 
     public PostAdapter(ArrayList<PostModel> postModels, Context context, Activity activity) {
         this.postModels = postModels;
@@ -153,8 +155,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
             context.startActivity(intent, optionsCompat.toBundle());
         });
 
-        //getComment(postModel.getPostedBy(), postModel.getPostId(), holder);
-
         holder.binding.buttonMenu.setOnClickListener(view -> {
             showBalloon(holder.binding.buttonMenu, 4);
             BlurView blurView = balloon.getContentView().findViewById(R.id.blur);
@@ -163,7 +163,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
 
             CardView deleteButton = balloon.getContentView().findViewById(R.id.buttonDelete);
             deleteButton.setOnClickListener(v -> {
-                postDelete(postModel.getPostId());
+                postDelete(postModel.getPostId(), position);
                 balloon.dismiss();
             });
 
@@ -173,6 +173,37 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                 balloon.dismiss();
             });
         });
+    }
+
+    private void animateCard(PostAdapter.ViewHolder holder, boolean isPressed, UserModel userModel)
+    {
+        if (isPressed)
+        {
+            Animation anim = AnimationUtils.loadAnimation(context, R.anim.scale);
+            anim.setFillAfter(true);
+            holder.binding.getRoot().startAnimation(anim);
+        }
+        else
+        {
+            Animation anim = AnimationUtils.loadAnimation(context, R.anim.scale_reverse);
+            holder.binding.getRoot().startAnimation(anim);
+            anim.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+        }
     }
 
     private void likePost(PostModel postModel, ViewHolder holder)
@@ -324,15 +355,16 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                 });
     }
 
-    private void postDelete(String postId)
+    private void postDelete(String postId, int position)
     {
         balloon.dismiss();
         AlertDialog.Builder dialog = new AlertDialog.Builder(context);
         dialog.setMessage(R.string.delete_post_question);
         dialog.setPositiveButton(R.string.yes, (dialogInterface, i) -> {
-            database.collection("Users").document(currentUserId).collection("Posts").document(postId).delete();
-            notifyDataSetChanged();
-            dialogInterface.dismiss();
+            database.collection("Users").document(currentUserId).collection("Posts").document(postId).delete().addOnCompleteListener(task -> {
+                notifyItemRemoved(position);
+                dialogInterface.dismiss();
+            });
         });
         dialog.setNegativeButton(R.string.no, (dialogInterface, i) -> {
             dialogInterface.dismiss();
