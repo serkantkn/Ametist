@@ -1,15 +1,22 @@
 package com.serkantken.ametist.fragments;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -19,6 +26,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.serkantken.ametist.R;
 import com.serkantken.ametist.activities.ProfileActivity;
 import com.serkantken.ametist.adapters.UsersAdapter;
 import com.serkantken.ametist.databinding.FragmentDiscoverBinding;
@@ -26,7 +34,6 @@ import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.utilities.Constants;
 import com.serkantken.ametist.utilities.UserListener;
 import com.serkantken.ametist.utilities.Utilities;
-import com.skydoves.balloon.Balloon;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -39,8 +46,8 @@ public class DiscoverFragment extends Fragment implements UserListener
     private Utilities utilities;
     private ArrayList<UserModel> userList;
     private UsersAdapter adapter;
-    private Balloon balloon;
     private UserModel userModel;
+    private Boolean isPressed = false;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -52,9 +59,29 @@ public class DiscoverFragment extends Fragment implements UserListener
         userList = new ArrayList<>();
         utilities = new Utilities(requireContext(), requireActivity());
 
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int deviceWidth = displayMetrics.widthPixels;
+        int spanCount = 3;
+        if (deviceWidth >= utilities.convertDpToPixel(500) && deviceWidth < utilities.convertDpToPixel(550)) {
+            spanCount = 4;
+        }
+        if (deviceWidth >= utilities.convertDpToPixel(550) && deviceWidth < utilities.convertDpToPixel(600)) {
+            spanCount = 5;
+        }
+        if (deviceWidth >= utilities.convertDpToPixel(600) && deviceWidth < utilities.convertDpToPixel(650)) {
+            spanCount = 6;
+        }
+        if (deviceWidth >= utilities.convertDpToPixel(650) && deviceWidth < utilities.convertDpToPixel(700)) {
+            spanCount = 7;
+        }
+        if (deviceWidth >= utilities.convertDpToPixel(700)) {
+            spanCount = 8;
+        }
+
         adapter = new UsersAdapter(userList, getContext(), getActivity(), this);
         binding.discoverRV.setAdapter(adapter);
-        binding.discoverRV.setLayoutManager(new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL));
+        binding.discoverRV.setLayoutManager(new StaggeredGridLayoutManager(spanCount, StaggeredGridLayoutManager.VERTICAL));
         binding.discoverRefresher.setOnRefreshListener(this::getUsers);
 
         CoordinatorLayout.LayoutParams searchBlurParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -67,6 +94,27 @@ public class DiscoverFragment extends Fragment implements UserListener
         binding.discoverRV.setClipToPadding(false);
 
         getUsers();
+
+        binding.etSearch.setOnTouchListener((v, event) -> {
+            if (Objects.equals(binding.etSearch.getText().toString(), ""))
+            {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        isPressed = true;
+                        animateEditText(true, v);
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        if (isPressed)
+                        {
+                            animateEditText(false, v);
+                        }
+                        isPressed = false;
+                        showKeyboard(binding.etSearch);
+                        return true;
+                }
+            }
+            return false;
+        });
 
         binding.etSearch.addTextChangedListener(new TextWatcher() {
             @Override
@@ -129,6 +177,26 @@ public class DiscoverFragment extends Fragment implements UserListener
             }
             adapter.notifyDataSetChanged();
         });
+    }
+
+    private void animateEditText(boolean isPressed, View view) {
+        if (isPressed)
+        {
+            Animation anim = AnimationUtils.loadAnimation(requireContext(), R.anim.scale);
+            anim.setFillAfter(true);
+            view.startAnimation(anim);
+        }
+        else
+        {
+            Animation anim = AnimationUtils.loadAnimation(requireContext(), R.anim.scale_reverse);
+            view.startAnimation(anim);
+        }
+    }
+
+    private void showKeyboard(EditText editText) {
+        editText.requestFocus();
+        InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
     }
 
     @Override

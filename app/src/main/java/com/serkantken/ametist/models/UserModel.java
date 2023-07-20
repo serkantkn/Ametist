@@ -4,14 +4,10 @@ import java.io.Serializable;
 
 public class UserModel implements Serializable
 {
-    String userId, name, email, password, profilePic, profilePicSquare, picSecond, picThird, picFourth, about, gender, age, token;
-    int followerCount, followingCount;
+    String userId, name, email, password, profilePic, profilePicSquare, about, gender, age, token, looking, relationship, role, sexuality;
+    int followerCount, followingCount, height, weight;
     Boolean isOnline;
     Long lastSeen, signupDate, latitude, longitude;
-
-    public UserModel()
-    {
-    }
 
     public String getUserId() {
         return userId;
@@ -53,36 +49,12 @@ public class UserModel implements Serializable
         this.profilePic = profilePic;
     }
 
-    public String getPicSecond() {
-        return picSecond;
-    }
-
     public String getProfilePicSquare() {
         return profilePicSquare;
     }
 
     public void setProfilePicSquare(String profilePicSquare) {
         this.profilePicSquare = profilePicSquare;
-    }
-
-    public void setPicSecond(String picSecond) {
-        this.picSecond = picSecond;
-    }
-
-    public String getPicThird() {
-        return picThird;
-    }
-
-    public void setPicThird(String picThird) {
-        this.picThird = picThird;
-    }
-
-    public String getPicFourth() {
-        return picFourth;
-    }
-
-    public void setPicFourth(String picFourth) {
-        this.picFourth = picFourth;
     }
 
     public String getAbout() {
@@ -155,5 +127,69 @@ public class UserModel implements Serializable
 
     public void setSignupDate(Long signupDate) {
         this.signupDate = signupDate;
+    }
+
+    public Long getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Long latitude) {
+        this.latitude = latitude;
+    }
+
+    public Long getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Long longitude) {
+        this.longitude = longitude;
+    }
+
+    public String getLooking() {
+        return looking;
+    }
+
+    public void setLooking(String looking) {
+        this.looking = looking;
+    }
+
+    public String getRelationship() {
+        return relationship;
+    }
+
+    public void setRelationship(String relationship) {
+        this.relationship = relationship;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public int getWeight() {
+        return weight;
+    }
+
+    public void setWeight(int weight) {
+        this.weight = weight;
+    }
+
+    public String getSexuality() {
+        return sexuality;
+    }
+
+    public void setSexuality(String sexuality) {
+        this.sexuality = sexuality;
     }
 }

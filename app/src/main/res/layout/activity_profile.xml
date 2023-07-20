@@ -8,25 +8,6 @@
     android:id="@+id/profileRoot"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <com.makeramen.roundedimageview.RoundedImageView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintDimensionRatio="3:4"
-        android:id="@+id/profileImage"
-        android:src="@drawable/ic_person_profile"
-        app:layout_constraintTop_toBottomOf="@id/toolbarBlur"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        app:riv_corner_radius="10dp"
-        android:elevation="5dp"/>
-
-    <eightbitlab.com.blurview.BlurView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:id="@+id/photoBlur"
-        app:layout_constraintTop_toBottomOf="@id/toolbarBlur"
-        app:layout_constraintBottom_toBottomOf="parent"/>
-
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -41,6 +22,19 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
+                <androidx.recyclerview.widget.RecyclerView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/profileImageRV"
+                    android:orientation="horizontal"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/photo_item"
+                    tools:itemCount="2"
+                    android:scrollbars="none"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
                 <TextView
                     android:id="@+id/username2"
                     android:layout_width="wrap_content"
@@ -51,9 +45,8 @@
                     android:shadowColor="@color/accent_purple_dark"
                     android:shadowRadius="10"
                     android:textSize="32sp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    android:layout_marginStart="16dp"
+                    app:layout_constraintStart_toStartOf="@id/cardSeek"
+                    app:layout_constraintTop_toBottomOf="@id/profileImageRV"
                     android:layout_marginTop="10dp"/>
 
                 <androidx.cardview.widget.CardView
@@ -64,10 +57,9 @@
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
                     app:layout_constraintTop_toBottomOf="@id/username2"
-                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintStart_toStartOf="@id/cardSeek"
                     app:layout_constraintEnd_toStartOf="@id/cardFollowerCount"
                     android:layout_marginTop="10dp"
-                    android:layout_marginStart="16dp"
                     android:layout_marginEnd="5dp">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
@@ -121,9 +113,8 @@
                     app:cardElevation="0dp"
                     app:layout_constraintTop_toTopOf="@id/cardFollowCount"
                     app:layout_constraintStart_toEndOf="@id/cardFollowCount"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginStart="5dp"
-                    android:layout_marginEnd="16dp">
+                    app:layout_constraintEnd_toEndOf="@id/cardSeek"
+                    android:layout_marginStart="5dp">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -176,24 +167,21 @@
                     android:fontFamily="@font/jost_bold"
                     android:textSize="24sp"
                     app:layout_constraintTop_toBottomOf="@id/cardFollowCount"
-                    app:layout_constraintStart_toStartOf="parent"
-                    android:layout_marginStart="16dp"
+                    app:layout_constraintStart_toStartOf="@id/cardSeek"
                     android:layout_marginTop="6dp"/>
 
                 <com.ms.square.android.expandabletextview.ExpandableTextView
                     android:id="@+id/textAbout"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     app:animDuration="500"
                     app:maxCollapsedLines="2"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="@id/cardSeek"
+                    app:layout_constraintStart_toStartOf="@id/cardSeek"
                     app:layout_constraintTop_toBottomOf="@id/titleAbout"
                     app:layout_constraintVertical_bias="0"
-                    android:layout_marginTop="6dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginStart="16dp">
+                    android:layout_marginTop="6dp">
 
                     <TextView
                         android:id="@+id/expandable_text"
@@ -221,10 +209,9 @@
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
                     app:layout_constraintTop_toBottomOf="@id/textAbout"
-                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintStart_toStartOf="@id/cardSeek"
                     app:layout_constraintEnd_toStartOf="@id/cardAge"
                     android:layout_marginTop="6dp"
-                    android:layout_marginStart="16dp"
                     android:layout_marginEnd="5dp">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
@@ -273,10 +260,9 @@
                     app:cardElevation="0dp"
                     app:layout_constraintTop_toBottomOf="@id/textAbout"
                     app:layout_constraintStart_toEndOf="@id/cardGender"
-                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintEnd_toEndOf="@id/cardSeek"
                     android:layout_marginTop="6dp"
-                    android:layout_marginStart="5dp"
-                    android:layout_marginEnd="16dp">
+                    android:layout_marginStart="5dp">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -318,6 +304,7 @@
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardSeek"
                     android:layout_width="0dp"
+                    app:layout_constraintWidth_max="600dp"
                     android:layout_height="wrap_content"
                     app:cardBackgroundColor="@color/primary_dark_midtransparent"
                     app:cardCornerRadius="20dp"
@@ -374,10 +361,9 @@
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
                     app:layout_constraintTop_toBottomOf="@id/cardSeek"
-                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintStart_toStartOf="@id/cardSeek"
                     app:layout_constraintEnd_toStartOf="@id/cardWeight"
                     android:layout_marginTop="10dp"
-                    android:layout_marginStart="16dp"
                     android:layout_marginEnd="5dp">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
@@ -426,10 +412,9 @@
                     app:cardElevation="0dp"
                     app:layout_constraintTop_toBottomOf="@id/cardSeek"
                     app:layout_constraintStart_toEndOf="@id/cardHeight"
-                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintEnd_toEndOf="@id/cardSeek"
                     android:layout_marginTop="10dp"
-                    android:layout_marginStart="5dp"
-                    android:layout_marginEnd="16dp">
+                    android:layout_marginStart="5dp">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -476,11 +461,9 @@
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
                     app:layout_constraintTop_toBottomOf="@id/cardHeight"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp">
+                    app:layout_constraintStart_toStartOf="@id/cardSeek"
+                    app:layout_constraintEnd_toEndOf="@id/cardSeek"
+                    android:layout_marginTop="10dp">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -520,18 +503,65 @@
                 </androidx.cardview.widget.CardView>
 
                 <androidx.cardview.widget.CardView
-                    android:id="@+id/cardRole"
+                    android:id="@+id/cardSexuality"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     app:cardBackgroundColor="@color/primary_dark_midtransparent"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
                     app:layout_constraintTop_toBottomOf="@id/cardRelationship"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp">
+                    app:layout_constraintStart_toStartOf="@id/cardSeek"
+                    app:layout_constraintEnd_toEndOf="@id/cardSeek"
+                    android:layout_marginTop="10dp">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/titleSexuality"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginBottom="10dp"
+                            android:fontFamily="@font/jost_regular"
+                            android:text="@string/sexuality"
+                            android:textColor="@color/accent_red_light"
+                            android:textSize="17sp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/textSexuality"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:fontFamily="@font/jost_regular"
+                            android:text="@string/sexuality"
+                            android:textColor="@color/primary_text"
+                            android:textSize="17sp"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0"
+                            app:layout_constraintStart_toEndOf="@id/titleSexuality"
+                            app:layout_constraintTop_toTopOf="@+id/titleSexuality" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardRole"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:cardBackgroundColor="@color/primary_dark_midtransparent"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="0dp"
+                    app:layout_constraintTop_toBottomOf="@id/cardSexuality"
+                    app:layout_constraintStart_toStartOf="@id/cardSeek"
+                    app:layout_constraintEnd_toEndOf="@id/cardSeek"
+                    android:layout_marginTop="10dp">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -570,6 +600,55 @@
 
                 </androidx.cardview.widget.CardView>
 
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardSignupDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:cardBackgroundColor="@color/primary_dark_midtransparent"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="0dp"
+                    app:layout_constraintTop_toBottomOf="@id/cardRole"
+                    app:layout_constraintStart_toStartOf="@id/cardSeek"
+                    app:layout_constraintEnd_toEndOf="@id/cardSeek"
+                    android:layout_marginTop="10dp">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/titleSignupDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginBottom="10dp"
+                            android:fontFamily="@font/jost_regular"
+                            android:text="@string/sign_up_date"
+                            android:textColor="@color/accent_red_light"
+                            android:textSize="17sp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/textSignupDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:fontFamily="@font/jost_regular"
+                            android:text="@string/sign_up_date"
+                            android:textColor="@color/primary_text"
+                            android:textSize="17sp"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0"
+                            app:layout_constraintStart_toEndOf="@id/titleSignupDate"
+                            app:layout_constraintTop_toTopOf="@+id/titleSignupDate" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </androidx.cardview.widget.CardView>
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -578,9 +657,8 @@
                     android:textColor="@color/accent_blue_dark"
                     android:fontFamily="@font/jost_bold"
                     android:textSize="24sp"
-                    app:layout_constraintTop_toBottomOf="@id/cardRole"
-                    app:layout_constraintStart_toStartOf="parent"
-                    android:layout_marginStart="16dp"
+                    app:layout_constraintTop_toBottomOf="@id/cardSignupDate"
+                    app:layout_constraintStart_toStartOf="@id/cardSeek"
                     android:layout_marginTop="6dp"/>
 
                 <androidx.recyclerview.widget.RecyclerView

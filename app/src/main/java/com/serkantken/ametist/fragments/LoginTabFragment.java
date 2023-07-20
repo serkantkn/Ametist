@@ -20,6 +20,9 @@ import com.serkantken.ametist.R;
 import com.serkantken.ametist.activities.MainActivity;
 import com.serkantken.ametist.databinding.FragmentLoginTabBinding;
 import com.serkantken.ametist.models.UserModel;
+import com.serkantken.ametist.utilities.Constants;
+
+import java.util.Objects;
 
 public class LoginTabFragment extends Fragment
 {
@@ -48,7 +51,7 @@ public class LoginTabFragment extends Fragment
                 auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
                     if (task.isSuccessful())
                     {
-                        FirebaseFirestore.getInstance().collection("Users").get().addOnCompleteListener(task1 -> {
+                        FirebaseFirestore.getInstance().collection(Constants.DATABASE_PATH_USERS).get().addOnCompleteListener(task1 -> {
                             if (task1.isSuccessful())
                             {
                                 UserModel user = new UserModel();
@@ -61,6 +64,27 @@ public class LoginTabFragment extends Fragment
                                         user.setAbout(documentSnapshot.getString("about"));
                                         user.setGender(documentSnapshot.getString("gender"));
                                         user.setAge(documentSnapshot.getString("age"));
+                                        user.setLooking(documentSnapshot.getString("looking"));
+                                        user.setRelationship(documentSnapshot.getString("relationship"));
+                                        user.setRole(documentSnapshot.getString("role"));
+                                        Object height = documentSnapshot.get("height");
+                                        if (height != null)
+                                        {
+                                            user.setHeight(Integer.parseInt(height.toString()));
+                                        }
+                                        else
+                                        {
+                                            FirebaseFirestore.getInstance().collection(Constants.DATABASE_PATH_USERS).document(auth.getUid()).update("height", 130);
+                                        }
+                                        Object weight = documentSnapshot.get("weight");
+                                        if (weight != null)
+                                        {
+                                            user.setWeight(Integer.parseInt(weight.toString()));
+                                        }
+                                        else
+                                        {
+                                            FirebaseFirestore.getInstance().collection(Constants.DATABASE_PATH_USERS).document(auth.getUid()).update("weight", 30);
+                                        }
                                         user.setUserId(documentSnapshot.getId());
                                         Hawk.put("username", documentSnapshot.getString("name"));
                                     }
@@ -80,7 +104,7 @@ public class LoginTabFragment extends Fragment
                     }
                 }).addOnFailureListener(e -> {
                     loading(false);
-                    showToast(getString(R.string.error_at_login)+e.toString());
+                    showToast(getString(R.string.error_at_login)+ e);
                 });
             }
         });

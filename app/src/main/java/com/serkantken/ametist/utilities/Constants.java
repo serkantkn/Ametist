@@ -1,5 +1,10 @@
 package com.serkantken.ametist.utilities;
 
+import android.content.Context;
+
+import com.serkantken.ametist.R;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Constants

@@ -35,6 +35,7 @@ import com.skydoves.balloon.ArrowPositionRules;
 import com.skydoves.balloon.Balloon;
 import com.skydoves.balloon.BalloonAnimation;
 import com.skydoves.balloon.BalloonSizeSpec;
+import com.skydoves.balloon.OnBalloonDismissListener;
 
 import java.util.Objects;
 
@@ -76,7 +77,6 @@ public class MainActivity extends BaseActivity
             {
                 new Handler().postDelayed(() -> {
                     showBalloon(getString(R.string.your_profile_here), binding.profileImage, 3);
-                    Hawk.put(Constants.IS_BALLOONS_SHOWED, true);
                 }, 2000);
             }
         }
@@ -84,50 +84,59 @@ public class MainActivity extends BaseActivity
         {
             Hawk.put(Constants.IS_BALLOONS_SHOWED, false);
         }
-        binding.buttonSettings.setOnClickListener(view -> startActivity(new Intent(MainActivity.this, SettingsActivity.class)));
 
-        binding.buttonQrScanner.setOnClickListener(v -> {
-            IntentIntegrator integrator = new IntentIntegrator(this);
-            integrator.setPrompt(getString(R.string.scan_qr_code_message)); // Kullanıcıya gösterilecek mesaj
-            integrator.setOrientationLocked(false); // Ekran yönü kilitli değil
-            integrator.setBeepEnabled(false);
-            integrator.initiateScan(); // Tarama işlemini başlat
-        });
+        binding.profileImage.setOnClickListener(v -> animate(v, 1));
 
-        binding.profileImage.setOnClickListener(view -> {
-            final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.BottomSheetDialogTheme_Chat);
-            LayoutProfileBinding bottomSheetView = LayoutProfileBinding.inflate(getLayoutInflater());
+        binding.buttonQrScanner.setOnClickListener(v -> animate(v, 2));
 
-            utilities.blur(bottomSheetView.bottomSheetContainer, 10f, false);
-            bottomSheetView.username.setText(user.getName());
-            Glide.with(this).load(user.getProfilePic()).placeholder(R.drawable.ic_person).into(bottomSheetView.profileImage);
-            bottomSheetView.textAbout.setText(user.getAbout());
-            bottomSheetView.textAge.setText(user.getAge());
-            if (user.getGender().equals("0") || user.getGender().isEmpty())
-            {
-                bottomSheetView.textGender.setText("-");
+        binding.buttonSettings.setOnClickListener(v -> animate(v, 3));
+    }
+
+    private void animate(View view, int mode)
+    {
+        Animation anim = AnimationUtils.loadAnimation(MainActivity.this, R.anim.scale);
+        view.startAnimation(anim);
+        anim.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
             }
-            else if (user.getGender().equals("1"))
-            {
-                bottomSheetView.textGender.setText(getString(R.string.man));
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                Animation anim = AnimationUtils.loadAnimation(MainActivity.this, R.anim.scale_reverse);
+                view.startAnimation(anim);
+                anim.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+                    }
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        switch (mode)
+                        {
+                            case 1:
+                                Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+                                intent.putExtra("receiverUser", user);
+                                startActivity(intent);
+                                break;
+                            case 2:
+                                IntentIntegrator integrator = new IntentIntegrator(MainActivity.this);
+                                integrator.setPrompt(getString(R.string.scan_qr_code_message));
+                                integrator.setOrientationLocked(false);
+                                integrator.setBeepEnabled(false);
+                                integrator.initiateScan();
+                                break;
+                            case 3:
+                                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+                                break;
+                        }
+                    }
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+                    }
+                });
             }
-            else if (user.getGender().equals("2"))
-            {
-                bottomSheetView.textGender.setText(getString(R.string.woman));
+            @Override
+            public void onAnimationRepeat(Animation animation) {
             }
-
-            bottomSheetView.buttonMore.setOnClickListener(view1 -> {
-                Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
-                intent.putExtra("receiverUser", user);
-                startActivity(intent);
-                bottomSheetDialog.dismiss();
-            });
-            bottomSheetView.buttonClose.setOnClickListener(view1 -> bottomSheetDialog.dismiss());
-            bottomSheetView.buttonEdit.setVisibility(View.GONE);
-            bottomSheetView.buttonMessage.setVisibility(View.GONE);
-
-            bottomSheetDialog.setContentView(bottomSheetView.getRoot());
-            bottomSheetDialog.show();
         });
     }
 
@@ -250,8 +259,6 @@ public class MainActivity extends BaseActivity
                 Toast.makeText(this, "Tarama iptal edildi", Toast.LENGTH_LONG).show();
             } else {
                 String qrText = result.getContents();
-                // QR kodu başarıyla tarandı, yapılacak işlemler burada gerçekleştirilebilir
-                Toast.makeText(this, qrText, Toast.LENGTH_SHORT).show();
 
                 database.collection(Constants.DATABASE_PATH_USERS).get().addOnCompleteListener(task -> {
                     if (task.isSuccessful())
@@ -313,5 +320,6 @@ public class MainActivity extends BaseActivity
                 balloon.showAlignLeft(view);
                 break;
         }
+        balloon.setOnBalloonDismissListener(() -> Hawk.put(Constants.IS_BALLOONS_SHOWED, true));
     }
 }

@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
@@ -27,8 +28,13 @@ import com.serkantken.ametist.models.SettingsModel;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.utilities.Constants;
 import com.serkantken.ametist.utilities.Utilities;
+import com.skydoves.balloon.ArrowPositionRules;
+import com.skydoves.balloon.Balloon;
+import com.skydoves.balloon.BalloonAnimation;
+import com.skydoves.balloon.BalloonSizeSpec;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Objects;
 
 public class SignupTabFragment extends Fragment
@@ -94,10 +100,6 @@ public class SignupTabFragment extends Fragment
                 {
                     gender = "2";
                 }
-                else
-                {
-                    gender = "0";
-                }
                 email = binding.inputMail.getText().toString().trim().toLowerCase();
                 password = binding.inputPassword.getText().toString();
 
@@ -119,7 +121,16 @@ public class SignupTabFragment extends Fragment
                 userModel.setAge(age);
                 userModel.setGender(gender);
                 userModel.setEmail(email);
-                userModel.setPassword(password);
+                userModel.setFollowingCount(0);
+                userModel.setFollowerCount(0);
+                userModel.setWeight(30);
+                userModel.setHeight(130);
+                userModel.setRole("");
+                userModel.setSexuality("");
+                userModel.setRelationship("");
+                userModel.setAbout("");
+                userModel.setLooking("");
+                userModel.setSignupDate(new Date().getTime());
                 userModel.setOnline(true);
 
                 database.collection("Users").document(Objects.requireNonNull(auth.getUid())).set(userModel).addOnCompleteListener(task1 -> {
@@ -165,6 +176,11 @@ public class SignupTabFragment extends Fragment
             showError(binding.inputPassword, getString(R.string.six_char_password));
             return false;
         }
+        else if (!binding.radioMale.isChecked() && !binding.radioFemale.isChecked())
+        {
+            showBalloon(binding.radioGender, "Cinsiyet belirtmek zorunludur", 3);
+            return false;
+        }
         else
         {
             return true;
@@ -206,5 +222,38 @@ public class SignupTabFragment extends Fragment
     private void showToast(String message)
     {
         Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
+    private void showBalloon(View view, String message, int position)
+    {
+        Balloon balloon = new Balloon.Builder(requireContext())
+                .setArrowSize(10)
+                .setWidth(BalloonSizeSpec.WRAP)
+                .setHeight(BalloonSizeSpec.WRAP)
+                .setText(message)
+                .setTextSize(15f)
+                .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                .setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.accent_blue_dark))
+                .setArrowPosition(0.5f)
+                .setArrowPositionRules(ArrowPositionRules.ALIGN_ANCHOR)
+                .setPadding(12)
+                .setCornerRadius(8f)
+                .setBalloonAnimation(BalloonAnimation.ELASTIC)
+                .build();
+        switch (position)
+        {
+            case 1:
+                balloon.showAlignTop(view);
+                break;
+            case 2:
+                balloon.showAlignRight(view);
+                break;
+            case 3:
+                balloon.showAlignBottom(view);
+                break;
+            case 4:
+                balloon.showAlignLeft(view);
+                break;
+        }
     }
 }

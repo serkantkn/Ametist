@@ -127,4 +127,26 @@
     <string name="reply_to">Reply to this message:</string>
     <string name="answer">Answer</string>
     <string name="delete">Delete</string>
+    <string name="single">Single</string>
+    <string name="married">Married</string>
+    <string name="divorced">Divorced</string>
+    <string name="top">Top</string>
+    <string name="more_top">More Top</string>
+    <string name="versatile">Versatile</string>
+    <string name="more_bottom">More Bottom</string>
+    <string name="bottom">Bottom</string>
+    <string name="friendship">Friendship</string>
+    <string name="love">Love</string>
+    <string name="conversation">Conversation</string>
+    <string name="gay">Gay</string>
+    <string name="hetero">Heterosexual</string>
+    <string name="lesbian">Lesbian</string>
+    <string name="bisex">Bisexual</string>
+    <string name="trans">Transexual</string>
+    <string name="inter">Intersexual</string>
+    <string name="other">Ohter</string>
+    <string name="not_show">Do not show</string>
+    <string name="sexuality">Sexuality</string>
+    <string name="sign_up_date">Sign Up Date</string>
+    <string name="kg" translatable="false">kg</string>
 </resources>

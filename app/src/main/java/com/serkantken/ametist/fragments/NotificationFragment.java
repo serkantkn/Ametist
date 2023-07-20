@@ -1,5 +1,6 @@
 package com.serkantken.ametist.fragments;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -7,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -28,6 +30,7 @@ import com.serkantken.ametist.utilities.Utilities;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Objects;
 
 import eightbitlab.com.blurview.BlurView;
 
@@ -42,7 +45,7 @@ public class NotificationFragment extends Fragment implements UserListener
     NotificationModel notificationModel;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         binding = FragmentNotificationBinding.inflate(inflater, container, false);
 
@@ -62,11 +65,12 @@ public class NotificationFragment extends Fragment implements UserListener
         return binding.getRoot();
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void getNotifications()
     {
         binding.notifRefresher.setRefreshing(true);
         database.collection("Users")
-                .document(auth.getUid())
+                .document(Objects.requireNonNull(auth.getUid()))
                 .collection("notifications")
                 .get().addOnCompleteListener(task -> {
                     if (task.isSuccessful())
@@ -91,46 +95,8 @@ public class NotificationFragment extends Fragment implements UserListener
 
     @Override
     public void onUserClicked(UserModel userModel) {
-        final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme_Chat);
-        LayoutProfileBinding bottomSheetView = LayoutProfileBinding.inflate(getLayoutInflater());
-
-        Utilities utilities = new Utilities(requireContext(), requireActivity());
-        utilities.blur((BlurView) bottomSheetView.bottomSheetContainer, 10f, false);
-        bottomSheetView.username.setText(userModel.getName());
-        Glide.with(this).load(userModel.getProfilePic()).placeholder(R.drawable.ic_person).into(bottomSheetView.profileImage);
-        bottomSheetView.textAbout.setText(userModel.getAbout());
-        bottomSheetView.textAge.setText(userModel.getAge());
-        bottomSheetView.followCount.setText(""+userModel.getFollowingCount());
-        bottomSheetView.followerCount.setText(""+userModel.getFollowerCount());
-        switch (userModel.getGender()) {
-            case "0":
-                bottomSheetView.textGender.setText("-");
-                break;
-            case "1":
-                bottomSheetView.textGender.setText(getString(R.string.man));
-                break;
-            case "2":
-                bottomSheetView.textGender.setText(getString(R.string.woman));
-                break;
-        }
-
-        bottomSheetView.buttonMore.setOnClickListener(view1 -> {
-            Intent intent = new Intent(getContext(), ProfileActivity.class);
-            intent.putExtra("receiverUser", userModel);
-            requireContext().startActivity(intent);
-            bottomSheetDialog.dismiss();
-        });
-        bottomSheetView.buttonMessage.setOnClickListener(view -> {
-            Intent intent = new Intent(getContext(), ChatActivity.class);
-            intent.putExtra("receiverUser", userModel);
-            requireContext().startActivity(intent);
-            bottomSheetDialog.dismiss();
-        });
-        bottomSheetView.buttonClose.setOnClickListener(view1 -> bottomSheetDialog.dismiss());
-        bottomSheetView.buttonEdit.setVisibility(View.GONE);
-
-        bottomSheetDialog.setContentView(bottomSheetView.getRoot());
-        bottomSheetDialog.show();
-
+        Intent intent = new Intent(requireContext(), ProfileActivity.class);
+        intent.putExtra("receiverUser", userModel);
+        requireContext().startActivity(intent);
     }
 }

@@ -18,7 +18,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.bumptech.glide.Glide;
+import com.github.marlonlom.utilities.timeago.TimeAgo;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -31,14 +31,17 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
+import com.serkantken.ametist.adapters.PhotoAdapter;
 import com.serkantken.ametist.adapters.PostAdapter;
 import com.serkantken.ametist.databinding.ActivityProfileBinding;
 import com.serkantken.ametist.databinding.LayoutQrCodeBinding;
+import com.serkantken.ametist.models.PhotoModel;
 import com.serkantken.ametist.models.PostModel;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.network.ApiClient;
 import com.serkantken.ametist.network.ApiService;
 import com.serkantken.ametist.utilities.Constants;
+import com.serkantken.ametist.utilities.PhotoListener;
 import com.serkantken.ametist.utilities.Utilities;
 
 import org.json.JSONArray;
@@ -55,7 +58,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ProfileActivity extends BaseActivity
+public class ProfileActivity extends BaseActivity implements PhotoListener
 {
     private ActivityProfileBinding binding;
     private ArrayList<PostModel> postModels;
@@ -64,6 +67,8 @@ public class ProfileActivity extends BaseActivity
     private FirebaseFirestore database;
     private UserModel user;
     private Utilities utilities;
+    private ArrayList<PhotoModel> pictureList;
+    private PhotoAdapter photoAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -79,9 +84,6 @@ public class ProfileActivity extends BaseActivity
         binding.navbarBlur.setMinimumHeight(utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT));
         utilities.blur(binding.navbarBlur, 10f, false);
 
-        utilities.blur(binding.photoBlur, 10f, false);
-        binding.photoBlur.setVisibility(View.GONE);
-
         binding.toolbarBlur.setPadding(0, utilities.getStatusBarHeight(), 0, 0);
 
         Display display = getWindowManager().getDefaultDisplay();
@@ -89,7 +91,8 @@ public class ProfileActivity extends BaseActivity
         display.getSize(size);
         int screenHeight = size.y;
 
-        binding.scrollView.setPadding(0, utilities.getStatusBarHeight()+(screenHeight-(screenHeight/4)), 0, utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT));
+        //utilities.getStatusBarHeight()+(screenHeight-(screenHeight/4))
+        binding.scrollView.setPadding(0, utilities.getStatusBarHeight()+utilities.convertDpToPixel(64), 0, utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT));
         binding.scrollView.setClipToPadding(false);
 
         ConstraintSet constraintSet = new ConstraintSet();
@@ -102,13 +105,17 @@ public class ProfileActivity extends BaseActivity
         auth = FirebaseAuth.getInstance();
         database = FirebaseFirestore.getInstance();
         postModels = new ArrayList<>();
-
-        getUserInfo();
-        getPosts();
+        pictureList = new ArrayList<>();
 
         adapter = new PostAdapter(postModels, ProfileActivity.this, ProfileActivity.this);
         binding.posts.setAdapter(adapter);
         binding.posts.setLayoutManager(new LinearLayoutManager(ProfileActivity.this));
+
+        photoAdapter = new PhotoAdapter(pictureList, ProfileActivity.this, this);
+        binding.profileImageRV.setAdapter(photoAdapter);
+
+        getUserInfo();
+        getPosts();
 
         binding.buttonBack.setOnClickListener(view -> onBackPressed());
 
@@ -117,28 +124,15 @@ public class ProfileActivity extends BaseActivity
             binding.buttonBlock.setVisibility(View.GONE);
         }
 
-        binding.profileImage.setOnClickListener(view -> {
-            if (!Objects.isNull(binding.profileImage.getTag()))
-            {
-                Intent intent = new Intent(ProfileActivity.this, FullProfilePhotoActivity.class);
-                intent.putExtra("pictureUrl", user.getProfilePic());
-                startActivity(intent);
-            }
-        });
-
         binding.scrollView.setOnScrollChangeListener((View.OnScrollChangeListener) (view, x, y, oldX, oldY) -> {
             if (y > oldY && binding.buttonMessage.isExtended())
             {
-                binding.photoBlur.setVisibility(View.VISIBLE);
-                binding.profileImage.setElevation(0);
                 binding.buttonMessage.shrink();
                 if (!user.getUserId().equals(auth.getUid()))
                     binding.buttonFollow.hide();
             }
             if (y < oldY && !binding.buttonMessage.isExtended())
             {
-                binding.photoBlur.setVisibility(View.VISIBLE);
-                binding.profileImage.setElevation(0);
                 binding.buttonMessage.extend();
                 if (!user.getUserId().equals(auth.getUid()))
                     binding.buttonFollow.show();
@@ -153,18 +147,12 @@ public class ProfileActivity extends BaseActivity
                 binding.username.setVisibility(View.INVISIBLE);
                 binding.username2.setVisibility(View.VISIBLE);
             }
-            if (y == 0)
-            {
-                binding.photoBlur.setVisibility(View.GONE);
-                binding.profileImage.setElevation(5f);
-            }
         });
 
         binding.buttonMessage.setOnClickListener(view -> {
             if (user.getUserId().equals(auth.getUid()))
             {
                 startActivity(new Intent(ProfileActivity.this, ProfileEditActivity.class));
-                finish();
             }
             else
             {
@@ -368,6 +356,42 @@ public class ProfileActivity extends BaseActivity
                         user.setGender(documentSnapshot.getString("gender"));
                         user.setName(documentSnapshot.getString("name"));
                         user.setAbout(documentSnapshot.getString("about"));
+                        user.setRole(documentSnapshot.getString("role"));
+                        user.setLooking(documentSnapshot.getString("looking"));
+                        user.setRelationship(documentSnapshot.getString("relationship"));
+                        user.setSexuality(documentSnapshot.getString("sexuality"));
+                        user.setFollowerCount(Integer.parseInt(Objects.requireNonNull(documentSnapshot.get("followerCount")).toString()));
+                        user.setFollowingCount(Integer.parseInt(Objects.requireNonNull(documentSnapshot.get("followingCount")).toString()));
+                        Object height = documentSnapshot.get("height");
+                        if (height != null)
+                        {
+                            user.setHeight(Integer.parseInt(height.toString()));
+                        }
+                        else
+                        {
+                            database.collection(Constants.DATABASE_PATH_USERS).document(user.getUserId()).update("height", 130);
+                            user.setHeight(130);
+                        }
+                        Object weight = documentSnapshot.get("weight");
+                        if (weight != null)
+                        {
+                            user.setWeight(Integer.parseInt(weight.toString()));
+                        }
+                        else
+                        {
+                            database.collection(Constants.DATABASE_PATH_USERS).document(user.getUserId()).update("weight", 30);
+                            user.setWeight(30);
+                        }
+                        Object signupDate = documentSnapshot.get("signupDate");
+                        if (signupDate != null)
+                        {
+                            user.setSignupDate(Long.parseLong(signupDate.toString()));
+                        }
+                        else
+                        {
+                            database.collection(Constants.DATABASE_PATH_USERS).document(user.getUserId()).update("signupDate", Long.parseLong("1685965594357"));
+                            user.setSignupDate(Long.parseLong("1685965594357"));
+                        }
 
                         if (documentSnapshot.getId().equals(auth.getUid()))
                         {
@@ -375,6 +399,26 @@ public class ProfileActivity extends BaseActivity
                             binding.buttonMessage.setIcon(AppCompatResources.getDrawable(this, R.drawable.ic_edit));
                             binding.buttonMessage.setText(getString(R.string.edit));
                         }
+
+                        database.collection(Constants.DATABASE_PATH_USERS).document(Objects.requireNonNull(user.getUserId())).collection("photos").get().addOnCompleteListener(task1 -> {
+                            if (task1.isSuccessful())
+                            {
+                                pictureList.clear();
+                                for (QueryDocumentSnapshot photoIDs : task1.getResult())
+                                {
+                                    if (photoIDs.exists())
+                                    {
+                                        PhotoModel photo = new PhotoModel();
+                                        photo.setPhotoId(photoIDs.getId());
+                                        photo.setLink(photoIDs.getString("link"));
+                                        photo.setDate(photoIDs.getLong("date"));
+                                        pictureList.add(photo);
+                                    }
+                                }
+                                pictureList.sort(Comparator.comparing(PhotoModel::getDate));
+                                photoAdapter.notifyDataSetChanged();
+                            }
+                        });
                     }
                 }
 
@@ -383,9 +427,6 @@ public class ProfileActivity extends BaseActivity
                 binding.textAbout.setText(user.getAbout());
                 binding.textAge.setText(user.getAge());
                 switch (user.getGender()) {
-                    case "0":
-                        binding.textGender.setText("-");
-                        break;
                     case "1":
                         binding.textGender.setText(getString(R.string.man));
                         break;
@@ -393,8 +434,13 @@ public class ProfileActivity extends BaseActivity
                         binding.textGender.setText(getString(R.string.woman));
                         break;
                 }
-                Glide.with(ProfileActivity.this).load(user.getProfilePic()).placeholder(R.drawable.ic_person_profile).into(binding.profileImage);
-                binding.profileImage.setTag(user.getProfilePic());
+                binding.textRole.setText(user.getRole());
+                binding.textRelationship.setText(user.getRelationship());
+                binding.textSeek.setText(user.getLooking());
+                binding.textHeight.setText(user.getHeight()+" cm");
+                binding.textWeight.setText(user.getWeight()+" kg");
+                binding.textSexuality.setText(user.getSexuality());
+                binding.textSignupDate.setText(TimeAgo.using(user.getSignupDate()));
             }
         });
     }
@@ -466,6 +512,18 @@ public class ProfileActivity extends BaseActivity
     }
 
     @Override
+    public void onClick(String link) {
+        Intent intent = new Intent(ProfileActivity.this, FullProfilePhotoActivity.class);
+        intent.putExtra("pictureUrl", link);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onRemove(long date, int position) {
+
+    }
+
+    @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return true;
@@ -475,5 +533,6 @@ public class ProfileActivity extends BaseActivity
     protected void onResume() {
         super.onResume();
         getUserInfo();
+        getPosts();
     }
 }

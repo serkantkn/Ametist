@@ -123,4 +123,25 @@
     <string name="crop_portrait">Büyük resmi kırp</string>
     <string name="crop_square">Keşfet için kırp</string>
     <string name="delete">Sil</string>
+    <string name="single">Bekar</string>
+    <string name="married">Evli</string>
+    <string name="divorced">Boşanmış</string>
+    <string name="top">Aktif</string>
+    <string name="more_top">Aktif Ağırlıklı</string>
+    <string name="versatile">Aktif ve Pasif</string>
+    <string name="more_bottom">Pasif Ağırlıklı</string>
+    <string name="bottom">Pasif</string>
+    <string name="friendship">Arkadaşlık</string>
+    <string name="love">Aşk</string>
+    <string name="conversation">Sohbet</string>
+    <string name="hetero">Heteroseksüel</string>
+    <string name="lesbian">Lezbiyen</string>
+    <string name="gay">Gay</string>
+    <string name="bisex">Biseksüel</string>
+    <string name="trans">Transseksüel</string>
+    <string name="inter">İnterseksüel</string>
+    <string name="other">Diğer</string>
+    <string name="not_show">Gizle</string>
+    <string name="sexuality">Cinsel Yönelim</string>
+    <string name="sign_up_date">Kayıt Olma Tarihi</string>
 </resources>

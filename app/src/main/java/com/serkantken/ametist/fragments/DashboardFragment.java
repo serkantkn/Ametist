@@ -121,12 +121,12 @@ public class DashboardFragment extends Fragment
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     isPressed = true;
-                    animateCard(true);
+                    animateCard(true, binding.newPostButton, 1);
                     return true;
                 case MotionEvent.ACTION_UP:
                     if (isPressed)
                     {
-                        animateCard(false);
+                        animateCard(false, binding.newPostButton, 1);
                     }
                     isPressed = false;
                     return true;
@@ -152,32 +152,56 @@ public class DashboardFragment extends Fragment
         return binding.getRoot();
     }
 
-    private void animateCard(boolean isPressed)
+    private void animateCard(boolean isPressed, View view, int mode)
     {
         if (isPressed)
         {
             Animation anim = AnimationUtils.loadAnimation(requireContext(), R.anim.scale);
             anim.setFillAfter(true);
-            binding.newPostButton.startAnimation(anim);
+            view.startAnimation(anim);
         }
         else
         {
             Animation anim = AnimationUtils.loadAnimation(requireContext(), R.anim.scale_reverse);
-            binding.newPostButton.startAnimation(anim);
+            view.startAnimation(anim);
             anim.setAnimationListener(new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
-
                 }
-
                 @Override
                 public void onAnimationEnd(Animation animation) {
-                    showNewPostDialog();
-                }
+                    switch (mode)
+                    {
+                        case 1:
+                            showNewPostDialog();
+                            break;
+                        case 2:
+                            showBalloon(dialogBinding.buttonAddPhoto, 3);
+                            BlurView blurView = balloon.getContentView().findViewById(R.id.blur);
+                            utilities.blur(blurView, 10f, false);
 
+                            CardView cameraButton = balloon.getContentView().findViewById(R.id.buttonCamera);
+                            cameraButton.setOnClickListener(v -> {
+                                ImagePicker.with(requireActivity()).cameraOnly().cropSquare().createIntent(intent -> {
+                                    getContent.launch(intent);
+                                    return null;
+                                });
+                                balloon.dismiss();
+                            });
+
+                            CardView galleryButton = balloon.getContentView().findViewById(R.id.buttonGallery);
+                            galleryButton.setOnClickListener(v -> {
+                                ImagePicker.with(requireActivity()).galleryOnly().cropSquare().createIntent(intent -> {
+                                    getContent.launch(intent);
+                                    return null;
+                                });
+                                balloon.dismiss();
+                            });
+                            break;
+                    }
+                }
                 @Override
                 public void onAnimationRepeat(Animation animation) {
-
                 }
             });
         }
@@ -195,28 +219,21 @@ public class DashboardFragment extends Fragment
 
         Glide.with(requireContext()).load(currentUser.getProfilePic()).placeholder(AppCompatResources.getDrawable(requireContext(), R.drawable.ic_person_profile)).into(dialogBinding.profileImage);
         dialogBinding.username.setText(currentUser.getName());
-        dialogBinding.buttonAddPhoto.setOnClickListener(view1 -> {
-            showBalloon(dialogBinding.buttonAddPhoto, 3);
-            BlurView blurView = balloon.getContentView().findViewById(R.id.blur);
-            utilities.blur(blurView, 10f, false);
-
-            CardView cameraButton = balloon.getContentView().findViewById(R.id.buttonCamera);
-            cameraButton.setOnClickListener(v -> {
-                ImagePicker.with(this).cameraOnly().cropSquare().createIntent(intent -> {
-                    getContent.launch(intent);
-                    return null;
-                });
-                balloon.dismiss();
-            });
-
-            CardView galleryButton = balloon.getContentView().findViewById(R.id.buttonGallery);
-            galleryButton.setOnClickListener(v -> {
-                ImagePicker.with(this).galleryOnly().cropSquare().createIntent(intent -> {
-                    getContent.launch(intent);
-                    return null;
-                });
-                balloon.dismiss();
-            });
+        dialogBinding.buttonAddPhoto.setOnTouchListener((view, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    isPressed = true;
+                    animateCard(true, dialogBinding.buttonAddPhoto, 2);
+                    return true;
+                case MotionEvent.ACTION_UP:
+                    if (isPressed)
+                    {
+                        animateCard(false, dialogBinding.buttonAddPhoto, 2);
+                    }
+                    isPressed = false;
+                    return true;
+            }
+            return false;
         });
         dialogBinding.postText.addTextChangedListener(new TextWatcher() {
             @Override

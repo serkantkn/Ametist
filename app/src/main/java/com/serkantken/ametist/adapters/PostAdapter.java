@@ -479,54 +479,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
     }
 
     public void onUserClicked(UserModel userModel) {
-        final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(context, R.style.BottomSheetDialogTheme_Chat);
-        LayoutProfileBinding bottomSheetView = LayoutProfileBinding.inflate(LayoutInflater.from(context));
-
-        Utilities utilities = new Utilities(context, activity);
-        utilities.blur(bottomSheetView.bottomSheetContainer, 10f, false);
-        bottomSheetView.username.setText(userModel.getName());
-        Glide.with(context).load(userModel.getProfilePic()).placeholder(R.drawable.ic_person).into(bottomSheetView.profileImage);
-        bottomSheetView.textAbout.setText(userModel.getAbout());
-        bottomSheetView.textAge.setText(userModel.getAge());
-        switch (userModel.getGender()) {
-            case "0":
-                bottomSheetView.textGender.setText("-");
-                break;
-            case "1":
-                bottomSheetView.textGender.setText(activity.getString(R.string.man));
-                break;
-            case "2":
-                bottomSheetView.textGender.setText(activity.getString(R.string.woman));
-                break;
-        }
-
-        bottomSheetView.buttonMore.setOnClickListener(view1 -> {
-            Intent intent = new Intent(context, ProfileActivity.class);
-            intent.putExtra("receiverUser", userModel);
-            context.startActivity(intent);
-            bottomSheetDialog.dismiss();
-        });
-        bottomSheetView.buttonMessage.setOnClickListener(view -> {
-            Intent intent = new Intent(context, ChatActivity.class);
-            intent.putExtra("receiverUser", userModel);
-            context.startActivity(intent);
-            bottomSheetDialog.dismiss();
-        });
-        bottomSheetView.buttonEdit.setOnClickListener(view -> context.startActivity(new Intent(activity, ProfileEditActivity.class)));
-        bottomSheetView.buttonClose.setOnClickListener(view1 -> bottomSheetDialog.dismiss());
-        if (Objects.equals(userModel.getUserId(), FirebaseAuth.getInstance().getUid()))
-        {
-            bottomSheetView.buttonEdit.setVisibility(View.VISIBLE);
-            bottomSheetView.buttonMessage.setVisibility(View.GONE);
-        }
-        else
-        {
-            bottomSheetView.buttonEdit.setVisibility(View.GONE);
-            bottomSheetView.buttonMessage.setVisibility(View.VISIBLE);
-        }
-
-        bottomSheetDialog.setContentView(bottomSheetView.getRoot());
-        bottomSheetDialog.show();
+        Intent intent = new Intent(context, ProfileActivity.class);
+        intent.putExtra("receiverUser", userModel);
+        context.startActivity(intent);
     }
 
     @Override

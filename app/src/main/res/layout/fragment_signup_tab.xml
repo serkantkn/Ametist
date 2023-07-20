@@ -48,9 +48,10 @@
         <EditText
             android:id="@+id/input_name"
             android:layout_width="0dp"
+            app:layout_constraintWidth_max="460dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
-            android:layout_marginEnd="15dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:background="@drawable/background_edittext"
             android:textColorHint="@color/secondary_text"
             android:textColor="@color/primary_text"
@@ -62,42 +63,76 @@
             android:paddingTop="15dp"
             android:paddingEnd="25dp"
             android:paddingBottom="15dp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/backButton"
-            app:layout_constraintWidth_percent=".9"
-            app:layout_constraintVertical_bias=".1"
+            android:layout_marginTop="10dp"
             android:importantForAutofill="no" />
 
-        <Spinner
-            android:id="@+id/spinnerAge"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardAge"
             android:layout_width="0dp"
+            app:layout_constraintWidth_max="460dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/background_edittext"
-            android:textColor="@color/primary_text"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:cardBackgroundColor="@color/primary_transparent"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:layout_constraintTop_toBottomOf="@id/input_name"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/input_name"
-            app:layout_constraintVertical_bias="0"
-            app:layout_constraintWidth_percent=".9"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/titleAge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:fontFamily="@font/jost_regular"
+                    android:text="@string/age"
+                    android:textColor="@color/accent_red_light"
+                    android:textSize="17sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0"/>
+
+                <Spinner
+                    android:id="@+id/spinnerAge"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/background_edittext"
+                    android:textColor="@color/primary_text"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/titleAge"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView
             android:id="@+id/radioGender"
             android:layout_width="0dp"
+            app:layout_constraintWidth_max="460dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             app:cardElevation="0dp"
             app:cardBackgroundColor="@color/primary"
             app:cardCornerRadius="20dp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/spinnerAge"
-            app:layout_constraintWidth_percent=".9"
-            app:layout_constraintVertical_bias="0">
+            app:layout_constraintTop_toBottomOf="@id/cardAge"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -113,8 +148,8 @@
                     android:fontFamily="@font/jost_regular"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    android:layout_marginTop="15dp"
-                    android:layout_marginStart="25dp"/>
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="10dp"/>
 
                 <RadioGroup
                     android:layout_width="wrap_content"
@@ -155,10 +190,11 @@
         <EditText
             android:id="@+id/input_mail"
             android:layout_width="0dp"
+            app:layout_constraintWidth_max="460dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="10dp"
-            android:layout_marginEnd="15dp"
+            android:layout_marginEnd="16dp"
             android:background="@drawable/background_edittext"
             android:textColorHint="@color/secondary_text"
             android:textColor="@color/primary_text"
@@ -181,6 +217,7 @@
         <EditText
             android:id="@+id/input_password"
             android:layout_width="0dp"
+            app:layout_constraintWidth_max="460dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="15dp"
             android:layout_marginTop="10dp"
@@ -207,6 +244,7 @@
         <androidx.cardview.widget.CardView
             android:id="@+id/buttonSignup"
             android:layout_width="0dp"
+            app:layout_constraintWidth_max="360dp"
             android:layout_height="wrap_content"
             app:cardCornerRadius="20dp"
             app:cardElevation="5dp"

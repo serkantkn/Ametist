@@ -1,58 +1,38 @@
 package com.serkantken.ametist.activities;
 
-import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.content.res.AppCompatResources;
-import androidx.constraintlayout.widget.ConstraintSet;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
-import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.Continuation;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
+import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
-import com.google.firebase.storage.StorageMetadata;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.StorageTask;
-import com.google.firebase.storage.UploadTask;
 import com.serkantken.ametist.R;
-import com.serkantken.ametist.databinding.ActivityProfileEditBinding;
+import com.serkantken.ametist.adapters.PhotoAdapter;
 import com.serkantken.ametist.databinding.ActivityProfileEditNewBinding;
+import com.serkantken.ametist.models.PhotoModel;
 import com.serkantken.ametist.models.UserModel;
+import com.serkantken.ametist.utilities.Constants;
+import com.serkantken.ametist.utilities.PhotoListener;
 import com.serkantken.ametist.utilities.Utilities;
 import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
 
-public class ProfileEditActivity extends BaseActivity
+public class ProfileEditActivity extends BaseActivity implements PhotoListener
 {
     ActivityProfileEditNewBinding binding;
     FirebaseFirestore database;
@@ -60,12 +40,22 @@ public class ProfileEditActivity extends BaseActivity
     UserModel user;
     Utilities utilities;
     ArrayList<String> ageList;
-    ArrayAdapter<String> arrayAdapter;
-    Uri[] pictureList = new Uri[4];
-    ActivityResultLauncher<String> getProfilePic, getSquarePic;
-    int requesting = 90;
-    int photoAdded = 0;
+    ArrayAdapter<String> ageAdapter;
+    ArrayAdapter<String> relationshipAdapter;
+    ArrayAdapter<String> lookingAdapter;
+    ArrayAdapter<String> roleAdapter;
+    ArrayAdapter<String> sexualityAdapter;
+    PhotoAdapter photoAdapter;
+    ArrayList<Uri> pictureUris = new ArrayList<>();
+    ArrayList<Uri> squareUris = new ArrayList<>();
+    ArrayList<PhotoModel> pictureList = new ArrayList<>();
+    PhotoModel photoModel;
+    ArrayList<String> relationships = new ArrayList<>();
+    ArrayList<String> roles = new ArrayList<>();
+    ArrayList<String> looking = new ArrayList<>();
+    ArrayList<String> sexuality = new ArrayList<>();
 
+    int index = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -85,123 +75,89 @@ public class ProfileEditActivity extends BaseActivity
         binding.scrollView.setPadding(0, utilities.getStatusBarHeight()+utilities.convertDpToPixel(64), 0, 0);
         binding.scrollView.setClipToPadding(false);
 
-        ageList = new ArrayList<>();
-        for (int i = 17; i <= 100; i++)
-        {
-            if (i == 17)
-            {
-                ageList.add(getString(R.string.age));
-            }
-            else
-            {
-                ageList.add(i + "");
-            }
-        }
-        arrayAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item, ageList);
-        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.spinnerAge.setAdapter(arrayAdapter);
+        photoAdapter = new PhotoAdapter(pictureList, ProfileEditActivity.this, this);
+        binding.profileImageRV.setAdapter(photoAdapter);
 
-        binding.buttonBack.setOnClickListener(view -> {
-            startActivity(new Intent(ProfileEditActivity.this, ProfileActivity.class));
-            finish();
-        });
+        ageList = new ArrayList<>();
+        fillComponents(ageList, getString(R.string.age), 17, 100);
+        ageAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, ageList);
+        ageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.spinnerAge.setAdapter(ageAdapter);
+
+        lookingAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, looking);
+        lookingAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.spinnerLooking.setAdapter(lookingAdapter);
+
+        relationshipAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, relationships);
+        relationshipAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.spinnerRelationship.setAdapter(relationshipAdapter);
+
+        roleAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, roles);
+        roleAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.spinnerRole.setAdapter(roleAdapter);
+
+        sexualityAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, sexuality);
+        sexualityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.spinnerSexuality.setAdapter(sexualityAdapter);
+
+        binding.npHeight.setMinValue(130);
+        binding.npHeight.setMaxValue(300);
+        binding.npWeight.setMinValue(30);
+        binding.npWeight.setMaxValue(300);
+
+        binding.buttonBack.setOnClickListener(view -> finish());
 
         binding.buttonDone.setOnClickListener(view -> updateUserInfo());
 
-        binding.profileImage.setOnClickListener(view -> {
-            if (isPermissionGranted())
-            {
-                requesting = 101;
-                getProfilePic.launch("image/*");
-            }
-        });
-
-        /*binding.secondImage.setOnClickListener(view -> {
-            if (isPermissionGranted())
-            {
-                requesting = 102;
-                getContent.launch("image/*");
-            }
-        });
-
-        binding.thirdImage.setOnClickListener(view -> {
-            if (isPermissionGranted())
-            {
-                requesting = 103;
-                getContent.launch("image/*");
-            }
-        });
-
-        binding.fourthImage.setOnClickListener(view -> {
-            if (isPermissionGranted())
-            {
-                requesting = 104;
-                getContent.launch("image/*");
-            }
-        });*/
-
-        getProfilePic = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
-            String destUri = new StringBuilder(UUID.randomUUID().toString()).append(".jpg").toString();
-
-            UCrop.Options options = new UCrop.Options();
-            options.setLogoColor(getColor(R.color.accent_purple_dark));
-            options.setFreeStyleCropEnabled(false);
-            options.setToolbarTitle(getString(R.string.crop_portrait));
-            options.withAspectRatio(3, 4);
-            UCrop.of(result, Uri.fromFile(new File(getCacheDir(), destUri)))
-                    .withOptions(options)
-                    .start(ProfileEditActivity.this);
-        });
-
-        getSquarePic = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
-            String destUri = new StringBuilder(UUID.randomUUID().toString()).append(".jpg").toString();
-
-            UCrop.Options options = new UCrop.Options();
-            options.setLogoColor(getColor(R.color.accent_purple_dark));
-            options.setFreeStyleCropEnabled(false);
-            options.setToolbarTitle(getString(R.string.crop_square));
-            options.withAspectRatio(1, 1);
-            UCrop.of(result, Uri.fromFile(new File(getCacheDir(), destUri)))
-                    .withOptions(options)
-                    .start(ProfileEditActivity.this);
+        binding.buttonAddPhoto.setOnClickListener(view -> {
+            ImagePicker.with(this).galleryOnly().crop(3,4).start(101);
         });
 
         getUserInfo();
     }
 
-    private Boolean isPermissionGranted()
+    private void fillComponents(ArrayList<String> list, String name, int start, int end)
     {
-        if (!(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q))
+        for (int i = start; i <= end; i++)
         {
-            if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
-                    ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+            if (i == start)
             {
-                return true;
+                list.add(name);
             }
             else
             {
-                ActivityCompat.requestPermissions(ProfileEditActivity.this, new String[]{
-                        Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                }, 1);
-                return ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
-                        ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+                list.add(i + "");
             }
         }
-        else
-        {
-            if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_MEDIA_LOCATION) == PackageManager.PERMISSION_GRANTED)
-            {
-                return true;
-            }
-            else
-            {
-                ActivityCompat.requestPermissions(ProfileEditActivity.this, new String[]{
-                        Manifest.permission.ACCESS_MEDIA_LOCATION
-                }, 1);
-                return ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_MEDIA_LOCATION) == PackageManager.PERMISSION_GRANTED;
-            }
-        }
+
+        relationships.add(getString(R.string.not_show));
+        relationships.add(getString(R.string.single));
+        relationships.add(getString(R.string.married));
+        relationships.add(getString(R.string.divorced));
+        relationships.add(getString(R.string.other));
+
+        roles.add(getString(R.string.not_show));
+        roles.add(getString(R.string.top));
+        roles.add(getString(R.string.more_top));
+        roles.add(getString(R.string.versatile));
+        roles.add(getString(R.string.more_bottom));
+        roles.add(getString(R.string.bottom));
+        roles.add(getString(R.string.other));
+
+        looking.add(getString(R.string.not_show));
+        looking.add(getString(R.string.friendship));
+        looking.add(getString(R.string.love));
+        looking.add(getString(R.string.conversation));
+        looking.add(getString(R.string.other));
+
+        sexuality.add(getString(R.string.not_show));
+        sexuality.add(getString(R.string.hetero));
+        sexuality.add(getString(R.string.lesbian));
+        sexuality.add(getString(R.string.gay));
+        sexuality.add(getString(R.string.bisex));
+        sexuality.add(getString(R.string.trans));
+        sexuality.add(getString(R.string.inter));
+        sexuality.add(getString(R.string.other));
     }
 
     private void updateUserInfo()
@@ -217,34 +173,11 @@ public class ProfileEditActivity extends BaseActivity
         user.setUserId(auth.getUid());
         HashMap<String, Object> userModel = new HashMap<>();
         userModel.put("name", binding.inputName.getText().toString());
-        final String[] age = {null};
-        binding.spinnerAge.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                age[0] = adapterView.getItemAtPosition(i).toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-                age[0] = "";
-            }
-        });
-        userModel.put("age", age[0]);
-        String gender = "0";
-        if (binding.radioMale.isChecked())
-        {
-            gender = "1";
-        }
-        else if (binding.radioFemale.isChecked())
-        {
-            gender = "2";
-        }
-        userModel.put("gender", gender);
         userModel.put("about", binding.inputAbout.getText().toString());
         userModel.put("age", binding.spinnerAge.getSelectedItem().toString());
-        if (pictureList[0] != null)
+        if (pictureList.get(0) != null)
         {
-            StorageReference filePath = FirebaseStorage.getInstance().getReference("Users").child(auth.getUid()).child("profilePics").child(new StringBuilder(UUID.randomUUID().toString()).append(".jpg").toString());
+            /*StorageReference filePath = FirebaseStorage.getInstance().getReference("Users").child(auth.getUid()).child("profilePics").child(UUID.randomUUID().toString() + ".jpg");
             UploadTask uploadTask = filePath.putFile(pictureList[0], new StorageMetadata.Builder().build());
             uploadTask.addOnProgressListener(snapshot -> {
                 double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
@@ -262,30 +195,7 @@ public class ProfileEditActivity extends BaseActivity
                         finish();
                     }
                 });
-            })).addOnFailureListener(e -> Toast.makeText(ProfileEditActivity.this, "Hata", Toast.LENGTH_SHORT).show());
-
-/*
-            uploadTask.continueWithTask(task -> {
-                if (!task.isSuccessful())
-                {
-                    throw Objects.requireNonNull(task.getException());
-                }
-                return filePath.getDownloadUrl();
-            }).addOnCompleteListener((OnCompleteListener<Uri>) task -> {
-                Uri downloadUri = task.getResult();
-                String downloadUrl = downloadUri.toString();
-                userModel.put("profilePic", downloadUrl);
-                reference.update(userModel).addOnCompleteListener(task1 -> {
-                    if (task1.isSuccessful())
-                    {
-                        dialog.dismiss();
-                        Intent intent = new Intent(ProfileEditActivity.this, ProfileActivity.class);
-                        intent.putExtra("receiverUser", user);
-                        startActivity(intent);
-                        finish();
-                    }
-                });
-            });*/
+            })).addOnFailureListener(e -> Toast.makeText(ProfileEditActivity.this, "Hata", Toast.LENGTH_SHORT).show());*/
         }
         else
         {
@@ -302,9 +212,10 @@ public class ProfileEditActivity extends BaseActivity
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void getUserInfo()
     {
-        database.collection("Users").get().addOnCompleteListener(task -> {
+        database.collection(Constants.DATABASE_PATH_USERS).get().addOnCompleteListener(task -> {
             if (task.isSuccessful())
             {
                 user = new UserModel();
@@ -317,64 +228,36 @@ public class ProfileEditActivity extends BaseActivity
                         user.setAbout(documentSnapshot.getString("about"));
                         user.setName(documentSnapshot.getString("name"));
                         user.setProfilePic(documentSnapshot.getString("profilePic"));
-                        user.setPicSecond(documentSnapshot.getString("picSecond"));
-                        user.setPicThird(documentSnapshot.getString("picThird"));
-                        user.setPicFourth(documentSnapshot.getString("picFourth"));
+                        user.setLooking(documentSnapshot.getString("looking"));
+                        user.setRelationship(documentSnapshot.getString("relationship"));
+                        user.setRole(documentSnapshot.getString("role"));
+                        user.setHeight(Integer.parseInt(Objects.requireNonNull(documentSnapshot.get("height").toString())));
+                        user.setWeight(Integer.parseInt(Objects.requireNonNull(documentSnapshot.get("weight").toString())));
                     }
                 }
-
-                if (user.getProfilePic() != null)
-                {
-                    Glide.with(this).load(user.getProfilePic()).placeholder(AppCompatResources.getDrawable(this, R.drawable.ic_person_profile)).into(binding.profileImage);
-                    photoAdded++;
-                }
-                else
-                {
-                    Glide.with(this).load(AppCompatResources.getDrawable(this, R.drawable.ic_person_profile)).into(binding.profileImage);
-                }
-                /*
-                if (user.getPicSecond() != null)
-                {
-                    Glide.with(this).load(user.getPicSecond()).placeholder(AppCompatResources.getDrawable(this, R.drawable.ic_person_add)).into(binding.secondImage);
-                    photoAdded++;
-                }
-                else
-                {
-                    Glide.with(this).load(AppCompatResources.getDrawable(this, R.drawable.ic_person_add)).into(binding.secondImage);
-                }
-                if (user.getPicThird() != null)
-                {
-                    Glide.with(this).load(user.getPicThird()).placeholder(AppCompatResources.getDrawable(this, R.drawable.ic_person_add)).into(binding.thirdImage);
-                    photoAdded++;
-                }
-                else
-                {
-                    Glide.with(this).load(AppCompatResources.getDrawable(this, R.drawable.ic_person_add)).into(binding.thirdImage);
-                }
-                if (user.getPicFourth() != null)
-                {
-                    Glide.with(this).load(user.getPicFourth()).placeholder(AppCompatResources.getDrawable(this, R.drawable.ic_person_add)).into(binding.fourthImage);
-                    photoAdded++;
-                }
-                else
-                {
-                    Glide.with(this).load(AppCompatResources.getDrawable(this, R.drawable.ic_person_add)).into(binding.fourthImage);
-                }
-                */
 
                 binding.inputName.setText(user.getName());
                 int age = Integer.parseInt(user.getAge()) - 17;
                 binding.spinnerAge.setSelection(age, true);
-                String gender = user.getGender();
-                if (gender.equals("1"))
-                {
-                    binding.radioMale.setChecked(true);
-                }
-                else if (gender.equals("2"))
-                {
-                    binding.radioFemale.setChecked(true);
-                }
                 binding.inputAbout.setText(user.getAbout());
+                binding.npWeight.setValue(user.getWeight());
+                binding.npHeight.setValue(user.getHeight());
+
+                database.collection(Constants.DATABASE_PATH_USERS).document(Objects.requireNonNull(auth.getUid())).collection("photos").get().addOnCompleteListener(task1 -> {
+                    if (task1.isSuccessful())
+                    {
+                        for (QueryDocumentSnapshot photoIDs : task1.getResult())
+                        {
+                            PhotoModel photo = new PhotoModel();
+                            photo.setPhotoId(photoIDs.getId());
+                            photo.setLink(photoIDs.getString("link"));
+                            photo.setDate(photoIDs.getLong("date"));
+                            pictureList.add(photo);
+                        }
+                        pictureList.sort(Comparator.comparing(PhotoModel::getDate));
+                        photoAdapter.notifyDataSetChanged();
+                    }
+                });
             }
         });
     }
@@ -382,50 +265,55 @@ public class ProfileEditActivity extends BaseActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP && requesting == 101)
+        if (resultCode == RESULT_OK && requestCode == 101)
         {
+            assert data != null;
+            Uri resultUri = data.getData();
+            if (resultUri != null)
+            {
+                photoModel = new PhotoModel();
+                photoModel.setLink(resultUri.toString());
+
+                String destUri = UUID.randomUUID().toString() + ".jpg";
+
+                UCrop.Options options = new UCrop.Options();
+                options.setLogoColor(getColor(R.color.accent_purple_dark));
+                options.setFreeStyleCropEnabled(false);
+                options.setToolbarTitle(getString(R.string.crop_square));
+                options.withAspectRatio(1, 1);
+                UCrop.of(resultUri, Uri.fromFile(new File(getCacheDir(), destUri)))
+                        .withOptions(options)
+                        .start(ProfileEditActivity.this, 102);
+            }
+        }
+        else if (resultCode == RESULT_OK && requestCode == 102)
+        {
+            assert data != null;
             Uri resultUri = UCrop.getOutput(data);
             if (resultUri != null)
             {
-                pictureList[0] = resultUri;
+                photoModel.setSquareLink(resultUri.toString());
+                photoModel.setDate(new Date().getTime());
+                pictureList.add(photoModel);
+                pictureList.sort(Comparator.comparing(PhotoModel::getDate));
+                photoAdapter.notifyDataSetChanged();
             }
-
-            Glide.with(this).load(resultUri).placeholder(AppCompatResources.getDrawable(this, R.drawable.ic_person_profile)).into(binding.profileImage);
         }
-        /*
-        else if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP && requesting == 102)
+        else if (resultCode == RESULT_CANCELED && requestCode == 102)
         {
-            Uri resultUri = UCrop.getOutput(data);
-            if (resultUri != null)
-            {
-                pictureList[1] = resultUri;
-                ConstraintSet set = new ConstraintSet();
-                set.clone(binding.imageLayout);
-                set.setHorizontalBias(binding.secondImage.getId(), 0);
-            }
-
-            Glide.with(this).load(resultUri).placeholder(AppCompatResources.getDrawable(this, R.drawable.ic_person_profile)).into(binding.secondImage);
+            photoModel = null;
         }
-        else if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP && requesting == 103)
-        {
-            Uri resultUri = UCrop.getOutput(data);
-            if (resultUri != null)
-            {
-                pictureList[2] = resultUri;
-            }
+    }
 
-            Glide.with(this).load(resultUri).placeholder(AppCompatResources.getDrawable(this, R.drawable.ic_person_profile)).into(binding.thirdImage);
-        }
-        else if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP && requesting == 104)
-        {
-            Uri resultUri = UCrop.getOutput(data);
-            if (resultUri != null)
-            {
-                pictureList[3] = resultUri;
-            }
+    @Override
+    public void onClick(String link) {
 
-            Glide.with(this).load(resultUri).placeholder(AppCompatResources.getDrawable(this, R.drawable.ic_person_profile)).into(binding.fourthImage);
-        }
-        */
+    }
+
+    @Override
+    public void onRemove(long date, int position)
+    {
+        pictureList.removeIf(model -> model.getDate() == date);
+        photoAdapter.notifyItemRemoved(position);
     }
 }
