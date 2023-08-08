@@ -29,6 +29,10 @@ import com.serkantken.ametist.activities.FullProfilePhotoActivity;
 import com.serkantken.ametist.databinding.LayoutEmptyChatBinding;
 import com.serkantken.ametist.databinding.LayoutReceivedMessageBinding;
 import com.serkantken.ametist.databinding.LayoutReceivedPhotoBinding;
+import com.serkantken.ametist.databinding.LayoutRepliedReceivedMessageBinding;
+import com.serkantken.ametist.databinding.LayoutRepliedReceivedPhotoBinding;
+import com.serkantken.ametist.databinding.LayoutRepliedSendMessageBinding;
+import com.serkantken.ametist.databinding.LayoutRepliedSendPhotoBinding;
 import com.serkantken.ametist.databinding.LayoutSendMessageBinding;
 import com.serkantken.ametist.databinding.LayoutSendPhotoBinding;
 import com.serkantken.ametist.models.MessageModel;
@@ -51,17 +55,22 @@ public class ChatAdapter extends RecyclerView.Adapter
     ArrayList<MessageModel> messageModels;
     Context context;
     Activity activity;
-    String receiverId;
-
     FirebaseFirestore database;
     private Balloon balloon;
-    private Utilities utilities;
     private MessageListener messageListener;
-    int EMPTY_VIEW_TYPE = 5;
+    int EMPTY_VIEW_TYPE = 0;
     int SENDER_VIEW_TYPE = 1;
     int RECEIVER_VIEW_TYPE = 2;
     int PHOTO_SENDER_VIEW_TYPE = 3;
     int PHOTO_RECEIVER_VIEW_TYPE = 4;
+    int REPLIED_SENDER_VIEW_TYPE = 5;
+    int REPLIED_RECEIVER_VIEW_TYPE = 6;
+    int REPLIED_PHOTO_SENDER_VIEW_TYPE = 7;
+    int REPLIED_PHOTO_RECEIVER_VIEW_TYPE = 8;
+    int VOICE_SENDER_VIEW_TYPE = 9;
+    int VOICE_RECEIVER_VIEW_TYPE = 10;
+    int REPLIED_VOICE_SENDER_VIEW_TYPE = 11;
+    int REPLIED_VOICE_RECEIVER_VIEW_TYPE = 12;
 
     public ChatAdapter(ArrayList<MessageModel> messageModels, Context context, Activity activity, MessageListener messageListener, FirebaseFirestore database)
     {
@@ -70,7 +79,6 @@ public class ChatAdapter extends RecyclerView.Adapter
         this.activity = activity;
         this.messageListener = messageListener;
         this.database = database;
-        utilities = new Utilities(context, activity);
     }
 
     @NonNull
@@ -105,6 +113,34 @@ public class ChatAdapter extends RecyclerView.Adapter
                     parent,
                     false));
         }
+        else if (viewType == REPLIED_SENDER_VIEW_TYPE)
+        {
+            return new RepliedSenderViewHolder(LayoutRepliedSendMessageBinding.inflate(
+                    LayoutInflater.from(context),
+                    parent,
+                    false));
+        }
+        else if (viewType == REPLIED_RECEIVER_VIEW_TYPE)
+        {
+            return new RepliedReceiverViewHolder(LayoutRepliedReceivedMessageBinding.inflate(
+                    LayoutInflater.from(context),
+                    parent,
+                    false));
+        }
+        else if (viewType == REPLIED_PHOTO_SENDER_VIEW_TYPE)
+        {
+            return new RepliedPhotoSenderViewHolder(LayoutRepliedSendPhotoBinding.inflate(
+                    LayoutInflater.from(context),
+                    parent,
+                    false));
+        }
+        else if (viewType == REPLIED_PHOTO_RECEIVER_VIEW_TYPE)
+        {
+            return new RepliedPhotoReceiverViewHolder(LayoutRepliedReceivedPhotoBinding.inflate(
+                    LayoutInflater.from(context),
+                    parent,
+                    false));
+        }
         else
         {
             return new EmptyChatViewHolder(LayoutEmptyChatBinding.inflate(
@@ -117,32 +153,62 @@ public class ChatAdapter extends RecyclerView.Adapter
     @Override
     public int getItemViewType(int position)
     {
-        if (getItemCount() == 0)
+        MessageModel model = messageModels.get(position);
+
+        if (messageModels.size() == 0)
         {
             return EMPTY_VIEW_TYPE;
         }
         else
         {
-            if (Objects.equals(messageModels.get(position).getSenderId(), FirebaseAuth.getInstance().getUid()))
+            if (Objects.equals(model.getSenderId(), FirebaseAuth.getInstance().getUid()))
             {
-                if (Objects.equals(messageModels.get(position).getPhoto(), "null"))
+                if (Objects.equals(model.getPhoto(), "null"))
                 {
-                    return SENDER_VIEW_TYPE;
+                    if (model.hasReply())
+                    {
+                        return REPLIED_SENDER_VIEW_TYPE;
+                    }
+                    else
+                    {
+                        return SENDER_VIEW_TYPE;
+                    }
                 }
                 else
                 {
-                    return PHOTO_SENDER_VIEW_TYPE;
+                    if (model.hasReply())
+                    {
+                        return REPLIED_PHOTO_SENDER_VIEW_TYPE;
+                    }
+                    else
+                    {
+                        return PHOTO_SENDER_VIEW_TYPE;
+                    }
                 }
             }
             else
             {
-                if (Objects.equals(messageModels.get(position).getPhoto(), "null"))
+                if (Objects.equals(model.getPhoto(), "null"))
                 {
-                    return RECEIVER_VIEW_TYPE;
+                    if (model.hasReply())
+                    {
+                        return REPLIED_RECEIVER_VIEW_TYPE;
+                    }
+                    else
+                    {
+                        return RECEIVER_VIEW_TYPE;
+                    }
                 }
                 else
                 {
-                    return PHOTO_RECEIVER_VIEW_TYPE;
+                    if (model.hasReply())
+                    {
+                        return REPLIED_PHOTO_RECEIVER_VIEW_TYPE;
+                    }
+                    else
+                    {
+                        return PHOTO_RECEIVER_VIEW_TYPE;
+                    }
                 }
             }
         }
@@ -153,23 +219,17 @@ public class ChatAdapter extends RecyclerView.Adapter
     {
         MessageModel messageModel = messageModels.get(position);
 
-        if (holder.getClass() == SenderViewHolder.class)
+        if (holder.getClass() == EmptyChatViewHolder.class)
+        {
+
+        }
+        else if (holder.getClass() == SenderViewHolder.class)
         {
             if (position == 0)
             {
                 ((SenderViewHolder) holder).binding.container.setPadding(0, sizeInPixel(70), 0, 0);
             }
 
-            if (messageModel.hasReply())
-            {
-                ((SenderViewHolder)holder).binding.replyMessageContainer.setVisibility(View.VISIBLE);
-                ((SenderViewHolder)holder).binding.repliedMessage.setText(messageModel.getRepliedMessage());
-                if (messageModel.isReplyHasPhoto())
-                {
-                    Glide.with(context).load(messageModel.getRepliedPhoto()).into(((SenderViewHolder)holder).binding.repliedPhoto);
-                    ((SenderViewHolder)holder).binding.repliedPhoto.setVisibility(View.VISIBLE);
-                }
-            }
             ((SenderViewHolder)holder).binding.sentMessage.setText(messageModel.getMessage());
             ((SenderViewHolder)holder).binding.date.setText(TimeAgo.using(messageModel.getTimestamp()));
 
@@ -205,16 +265,6 @@ public class ChatAdapter extends RecyclerView.Adapter
                 ((ReceiverViewHolder) holder).binding.container.setPadding(0, sizeInPixel(70), 0, 0);
             }
 
-            if (messageModel.hasReply())
-            {
-                ((ReceiverViewHolder)holder).binding.replyMessageContainer.setVisibility(View.VISIBLE);
-                ((ReceiverViewHolder)holder).binding.repliedMessage.setText(messageModel.getRepliedMessage());
-                if (messageModel.isReplyHasPhoto())
-                {
-                    Glide.with(context).load(messageModel.getRepliedPhoto()).into(((ReceiverViewHolder)holder).binding.repliedPhoto);
-                    ((ReceiverViewHolder)holder).binding.repliedPhoto.setVisibility(View.VISIBLE);
-                }
-            }
             ((ReceiverViewHolder)holder).binding.receivedMessage.setText(messageModel.getMessage());
             ((ReceiverViewHolder)holder).binding.date.setText(TimeAgo.using(messageModel.getTimestamp()));
             AtomicReference<String> profilePic = new AtomicReference<>();
@@ -248,16 +298,6 @@ public class ChatAdapter extends RecyclerView.Adapter
                 ((PhotoSenderViewHolder) holder).binding.container.setPadding(0, sizeInPixel(70), 0, 0);
             }
 
-            if (messageModel.hasReply())
-            {
-                ((PhotoSenderViewHolder)holder).binding.replyMessageContainer.setVisibility(View.VISIBLE);
-                ((PhotoSenderViewHolder)holder).binding.repliedMessage.setText(messageModel.getRepliedMessage());
-                if (messageModel.isReplyHasPhoto())
-                {
-                    Glide.with(context).load(messageModel.getRepliedPhoto()).into(((PhotoSenderViewHolder)holder).binding.repliedPhoto);
-                    ((PhotoSenderViewHolder)holder).binding.repliedPhoto.setVisibility(View.VISIBLE);
-                }
-            }
             if (Objects.equals(messageModel.getMessage(), ""))
             {
                 ((PhotoSenderViewHolder)holder).binding.sentMessage.setVisibility(View.GONE);
@@ -299,23 +339,13 @@ public class ChatAdapter extends RecyclerView.Adapter
                 }
             });
         }
-        else
+        else if (holder.getClass() == PhotoReceiverViewHolder.class)
         {
             if (position == 0)
             {
                 ((PhotoReceiverViewHolder)holder).binding.container.setPadding(0, sizeInPixel(70), 0, 0);
             }
 
-            if (messageModel.hasReply())
-            {
-                ((PhotoReceiverViewHolder)holder).binding.replyMessageContainer.setVisibility(View.VISIBLE);
-                ((PhotoReceiverViewHolder)holder).binding.repliedMessage.setText(messageModel.getRepliedMessage());
-                if (messageModel.isReplyHasPhoto())
-                {
-                    Glide.with(context).load(messageModel.getRepliedPhoto()).into(((PhotoReceiverViewHolder)holder).binding.repliedPhoto);
-                    ((PhotoReceiverViewHolder)holder).binding.repliedPhoto.setVisibility(View.VISIBLE);
-                }
-            }
             if (Objects.equals(messageModel.getMessage(), ""))
             {
                 ((PhotoReceiverViewHolder)holder).binding.receivedMessage.setVisibility(View.GONE);
@@ -352,6 +382,196 @@ public class ChatAdapter extends RecyclerView.Adapter
             });
             ((PhotoReceiverViewHolder)holder).binding.container.setOnLongClickListener(v -> {
                 showOptions(((PhotoReceiverViewHolder)holder).binding.card, ((PhotoReceiverViewHolder)holder).binding.cardBackground, false, messageModel, profilePic.get(), true);
+                return true;
+            });
+        }
+        else if (holder.getClass() == RepliedSenderViewHolder.class)
+        {
+            if (position == 0)
+            {
+                ((RepliedSenderViewHolder) holder).binding.container.setPadding(0, sizeInPixel(70), 0, 0);
+            }
+
+            ((RepliedSenderViewHolder)holder).binding.repliedMessage.setText(messageModel.getRepliedMessage());
+            if (messageModel.isReplyHasPhoto())
+            {
+                Glide.with(context).load(messageModel.getRepliedPhoto()).into(((RepliedSenderViewHolder)holder).binding.repliedPhoto);
+                ((RepliedSenderViewHolder)holder).binding.repliedPhoto.setVisibility(View.VISIBLE);
+            }
+
+            ((RepliedSenderViewHolder)holder).binding.sentMessage.setText(messageModel.getMessage());
+            ((RepliedSenderViewHolder)holder).binding.date.setText(TimeAgo.using(messageModel.getTimestamp()));
+
+            ((RepliedSenderViewHolder)holder).binding.container.setOnLongClickListener(v -> {
+                showOptions(((RepliedSenderViewHolder)holder).binding.card, ((RepliedSenderViewHolder)holder).binding.cardBackground, true, messageModel, null, false);
+                return true;
+            });
+
+            //Görüldü kontrolü
+            database.collection("chats").document(messageModel.getMessageId()).addSnapshotListener(activity, (value, error) -> {
+                if (error != null) {
+                    return;
+                }
+                if (value != null) {
+                    if (value.getBoolean("isSeen") != null) {
+                        if (Boolean.TRUE.equals(value.getBoolean("isSeen")))
+                        {
+                            ((RepliedSenderViewHolder)holder).binding.seenCheck.setVisibility(View.VISIBLE);
+                            ((RepliedSenderViewHolder)holder).binding.seenCheck.playAnimation();
+                        }
+                        else
+                        {
+                            ((RepliedSenderViewHolder)holder).binding.seenCheck.setVisibility(View.INVISIBLE);
+                        }
+                    }
+                }
+            });
+        }
+        else if (holder.getClass() == RepliedReceiverViewHolder.class)
+        {
+            if (position == 0)
+            {
+                ((RepliedReceiverViewHolder) holder).binding.container.setPadding(0, sizeInPixel(70), 0, 0);
+            }
+
+            ((RepliedReceiverViewHolder)holder).binding.repliedMessage.setText(messageModel.getRepliedMessage());
+            if (messageModel.isReplyHasPhoto())
+            {
+                Glide.with(context).load(messageModel.getRepliedPhoto()).into(((RepliedReceiverViewHolder)holder).binding.repliedPhoto);
+                ((RepliedReceiverViewHolder)holder).binding.repliedPhoto.setVisibility(View.VISIBLE);
+            }
+
+            ((RepliedReceiverViewHolder)holder).binding.receivedMessage.setText(messageModel.getMessage());
+            ((RepliedReceiverViewHolder)holder).binding.date.setText(TimeAgo.using(messageModel.getTimestamp()));
+            AtomicReference<String> profilePic = new AtomicReference<>();
+            FirebaseFirestore.getInstance().collection("Users").get().addOnCompleteListener(task -> {
+                if (task.isSuccessful())
+                {
+                    UserModel userModel = new UserModel();
+                    for (QueryDocumentSnapshot documentSnapshot : task.getResult())
+                    {
+                        if (documentSnapshot.getId().equals(messageModel.getSenderId()))
+                        {
+                            userModel.setProfilePic(documentSnapshot.getString("profilePic"));
+                            profilePic.set(documentSnapshot.getString("profilePic"));
+                            userModel.setName(documentSnapshot.getString("name"));
+                        }
+                    }
+                    Glide.with(context).load(userModel.getProfilePic()).placeholder(AppCompatResources.getDrawable(context, R.drawable.ic_person))
+                            .into(((RepliedReceiverViewHolder)holder).binding.profileImage);
+                    ((RepliedReceiverViewHolder)holder).binding.username.setText(userModel.getName());
+                }
+            });
+            ((RepliedReceiverViewHolder)holder).binding.container.setOnLongClickListener(v -> {
+                showOptions(((RepliedReceiverViewHolder)holder).binding.card, ((RepliedReceiverViewHolder)holder).binding.cardBackground, false, messageModel, profilePic.get(), false);
+                return true;
+            });
+        }
+        else if (holder.getClass() == RepliedPhotoSenderViewHolder.class)
+        {
+            if (position == 0)
+            {
+                ((RepliedPhotoSenderViewHolder) holder).binding.container.setPadding(0, sizeInPixel(70), 0, 0);
+            }
+
+            ((RepliedPhotoSenderViewHolder)holder).binding.repliedMessage.setText(messageModel.getRepliedMessage());
+            if (messageModel.isReplyHasPhoto())
+            {
+                Glide.with(context).load(messageModel.getRepliedPhoto()).into(((RepliedPhotoSenderViewHolder)holder).binding.repliedPhoto);
+                ((RepliedPhotoSenderViewHolder)holder).binding.repliedPhoto.setVisibility(View.VISIBLE);
+            }
+
+            if (Objects.equals(messageModel.getMessage(), ""))
+            {
+                ((RepliedPhotoSenderViewHolder)holder).binding.sentMessage.setVisibility(View.GONE);
+            }
+            else
+            {
+                ((RepliedPhotoSenderViewHolder)holder).binding.sentMessage.setText(messageModel.getMessage());
+            }
+            ((RepliedPhotoSenderViewHolder)holder).binding.date.setText(TimeAgo.using(messageModel.getTimestamp()));
+            Glide.with(context).load(messageModel.getPhoto()).into(((RepliedPhotoSenderViewHolder)holder).binding.sentPhoto);
+            ((RepliedPhotoSenderViewHolder)holder).binding.sentPhoto.setOnClickListener(v -> {
+                Intent intent = new Intent(context, FullProfilePhotoActivity.class);
+                intent.putExtra("pictureUrl", messageModel.getPhoto());
+                context.startActivity(intent);
+            });
+
+            ((RepliedPhotoSenderViewHolder)holder).binding.container.setOnLongClickListener(v -> {
+                showOptions(((RepliedPhotoSenderViewHolder)holder).binding.card, ((RepliedPhotoSenderViewHolder)holder).binding.cardBackground, true, messageModel, null, true);
+                return true;
+            });
+
+            //Görüldü kontrolü
+            database.collection("chats").document(messageModel.getMessageId()).addSnapshotListener(activity, (value, error) -> {
+                if (error != null) {
+                    return;
+                }
+                if (value != null) {
+                    if (value.getBoolean("isSeen") != null) {
+                        if (Boolean.TRUE.equals(value.getBoolean("isSeen")))
+                        {
+                            ((RepliedPhotoSenderViewHolder)holder).binding.seenCheck.setVisibility(View.VISIBLE);
+                            ((RepliedPhotoSenderViewHolder)holder).binding.seenCheck.playAnimation();
+                        }
+                        else
+                        {
+                            ((RepliedPhotoSenderViewHolder)holder).binding.seenCheck.setVisibility(View.INVISIBLE);
+                        }
+                    }
+                }
+            });
+        }
+        else if (holder.getClass() == RepliedPhotoReceiverViewHolder.class)
+        {
+            if (position == 0)
+            {
+                ((RepliedPhotoReceiverViewHolder)holder).binding.container.setPadding(0, sizeInPixel(70), 0, 0);
+            }
+
+            ((RepliedPhotoReceiverViewHolder)holder).binding.repliedMessage.setText(messageModel.getRepliedMessage());
+            if (messageModel.isReplyHasPhoto())
+            {
+                Glide.with(context).load(messageModel.getRepliedPhoto()).into(((RepliedPhotoReceiverViewHolder)holder).binding.repliedPhoto);
+                ((RepliedPhotoReceiverViewHolder)holder).binding.repliedPhoto.setVisibility(View.VISIBLE);
+            }
+
+            if (Objects.equals(messageModel.getMessage(), ""))
+            {
+                ((RepliedPhotoReceiverViewHolder)holder).binding.receivedMessage.setVisibility(View.GONE);
+            }
+            else
+            {
+                ((RepliedPhotoReceiverViewHolder)holder).binding.receivedMessage.setText(messageModel.getMessage());
+            }
+            ((RepliedPhotoReceiverViewHolder)holder).binding.date.setText(TimeAgo.using(messageModel.getTimestamp()));
+            AtomicReference<String> profilePic = new AtomicReference<>();
+            FirebaseFirestore.getInstance().collection("Users").get().addOnCompleteListener(task -> {
+                if (task.isSuccessful())
+                {
+                    UserModel userModel = new UserModel();
+                    for (QueryDocumentSnapshot documentSnapshot : task.getResult())
+                    {
+                        if (documentSnapshot.getId().equals(messageModel.getSenderId()))
+                        {
+                            userModel.setProfilePic(documentSnapshot.getString("profilePic"));
+                            profilePic.set(documentSnapshot.getString("profilePic"));
+                            userModel.setName(documentSnapshot.getString("name"));
+                        }
+                    }
+                    Glide.with(context).load(userModel.getProfilePic()).placeholder(AppCompatResources.getDrawable(context, R.drawable.ic_person))
+                            .into(((RepliedPhotoReceiverViewHolder)holder).binding.profileImage);
+                    Glide.with(context).load(messageModel.getPhoto()).into(((RepliedPhotoReceiverViewHolder)holder).binding.receivedPhoto);
+                    ((RepliedPhotoReceiverViewHolder)holder).binding.username.setText(userModel.getName());
+                }
+            });
+            ((RepliedPhotoReceiverViewHolder)holder).binding.receivedPhoto.setOnClickListener(v -> {
+                Intent intent = new Intent(context, FullProfilePhotoActivity.class);
+                intent.putExtra("pictureUrl", messageModel.getPhoto());
+                context.startActivity(intent);
+            });
+            ((RepliedPhotoReceiverViewHolder)holder).binding.container.setOnLongClickListener(v -> {
+                showOptions(((RepliedPhotoReceiverViewHolder)holder).binding.card, ((RepliedPhotoReceiverViewHolder)holder).binding.cardBackground, false, messageModel, profilePic.get(), true);
                 return true;
             });
         }
@@ -433,6 +653,17 @@ public class ChatAdapter extends RecyclerView.Adapter
         return messageModels.size();
     }
 
+    public static class EmptyChatViewHolder extends RecyclerView.ViewHolder
+    {
+        LayoutEmptyChatBinding binding;
+
+        public  EmptyChatViewHolder(@NonNull LayoutEmptyChatBinding itemView)
+        {
+            super(itemView.getRoot());
+            binding = itemView;
+        }
+    }
+
     public static class ReceiverViewHolder extends RecyclerView.ViewHolder
     {
         LayoutReceivedMessageBinding binding;
@@ -477,11 +708,44 @@ public class ChatAdapter extends RecyclerView.Adapter
         }
     }
 
-    public static class EmptyChatViewHolder extends RecyclerView.ViewHolder
+    public static class RepliedSenderViewHolder extends RecyclerView.ViewHolder
     {
-        LayoutEmptyChatBinding binding;
+        LayoutRepliedSendMessageBinding binding;
 
-        public  EmptyChatViewHolder(@NonNull LayoutEmptyChatBinding itemView)
+        public RepliedSenderViewHolder(@NonNull LayoutRepliedSendMessageBinding itemView)
+        {
+            super(itemView.getRoot());
+            binding = itemView;
+        }
+    }
+
+    public static class RepliedReceiverViewHolder extends RecyclerView.ViewHolder
+    {
+        LayoutRepliedReceivedMessageBinding binding;
+
+        public RepliedReceiverViewHolder(@NonNull LayoutRepliedReceivedMessageBinding itemView)
+        {
+            super(itemView.getRoot());
+            binding = itemView;
+        }
+    }
+
+    public static class RepliedPhotoSenderViewHolder extends RecyclerView.ViewHolder
+    {
+        LayoutRepliedSendPhotoBinding binding;
+
+        public RepliedPhotoSenderViewHolder(@NonNull LayoutRepliedSendPhotoBinding itemView)
+        {
+            super(itemView.getRoot());
+            binding = itemView;
+        }
+    }
+
+    public static class RepliedPhotoReceiverViewHolder extends RecyclerView.ViewHolder
+    {
+        LayoutRepliedReceivedPhotoBinding binding;
+
+        public RepliedPhotoReceiverViewHolder(@NonNull LayoutRepliedReceivedPhotoBinding itemView)
         {
             super(itemView.getRoot());
             binding = itemView;

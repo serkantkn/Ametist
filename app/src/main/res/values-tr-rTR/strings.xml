@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="back">Geri</string>
     <string name="photo">Fotoğraf</string>
     <string name="send">Gönder</string>
@@ -114,10 +114,10 @@
     <string name="show_qr">QR Kodumu göster</string>
     <string name="user_height">Boy</string>
     <string name="user_weight">Kilo</string>
-    <string name="scan_qr_code_message">Kullanıcının QR kodunu okutun...</string>
+    <string name="scan_qr_code_message" tools:ignore="TypographyEllipsis">Kullanıcının QR kodunu okutun...</string>
     <string name="forgot_password">Parolanızı mı unuttunuz?</string>
     <string name="sign_in_with_google">Google hesabınla giriş yap</string>
-    <string name="instead_of">Bunun yerine...</string>
+    <string name="instead_of" tools:ignore="TypographyEllipsis">Bunun yerine...</string>
     <string name="reply_to">Şu mesaja cevap veriliyor:</string>
     <string name="answer">Cevapla</string>
     <string name="crop_portrait">Büyük resmi kırp</string>
@@ -144,4 +144,5 @@
     <string name="not_show">Gizle</string>
     <string name="sexuality">Cinsel Yönelim</string>
     <string name="sign_up_date">Kayıt Olma Tarihi</string>
+    <string name="add_photo">Fotoğraf Ekle</string>
 </resources>

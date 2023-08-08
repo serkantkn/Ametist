@@ -2,6 +2,6 @@ package com.serkantken.ametist.utilities;
 
 public interface PhotoListener
 {
-    void onClick(String link);
-    void onRemove(long date, int position);
+    void onClick(long date);
+    void onRemove(int status, int position);
 }

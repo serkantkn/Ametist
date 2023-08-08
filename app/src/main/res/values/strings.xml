@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name" translatable="false">Ametist</string>
     <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
     <string name="logo" translatable="false">Ametist logo</string>
@@ -123,7 +123,7 @@
     <string name="scan_qr_code_message">Scan user\'s QR code</string>
     <string name="forgot_password">Forgot password?</string>
     <string name="sign_in_with_google">Sign in with Google</string>
-    <string name="instead_of">Instead of...</string>
+    <string name="instead_of" tools:ignore="TypographyEllipsis">Instead of...</string>
     <string name="reply_to">Reply to this message:</string>
     <string name="answer">Answer</string>
     <string name="delete">Delete</string>
@@ -149,4 +149,5 @@
     <string name="sexuality">Sexuality</string>
     <string name="sign_up_date">Sign Up Date</string>
     <string name="kg" translatable="false">kg</string>
+    <string name="add_photo">Add Photo</string>
 </resources>

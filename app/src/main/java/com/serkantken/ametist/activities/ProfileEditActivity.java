@@ -4,16 +4,25 @@ import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.content.res.ResourcesCompat;
 
+import com.bumptech.glide.Glide;
 import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageMetadata;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.adapters.PhotoAdapter;
 import com.serkantken.ametist.databinding.ActivityProfileEditNewBinding;
@@ -32,7 +41,7 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
 
-public class ProfileEditActivity extends BaseActivity implements PhotoListener
+public class ProfileEditActivity extends BaseActivity
 {
     ActivityProfileEditNewBinding binding;
     FirebaseFirestore database;
@@ -45,17 +54,11 @@ public class ProfileEditActivity extends BaseActivity implements PhotoListener
     ArrayAdapter<String> lookingAdapter;
     ArrayAdapter<String> roleAdapter;
     ArrayAdapter<String> sexualityAdapter;
-    PhotoAdapter photoAdapter;
-    ArrayList<Uri> pictureUris = new ArrayList<>();
-    ArrayList<Uri> squareUris = new ArrayList<>();
-    ArrayList<PhotoModel> pictureList = new ArrayList<>();
-    PhotoModel photoModel;
     ArrayList<String> relationships = new ArrayList<>();
     ArrayList<String> roles = new ArrayList<>();
     ArrayList<String> looking = new ArrayList<>();
     ArrayList<String> sexuality = new ArrayList<>();
-
-    int index = 0;
+    String photoUri = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -74,9 +77,6 @@ public class ProfileEditActivity extends BaseActivity implements PhotoListener
 
         binding.scrollView.setPadding(0, utilities.getStatusBarHeight()+utilities.convertDpToPixel(64), 0, 0);
         binding.scrollView.setClipToPadding(false);
-
-        photoAdapter = new PhotoAdapter(pictureList, ProfileEditActivity.this, this);
-        binding.profileImageRV.setAdapter(photoAdapter);
 
         ageList = new ArrayList<>();
         fillComponents(ageList, getString(R.string.age), 17, 100);
@@ -105,12 +105,17 @@ public class ProfileEditActivity extends BaseActivity implements PhotoListener
         binding.npWeight.setMinValue(30);
         binding.npWeight.setMaxValue(300);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            binding.npHeight.setTextColor(getResources().getColor(R.color.primary_text, null));
+            binding.npWeight.setTextColor(getResources().getColor(R.color.primary_text, null));
+        }
+
         binding.buttonBack.setOnClickListener(view -> finish());
 
         binding.buttonDone.setOnClickListener(view -> updateUserInfo());
 
-        binding.buttonAddPhoto.setOnClickListener(view -> {
-            ImagePicker.with(this).galleryOnly().crop(3,4).start(101);
+        binding.profileImage.setOnClickListener(view -> {
+            ImagePicker.with(this).galleryOnly().crop(3, 4).start(101);
         });
 
         getUserInfo();
@@ -175,41 +180,41 @@ public class ProfileEditActivity extends BaseActivity implements PhotoListener
         userModel.put("name", binding.inputName.getText().toString());
         userModel.put("about", binding.inputAbout.getText().toString());
         userModel.put("age", binding.spinnerAge.getSelectedItem().toString());
-        if (pictureList.get(0) != null)
+        userModel.put("looking", binding.spinnerLooking.getSelectedItem().toString());
+        userModel.put("relationship", binding.spinnerRelationship.getSelectedItem().toString());
+        userModel.put("sexuality", binding.spinnerSexuality.getSelectedItem().toString());
+        userModel.put("role", binding.spinnerRole.getSelectedItem().toString());
+        if (!photoUri.isEmpty())
         {
-            /*StorageReference filePath = FirebaseStorage.getInstance().getReference("Users").child(auth.getUid()).child("profilePics").child(UUID.randomUUID().toString() + ".jpg");
-            UploadTask uploadTask = filePath.putFile(pictureList[0], new StorageMetadata.Builder().build());
+            StorageReference filePath = FirebaseStorage.getInstance().getReference("Users").child(auth.getUid()).child("profilePics").child(UUID.randomUUID().toString() + ".jpg");
+            UploadTask uploadTask = filePath.putFile(Uri.parse(photoUri), new StorageMetadata.Builder().build());
             uploadTask.addOnProgressListener(snapshot -> {
                 double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
                 dialog.setProgress((int) progress);
             }).addOnSuccessListener(taskSnapshot -> filePath.getDownloadUrl().addOnSuccessListener(uri -> {
                 String downloadUrl = uri.toString();
                 userModel.put("profilePic", downloadUrl);
-                reference.update(userModel).addOnCompleteListener(task1 -> {
-                    if (task1.isSuccessful())
-                    {
-                        dialog.dismiss();
-                        Intent intent = new Intent(ProfileEditActivity.this, ProfileActivity.class);
-                        intent.putExtra("receiverUser", user);
-                        startActivity(intent);
-                        finish();
-                    }
-                });
-            })).addOnFailureListener(e -> Toast.makeText(ProfileEditActivity.this, "Hata", Toast.LENGTH_SHORT).show());*/
+                updateInfo(reference, userModel, dialog);
+            })).addOnFailureListener(e -> Toast.makeText(ProfileEditActivity.this, "Hata", Toast.LENGTH_SHORT).show());
         }
         else
         {
-            reference.update(userModel).addOnCompleteListener(task -> {
-                if (task.isSuccessful())
-                {
-                    dialog.dismiss();
-                    Intent intent = new Intent(ProfileEditActivity.this, ProfileActivity.class);
-                    intent.putExtra("receiverUser", user);
-                    startActivity(intent);
-                    finish();
-                }
-            });
+            updateInfo(reference, userModel, dialog);
         }
+    }
+
+    private void updateInfo(DocumentReference reference, HashMap<String, Object> userModel, ProgressDialog dialog)
+    {
+        reference.update(userModel).addOnCompleteListener(task -> {
+            if (task.isSuccessful())
+            {
+                dialog.dismiss();
+                Intent intent = new Intent(ProfileEditActivity.this, ProfileActivity.class);
+                intent.putExtra("receiverUser", user);
+                startActivity(intent);
+                finish();
+            }
+        });
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -231,6 +236,7 @@ public class ProfileEditActivity extends BaseActivity implements PhotoListener
                         user.setLooking(documentSnapshot.getString("looking"));
                         user.setRelationship(documentSnapshot.getString("relationship"));
                         user.setRole(documentSnapshot.getString("role"));
+                        user.setSexuality(documentSnapshot.getString("sexuality"));
                         user.setHeight(Integer.parseInt(Objects.requireNonNull(documentSnapshot.get("height").toString())));
                         user.setWeight(Integer.parseInt(Objects.requireNonNull(documentSnapshot.get("weight").toString())));
                     }
@@ -242,22 +248,15 @@ public class ProfileEditActivity extends BaseActivity implements PhotoListener
                 binding.inputAbout.setText(user.getAbout());
                 binding.npWeight.setValue(user.getWeight());
                 binding.npHeight.setValue(user.getHeight());
-
-                database.collection(Constants.DATABASE_PATH_USERS).document(Objects.requireNonNull(auth.getUid())).collection("photos").get().addOnCompleteListener(task1 -> {
-                    if (task1.isSuccessful())
-                    {
-                        for (QueryDocumentSnapshot photoIDs : task1.getResult())
-                        {
-                            PhotoModel photo = new PhotoModel();
-                            photo.setPhotoId(photoIDs.getId());
-                            photo.setLink(photoIDs.getString("link"));
-                            photo.setDate(photoIDs.getLong("date"));
-                            pictureList.add(photo);
-                        }
-                        pictureList.sort(Comparator.comparing(PhotoModel::getDate));
-                        photoAdapter.notifyDataSetChanged();
-                    }
-                });
+                Glide.with(this).load(user.getProfilePic()).into(binding.profileImage);
+                if (!Objects.isNull(user.getLooking()))
+                    binding.spinnerLooking.setSelection(looking.indexOf(user.getLooking()));
+                if (!Objects.isNull(user.getRelationship()))
+                    binding.spinnerRelationship.setSelection(relationships.indexOf(user.getRelationship()));
+                if (!Objects.isNull(user.getRole()))
+                    binding.spinnerRole.setSelection(roles.indexOf(user.getRole()));
+                if (!Objects.isNull(user.getSexuality()))
+                    binding.spinnerSexuality.setSelection(sexuality.indexOf(user.getSexuality()));
             }
         });
     }
@@ -271,49 +270,9 @@ public class ProfileEditActivity extends BaseActivity implements PhotoListener
             Uri resultUri = data.getData();
             if (resultUri != null)
             {
-                photoModel = new PhotoModel();
-                photoModel.setLink(resultUri.toString());
-
-                String destUri = UUID.randomUUID().toString() + ".jpg";
-
-                UCrop.Options options = new UCrop.Options();
-                options.setLogoColor(getColor(R.color.accent_purple_dark));
-                options.setFreeStyleCropEnabled(false);
-                options.setToolbarTitle(getString(R.string.crop_square));
-                options.withAspectRatio(1, 1);
-                UCrop.of(resultUri, Uri.fromFile(new File(getCacheDir(), destUri)))
-                        .withOptions(options)
-                        .start(ProfileEditActivity.this, 102);
+                photoUri = resultUri.toString();
+                Glide.with(this).load(photoUri).into(binding.profileImage);
             }
         }
-        else if (resultCode == RESULT_OK && requestCode == 102)
-        {
-            assert data != null;
-            Uri resultUri = UCrop.getOutput(data);
-            if (resultUri != null)
-            {
-                photoModel.setSquareLink(resultUri.toString());
-                photoModel.setDate(new Date().getTime());
-                pictureList.add(photoModel);
-                pictureList.sort(Comparator.comparing(PhotoModel::getDate));
-                photoAdapter.notifyDataSetChanged();
-            }
-        }
-        else if (resultCode == RESULT_CANCELED && requestCode == 102)
-        {
-            photoModel = null;
-        }
-    }
-
-    @Override
-    public void onClick(String link) {
-
-    }
-
-    @Override
-    public void onRemove(long date, int position)
-    {
-        pictureList.removeIf(model -> model.getDate() == date);
-        photoAdapter.notifyItemRemoved(position);
     }
 }

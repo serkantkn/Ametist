@@ -2,9 +2,7 @@ package com.serkantken.ametist.adapters;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -12,23 +10,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.github.marlonlom.utilities.timeago.TimeAgo;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.serkantken.ametist.R;
-import com.serkantken.ametist.activities.ChatActivity;
-import com.serkantken.ametist.activities.ProfileActivity;
 import com.serkantken.ametist.databinding.CommentItemBinding;
-import com.serkantken.ametist.databinding.LayoutProfileBinding;
 import com.serkantken.ametist.models.CommentModel;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.utilities.Constants;
-import com.serkantken.ametist.utilities.Utilities;
 
 import java.util.ArrayList;
 import java.util.Objects;
-
-import eightbitlab.com.blurview.BlurView;
 
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHolder>
 {
@@ -105,46 +96,6 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
                         holder.binding.commentUsername.setText(userModel.getName());
 
                         holder.binding.profileImage.setOnClickListener(v -> {
-                            final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(context, R.style.BottomSheetDialogTheme_Chat);
-                            LayoutProfileBinding bottomSheetView = LayoutProfileBinding.inflate(activity.getLayoutInflater());
-
-                            Utilities utilities = new Utilities(context, activity);
-                            utilities.blur((BlurView) bottomSheetView.bottomSheetContainer, 10f, false);
-                            bottomSheetView.username.setText(userModel.getName());
-                            Glide.with(context).load(userModel.getProfilePic()).placeholder(R.drawable.ic_person).into(bottomSheetView.profileImage);
-                            bottomSheetView.textAbout.setText(userModel.getAbout());
-                            bottomSheetView.textAge.setText(userModel.getAge());
-                            bottomSheetView.followCount.setText(""+userModel.getFollowingCount());
-                            bottomSheetView.followerCount.setText(""+userModel.getFollowerCount());
-                            switch (userModel.getGender()) {
-                                case "0":
-                                    bottomSheetView.textGender.setText("-");
-                                    break;
-                                case "1":
-                                    bottomSheetView.textGender.setText(context.getString(R.string.man));
-                                    break;
-                                case "2":
-                                    bottomSheetView.textGender.setText(context.getString(R.string.woman));
-                                    break;
-                            }
-
-                            bottomSheetView.buttonMore.setOnClickListener(view1 -> {
-                                Intent intent = new Intent(context, ProfileActivity.class);
-                                intent.putExtra("receiverUser", userModel);
-                                context.startActivity(intent);
-                                bottomSheetDialog.dismiss();
-                            });
-                            bottomSheetView.buttonMessage.setOnClickListener(view -> {
-                                Intent intent = new Intent(context, ChatActivity.class);
-                                intent.putExtra("receiverUser", userModel);
-                                context.startActivity(intent);
-                                bottomSheetDialog.dismiss();
-                            });
-                            bottomSheetView.buttonClose.setOnClickListener(view1 -> bottomSheetDialog.dismiss());
-                            bottomSheetView.buttonEdit.setVisibility(View.GONE);
-
-                            bottomSheetDialog.setContentView(bottomSheetView.getRoot());
-                            bottomSheetDialog.show();
                         });
                     }
                 }

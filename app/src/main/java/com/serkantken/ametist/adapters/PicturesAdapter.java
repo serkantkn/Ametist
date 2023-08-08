@@ -4,51 +4,36 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.FragmentActivity;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.serkantken.ametist.fragments.DashboardFragment;
-import com.serkantken.ametist.fragments.DiscoverFragment;
-import com.serkantken.ametist.fragments.NotificationFragment;
-import com.serkantken.ametist.fragments.PictureFragments;
+import com.serkantken.ametist.fragments.PictureFragment;
+import com.serkantken.ametist.models.PhotoModel;
+import com.serkantken.ametist.utilities.PhotoListener;
 
 import java.util.ArrayList;
 
-public class PicturesAdapter extends FragmentPagerAdapter
+public class PicturesAdapter extends FragmentStateAdapter
 {
     private Context context;
-    int totalTabs;
-    ArrayList<String> pictureUris;
+    ArrayList<PhotoModel> pictureList;
+    PhotoListener listener;
 
-    public PicturesAdapter(@NonNull FragmentManager fm, Context context, int totalTabs, ArrayList<String> pictureUris)
-    {
-        super(fm);
+    public PicturesAdapter(@NonNull FragmentActivity fragmentActivity, Context context, ArrayList<PhotoModel> pictureList, PhotoListener photoListener) {
+        super(fragmentActivity);
         this.context = context;
-        this.totalTabs = totalTabs;
-        this.pictureUris = pictureUris;
-    }
-
-    @Override
-    public int getCount()
-    {
-        return totalTabs;
+        this.pictureList = pictureList;
+        listener = photoListener;
     }
 
     @NonNull
     @Override
-    public Fragment getItem(int position)
-    {
-        switch (position)
-        {
-            case 0:
-                return new PictureFragments.FirstPicFragment(pictureUris.get(position));
-            //case 1:
-            //return new PictureFragments.SecondPicFragment(pictureUris.get(position));
-            //case 2:
-            //return new PictureFragments.ThirdPicFragment(pictureUris.get(position));
-            //case 3:
-            //return new PictureFragments.FourthPicFragment(pictureUris.get(position));
-        }
-        return null;
+    public Fragment createFragment(int position) {
+        return new PictureFragment(context, pictureList.get(position).getLink());
+    }
+
+    @Override
+    public int getItemCount() {
+        return pictureList.size();
     }
 }

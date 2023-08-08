@@ -1,23 +1,32 @@
 package com.serkantken.ametist.activities;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.bumptech.glide.Glide;
+import com.denzcoskun.imageslider.models.SlideModel;
 import com.github.marlonlom.utilities.timeago.TimeAgo;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
@@ -31,11 +40,9 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
-import com.serkantken.ametist.adapters.PhotoAdapter;
 import com.serkantken.ametist.adapters.PostAdapter;
 import com.serkantken.ametist.databinding.ActivityProfileBinding;
 import com.serkantken.ametist.databinding.LayoutQrCodeBinding;
-import com.serkantken.ametist.models.PhotoModel;
 import com.serkantken.ametist.models.PostModel;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.network.ApiClient;
@@ -53,6 +60,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -67,8 +75,7 @@ public class ProfileActivity extends BaseActivity implements PhotoListener
     private FirebaseFirestore database;
     private UserModel user;
     private Utilities utilities;
-    private ArrayList<PhotoModel> pictureList;
-    private PhotoAdapter photoAdapter;
+    private ArrayList<SlideModel> pictureList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -81,10 +88,19 @@ public class ProfileActivity extends BaseActivity implements PhotoListener
         utilities = new Utilities(this, this);
         utilities.blur(binding.toolbarBlur, 10f, false);
 
+        binding.toolbarBlur.setPadding(0, utilities.getStatusBarHeight(), 0, 0);
+
         binding.navbarBlur.setMinimumHeight(utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT));
         utilities.blur(binding.navbarBlur, 10f, false);
 
-        binding.toolbarBlur.setPadding(0, utilities.getStatusBarHeight(), 0, 0);
+        utilities.blur(binding.backBlur, 10f, false);
+        ConstraintSet backBlurSet = new ConstraintSet();
+        backBlurSet.clone(binding.profileRoot);
+        backBlurSet.connect(R.id.backBlur, ConstraintSet.TOP, R.id.toolbarBlur, ConstraintSet.BOTTOM);
+        backBlurSet.connect(R.id.backBlur, ConstraintSet.BOTTOM, R.id.navbarBlur, ConstraintSet.TOP);
+        backBlurSet.applyTo(binding.profileRoot);
+        binding.backBlur.setVisibility(View.INVISIBLE);
+        binding.backgroundProfileImage.setVisibility(View.INVISIBLE);
 
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
@@ -92,7 +108,12 @@ public class ProfileActivity extends BaseActivity implements PhotoListener
         int screenHeight = size.y;
 
         //utilities.getStatusBarHeight()+(screenHeight-(screenHeight/4))
-        binding.scrollView.setPadding(0, utilities.getStatusBarHeight()+utilities.convertDpToPixel(64), 0, utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT));
+        binding.scrollView.setPadding(
+                0,
+                utilities.getStatusBarHeight()+utilities.convertDpToPixel(64),
+                0,
+                utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT)+utilities.convertDpToPixel(96)
+        );
         binding.scrollView.setClipToPadding(false);
 
         ConstraintSet constraintSet = new ConstraintSet();
@@ -107,12 +128,35 @@ public class ProfileActivity extends BaseActivity implements PhotoListener
         postModels = new ArrayList<>();
         pictureList = new ArrayList<>();
 
+        if (user.getUserId().equals(auth.getUid()))
+        {
+            binding.buttonFollow.setVisibility(View.GONE);
+            binding.buttonMessage.setIcon(AppCompatResources.getDrawable(this, R.drawable.ic_edit));
+            binding.buttonMessage.setText(getString(R.string.edit));
+        }
+        else
+        {
+            database.collection(Constants.DATABASE_PATH_USERS).document(Objects.requireNonNull(auth.getUid())).collection("followings").get().addOnCompleteListener(task -> {
+                if (task.isSuccessful())
+                {
+                    for (QueryDocumentSnapshot snapshot : task.getResult())
+                    {
+                        if (snapshot.exists() && snapshot.getId().equals(user.getUserId()))
+                        {
+                            binding.buttonFollow.setContentDescription(getString(R.string.followed));
+                            binding.buttonFollow.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.accent_yellow_dark)));
+                            binding.buttonFollow.setIcon(AppCompatResources.getDrawable(ProfileActivity.this, R.drawable.ic_check));
+                            binding.buttonFollow.setText(getString(R.string.following));
+                            binding.buttonFollow.extend();
+                        }
+                    }
+                }
+            });
+        }
+
         adapter = new PostAdapter(postModels, ProfileActivity.this, ProfileActivity.this);
         binding.posts.setAdapter(adapter);
         binding.posts.setLayoutManager(new LinearLayoutManager(ProfileActivity.this));
-
-        photoAdapter = new PhotoAdapter(pictureList, ProfileActivity.this, this);
-        binding.profileImageRV.setAdapter(photoAdapter);
 
         getUserInfo();
         getPosts();
@@ -123,29 +167,77 @@ public class ProfileActivity extends BaseActivity implements PhotoListener
         {
             binding.buttonBlock.setVisibility(View.GONE);
         }
+        AtomicBoolean isScrolled = new AtomicBoolean(false);
 
         binding.scrollView.setOnScrollChangeListener((View.OnScrollChangeListener) (view, x, y, oldX, oldY) -> {
             if (y > oldY && binding.buttonMessage.isExtended())
             {
                 binding.buttonMessage.shrink();
                 if (!user.getUserId().equals(auth.getUid()))
-                    binding.buttonFollow.hide();
+                    binding.buttonFollow.shrink();
             }
             if (y < oldY && !binding.buttonMessage.isExtended())
             {
                 binding.buttonMessage.extend();
                 if (!user.getUserId().equals(auth.getUid()))
-                    binding.buttonFollow.show();
+                    binding.buttonFollow.extend();
             }
-            if (y > screenHeight/1.5)
+            if (binding.scrollView.getChildAt(0).getBottom() <= (binding.scrollView.getHeight() + binding.scrollView.getScrollY()))
             {
-                binding.username.setVisibility(View.VISIBLE);
-                binding.username2.setVisibility(View.INVISIBLE);
+                binding.buttonMessage.extend();
+                binding.buttonFollow.extend();
+            }
+            if (y > screenHeight/3)
+            {
+                if (!isScrolled.get())
+                {
+                    binding.backBlur.setVisibility(View.VISIBLE);
+                    Animation fadein = AnimationUtils.loadAnimation(ProfileActivity.this, android.R.anim.fade_in);
+                    fadein.setDuration(2500);
+                    fadein.setAnimationListener(new Animation.AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
+                            binding.username.setVisibility(View.VISIBLE);
+                            binding.backgroundProfileImage.setVisibility(View.VISIBLE);
+                            binding.toolbarBlur.setBackgroundColor(getColor(R.color.primary_dark_lightransparent));
+                            binding.navbarBlur.setBackgroundColor(getColor(R.color.primary_dark_lightransparent));
+                            isScrolled.set(true);
+                        }
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                        }
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {}
+                    });
+                    binding.username.startAnimation(fadein);
+                    binding.backgroundProfileImage.startAnimation(fadein);
+                }
             }
             else
             {
-                binding.username.setVisibility(View.INVISIBLE);
-                binding.username2.setVisibility(View.VISIBLE);
+                if (isScrolled.get())
+                {
+                    Animation fadeout = AnimationUtils.loadAnimation(ProfileActivity.this, android.R.anim.fade_out);
+                    fadeout.setDuration(500);
+                    fadeout.setAnimationListener(new Animation.AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
+                            isScrolled.set(false);
+                        }
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            binding.username.setVisibility(View.INVISIBLE);
+                            binding.backgroundProfileImage.setVisibility(View.INVISIBLE);
+                            binding.backBlur.setVisibility(View.INVISIBLE);
+                            binding.toolbarBlur.setBackgroundColor(getColor(android.R.color.transparent));
+                            binding.navbarBlur.setBackgroundColor(getColor(android.R.color.transparent));
+                        }
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {}
+                    });
+                    binding.username.startAnimation(fadeout);
+                    binding.backgroundProfileImage.startAnimation(fadeout);
+                }
             }
         });
 
@@ -247,7 +339,7 @@ public class ProfileActivity extends BaseActivity implements PhotoListener
                                 .delete().addOnCompleteListener(task12 -> {
                                     binding.buttonFollow.setContentDescription(getString(R.string.follow));
                                     binding.buttonFollow.setBackgroundColor(getColor(R.color.accent_purple_dark));
-                                    binding.buttonFollow.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_add_borderless));
+                                    binding.buttonFollow.setIcon(AppCompatResources.getDrawable(this, R.drawable.ic_add_borderless));
                                 });
                     });
         }
@@ -300,8 +392,10 @@ public class ProfileActivity extends BaseActivity implements PhotoListener
                                             .set(followMap2).addOnCompleteListener(task1 -> {
                                                 //Butonu düzenle
                                                 binding.buttonFollow.setContentDescription(getString(R.string.followed));
-                                                binding.buttonFollow.setBackgroundColor(getColor(R.color.accent_blue_dark));
-                                                binding.buttonFollow.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_check));
+                                                binding.buttonFollow.setBackgroundColor(getColor(R.color.accent_yellow_dark));
+                                                binding.buttonFollow.setIcon(AppCompatResources.getDrawable(this, R.drawable.ic_check));
+                                                binding.buttonFollow.setText(getString(R.string.following));
+                                                binding.buttonFollow.extend();
                                             });
                                 });
                     });
@@ -393,37 +487,45 @@ public class ProfileActivity extends BaseActivity implements PhotoListener
                             user.setSignupDate(Long.parseLong("1685965594357"));
                         }
 
-                        if (documentSnapshot.getId().equals(auth.getUid()))
-                        {
-                            binding.buttonFollow.setVisibility(View.GONE);
-                            binding.buttonMessage.setIcon(AppCompatResources.getDrawable(this, R.drawable.ic_edit));
-                            binding.buttonMessage.setText(getString(R.string.edit));
-                        }
-
-                        database.collection(Constants.DATABASE_PATH_USERS).document(Objects.requireNonNull(user.getUserId())).collection("photos").get().addOnCompleteListener(task1 -> {
+                        /*database.collection(Constants.DATABASE_PATH_USERS).document(Objects.requireNonNull(user.getUserId())).collection("photos").get().addOnCompleteListener(task1 -> {
                             if (task1.isSuccessful())
                             {
                                 pictureList.clear();
+                                ArrayList<PhotoModel> photos = new ArrayList<>();
                                 for (QueryDocumentSnapshot photoIDs : task1.getResult())
                                 {
                                     if (photoIDs.exists())
                                     {
-                                        PhotoModel photo = new PhotoModel();
-                                        photo.setPhotoId(photoIDs.getId());
-                                        photo.setLink(photoIDs.getString("link"));
-                                        photo.setDate(photoIDs.getLong("date"));
-                                        pictureList.add(photo);
+                                        PhotoModel model = new PhotoModel();
+                                        model.setDate(Objects.requireNonNull(photoIDs.getLong("date")));
+                                        model.setLink(photoIDs.getString("link"));
+                                        photos.add(model);
                                     }
                                 }
-                                pictureList.sort(Comparator.comparing(PhotoModel::getDate));
-                                photoAdapter.notifyDataSetChanged();
+                                photos.sort(Comparator.comparing(PhotoModel::getDate).reversed());
+                                for (int i = 0; i < photos.size(); i++)
+                                {
+                                    pictureList.add(new SlideModel(photos.get(i).getLink(), ScaleTypes.FIT));
+                                }
+
+                                if (!pictureList.isEmpty())
+                                {
+                                    binding.profileImageViewPager.setImageList(pictureList);
+                                    binding.profileImageViewPager.startSliding(5000);
+                                }
+                                else
+                                {
+                                    binding.profileImageViewPager.setVisibility(View.GONE);
+                                }
                             }
-                        });
+                        });*/
                     }
                 }
 
                 binding.username.setText(user.getName());
                 binding.username2.setText(user.getName());
+                binding.followCount.setText(String.valueOf(user.getFollowingCount()));
+                binding.followerCount.setText(String.valueOf(user.getFollowerCount()));
                 binding.textAbout.setText(user.getAbout());
                 binding.textAge.setText(user.getAge());
                 switch (user.getGender()) {
@@ -437,10 +539,20 @@ public class ProfileActivity extends BaseActivity implements PhotoListener
                 binding.textRole.setText(user.getRole());
                 binding.textRelationship.setText(user.getRelationship());
                 binding.textSeek.setText(user.getLooking());
-                binding.textHeight.setText(user.getHeight()+" cm");
-                binding.textWeight.setText(user.getWeight()+" kg");
+                binding.textHeight.setText(user.getHeight() + " cm");
+                binding.textWeight.setText(user.getWeight() + " kg");
                 binding.textSexuality.setText(user.getSexuality());
                 binding.textSignupDate.setText(TimeAgo.using(user.getSignupDate()));
+
+                if (Objects.isNull(user.getProfilePic()))
+                {
+                    binding.profileImageViewPager.setVisibility(View.GONE);
+                }
+                else
+                {
+                    Glide.with(this).load(user.getProfilePic()).into(binding.profileImageViewPager);
+                    Glide.with(this).load(user.getProfilePic()).into(binding.backgroundProfileImage);
+                }
             }
         });
     }
@@ -512,14 +624,12 @@ public class ProfileActivity extends BaseActivity implements PhotoListener
     }
 
     @Override
-    public void onClick(String link) {
-        Intent intent = new Intent(ProfileActivity.this, FullProfilePhotoActivity.class);
-        intent.putExtra("pictureUrl", link);
-        startActivity(intent);
+    public void onClick(long date) {
+
     }
 
     @Override
-    public void onRemove(long date, int position) {
+    public void onRemove(int status, int position) {
 
     }
 

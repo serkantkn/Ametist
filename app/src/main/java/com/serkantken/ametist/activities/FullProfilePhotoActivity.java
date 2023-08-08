@@ -4,21 +4,15 @@ import android.os.Bundle;
 import android.transition.Fade;
 import android.view.View;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.bumptech.glide.Glide;
 import com.serkantken.ametist.R;
-import com.serkantken.ametist.adapters.PicturesAdapter;
 import com.serkantken.ametist.databinding.ActivityFullProfilePhotoBinding;
 
-import java.util.ArrayList;
+import java.util.Objects;
 
 public class FullProfilePhotoActivity extends BaseActivity
 {
     ActivityFullProfilePhotoBinding binding;
-    ArrayList<String> pictureUris;
-    PicturesAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,13 +29,14 @@ public class FullProfilePhotoActivity extends BaseActivity
         getWindow().setEnterTransition(fade);
         getWindow().setExitTransition(fade);
 
-        pictureUris = new ArrayList<>();
-        String url = getIntent().getStringExtra("pictureUrl");
-        pictureUris.add(url);
+        String pictureUrl = getIntent().getStringExtra("pictureUrl");
 
-        adapter = new PicturesAdapter(getSupportFragmentManager(), getApplicationContext(), pictureUris.size(), pictureUris);
-        binding.profileImageSlider.setAdapter(adapter);
-
-        binding.buttonBack.setOnClickListener(view -> onBackPressed());
+        if (!Objects.isNull(pictureUrl))
+        {
+            Glide.with(this).load(pictureUrl).into(binding.imageView);
+            binding.imageView.setMaximumScale(5);
+            binding.imageView.setMediumScale(3);
+            binding.imageView.setMinimumScale(1);
+        }
     }
 }

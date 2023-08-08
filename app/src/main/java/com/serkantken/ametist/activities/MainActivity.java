@@ -15,7 +15,6 @@ import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.auth.FirebaseAuth;
@@ -27,7 +26,6 @@ import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.adapters.MainAdapter;
 import com.serkantken.ametist.databinding.ActivityMainBinding;
-import com.serkantken.ametist.databinding.LayoutProfileBinding;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.utilities.Constants;
 import com.serkantken.ametist.utilities.Utilities;
@@ -35,7 +33,6 @@ import com.skydoves.balloon.ArrowPositionRules;
 import com.skydoves.balloon.Balloon;
 import com.skydoves.balloon.BalloonAnimation;
 import com.skydoves.balloon.BalloonSizeSpec;
-import com.skydoves.balloon.OnBalloonDismissListener;
 
 import java.util.Objects;
 
@@ -187,7 +184,7 @@ public class MainActivity extends BaseActivity
             }
         });
 
-        int[] tabicons = {R.drawable.ic_home, R.drawable.ic_group, R.drawable.ic_message, R.drawable.ic_notifications};
+        int[] tabicons = {R.drawable.ic_home, R.drawable.outline_group, R.drawable.outline_message, R.drawable.outline_notifications};
         binding.tabLayout.getTabAt(1).setIcon(tabicons[1]);
         binding.tabLayout.getTabAt(2).setIcon(tabicons[2]);
         binding.tabLayout.getTabAt(3).setIcon(tabicons[3]);
@@ -196,21 +193,25 @@ public class MainActivity extends BaseActivity
             public void onTabSelected(TabLayout.Tab tab) {
                 if (tab.getPosition() == 0)
                 {
+                    tab.setIcon(R.drawable.ic_home);
                     Objects.requireNonNull(tab.getIcon()).setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.accent_blue_dark), PorterDuff.Mode.SRC_IN);
                     tab.view.performClick();
                 }
                 else if (tab.getPosition() == 1)
                 {
+                    tab.setIcon(R.drawable.ic_group);
                     Objects.requireNonNull(tab.getIcon()).setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.accent_blue_dark), PorterDuff.Mode.SRC_IN);
                     tab.view.performClick();
                 }
                 else if (tab.getPosition() == 2)
                 {
+                    tab.setIcon(R.drawable.ic_message);
                     Objects.requireNonNull(tab.getIcon()).setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.accent_blue_dark), PorterDuff.Mode.SRC_IN);
                     tab.view.performClick();
                 }
                 else if (tab.getPosition() == 3)
                 {
+                    tab.setIcon(R.drawable.ic_notifications);
                     Objects.requireNonNull(tab.getIcon()).setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.accent_blue_dark), PorterDuff.Mode.SRC_IN);
                     tab.view.performClick();
                 }
@@ -220,18 +221,22 @@ public class MainActivity extends BaseActivity
             public void onTabUnselected(TabLayout.Tab tab) {
                 if (tab.getPosition() == 0)
                 {
+                    tab.setIcon(R.drawable.outline_home);
                     Objects.requireNonNull(tab.getIcon()).setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.accent_purple_light), PorterDuff.Mode.SRC_IN);
                 }
                 else if (tab.getPosition() == 1)
                 {
+                    tab.setIcon(R.drawable.outline_group);
                     Objects.requireNonNull(tab.getIcon()).setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.accent_purple_light), PorterDuff.Mode.SRC_IN);
                 }
                 else if (tab.getPosition() == 2)
                 {
+                    tab.setIcon(R.drawable.outline_message);
                     Objects.requireNonNull(tab.getIcon()).setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.accent_purple_light), PorterDuff.Mode.SRC_IN);
                 }
                 else if (tab.getPosition() == 3)
                 {
+                    tab.setIcon(R.drawable.outline_notifications);
                     Objects.requireNonNull(tab.getIcon()).setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.accent_purple_light), PorterDuff.Mode.SRC_IN);
                 }
             }

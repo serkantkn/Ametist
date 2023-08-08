@@ -5,32 +5,38 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/primary"
-    tools:context=".activities.ProfileEditActivity">
+    tools:context=".activities.SettingsActivity">
+
+    <com.makeramen.roundedimageview.RoundedImageView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintHeight_min="250dp"
+        app:layout_constraintHeight_max="750dp"
+        app:layout_constraintDimensionRatio="3:4"
+        android:id="@+id/profileImage"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="10dp"
+        android:src="@drawable/ic_add_photo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/scrollView"
+        app:riv_corner_radius="20dp"/>
 
     <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/profileImage"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         android:id="@+id/scrollView">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingBottom="20dp"
             android:id="@+id/scrollLayout">
-
-            <com.makeramen.roundedimageview.RoundedImageView
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                app:layout_constraintHeight_min="250dp"
-                app:layout_constraintHeight_max="450dp"
-                app:layout_constraintDimensionRatio="3:4"
-                android:id="@+id/profileImage"
-                android:src="@drawable/ic_add_photo"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                app:riv_corner_radius="20dp"/>
 
             <EditText
                 android:id="@+id/input_name"
@@ -50,7 +56,7 @@
                 android:paddingBottom="15dp"
                 android:maxLines="1"
                 android:importantForAutofill="no"
-                app:layout_constraintTop_toBottomOf="@id/profileImage"
+                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginStart="16dp"

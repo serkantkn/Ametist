@@ -12,17 +12,12 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.bumptech.glide.Glide;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.serkantken.ametist.R;
-import com.serkantken.ametist.activities.ChatActivity;
 import com.serkantken.ametist.activities.ProfileActivity;
 import com.serkantken.ametist.adapters.NotificationsAdapter;
 import com.serkantken.ametist.databinding.FragmentNotificationBinding;
-import com.serkantken.ametist.databinding.LayoutProfileBinding;
 import com.serkantken.ametist.models.NotificationModel;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.utilities.UserListener;
@@ -31,8 +26,6 @@ import com.serkantken.ametist.utilities.Utilities;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
-
-import eightbitlab.com.blurview.BlurView;
 
 public class NotificationFragment extends Fragment implements UserListener
 {

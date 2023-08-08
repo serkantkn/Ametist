@@ -37,12 +37,30 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Glide.with(context).load(photoList.get(position).getLink()).into(holder.binding.profileImage);
+        PhotoModel model = photoList.get(position);
+        Glide.with(context).load(model.getLink()).into(holder.binding.profileImage);
+        if (model.getStatus() == 1)
+        {
+            holder.binding.iconNew.setVisibility(View.VISIBLE);
+        }
+        else if (model.getStatus() == 2)
+        {
+            holder.binding.iconDelete.setVisibility(View.VISIBLE);
+        }
 
-        holder.binding.profileImage.setOnClickListener(v -> listener.onClick(photoList.get(holder.getAdapterPosition()).getLink()));
+        holder.binding.profileImage.setOnClickListener(v -> listener.onClick(model.getDate()));
 
         holder.binding.profileImage.setOnLongClickListener(v -> {
-            listener.onRemove(photoList.get(holder.getAdapterPosition()).getDate(), holder.getAdapterPosition());
+            if (holder.binding.iconDelete.getVisibility() == View.VISIBLE)
+            {
+                holder.binding.iconDelete.setVisibility(View.GONE);
+                listener.onRemove(0, holder.getAdapterPosition());
+            }
+            else
+            {
+                holder.binding.iconDelete.setVisibility(View.VISIBLE);
+                listener.onRemove(2, holder.getAdapterPosition());
+            }
             return true;
         });
     }

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -13,36 +12,28 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.PopupWindow;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.cardview.widget.CardView;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.github.marlonlom.utilities.timeago.TimeAgo;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.serkantken.ametist.R;
-import com.serkantken.ametist.activities.ChatActivity;
 import com.serkantken.ametist.activities.CommentActivity;
 import com.serkantken.ametist.activities.FullProfilePhotoActivity;
 import com.serkantken.ametist.activities.ProfileActivity;
-import com.serkantken.ametist.activities.ProfileEditActivity;
 import com.serkantken.ametist.databinding.LayoutNewPostDialogBinding;
 import com.serkantken.ametist.databinding.LayoutPostBinding;
-import com.serkantken.ametist.databinding.LayoutProfileBinding;
 import com.serkantken.ametist.models.CommentModel;
 import com.serkantken.ametist.models.PostModel;
 import com.serkantken.ametist.models.UserModel;
@@ -403,7 +394,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                 dialogBinding.username.setVisibility(View.GONE);
                 dialogBinding.buttonAddPhoto.setVisibility(View.GONE);
                 dialogBinding.postText.setText(model.get("postText").toString());
-                if (!Objects.equals(model.get("postPicture").toString(), ""))
+                if (!Objects.equals(model.get("postPicture"), null))
                 {
                     Glide.with(context).load(model.get("postPicture").toString()).into(dialogBinding.postImage);
                     dialogBinding.postImage.setVisibility(View.VISIBLE);

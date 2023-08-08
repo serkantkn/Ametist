@@ -8,6 +8,20 @@
     android:id="@+id/profileRoot"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/backgroundProfileImage"
+        android:scaleType="centerCrop"/>
+
+    <eightbitlab.com.blurview.BlurView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbarBlur"
+        app:layout_constraintBottom_toTopOf="@id/navbarBlur"
+        android:background="@color/primary_transparent"
+        android:id="@+id/backBlur"/>
+
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -22,15 +36,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/profileImageRV"
-                    android:orientation="horizontal"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    tools:listitem="@layout/photo_item"
-                    tools:itemCount="2"
-                    android:scrollbars="none"
+                <com.makeramen.roundedimageview.RoundedImageView
+                    android:layout_width="0dp"
+                    app:layout_constraintWidth_min="350dp"
+                    app:layout_constraintWidth_max="600dp"
+                    android:layout_height="0dp"
+                    app:layout_constraintDimensionRatio="3:4"
+                    android:id="@+id/profileImageViewPager"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    app:riv_corner_radius="20dp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -46,7 +61,7 @@
                     android:shadowRadius="10"
                     android:textSize="32sp"
                     app:layout_constraintStart_toStartOf="@id/cardSeek"
-                    app:layout_constraintTop_toBottomOf="@id/profileImageRV"
+                    app:layout_constraintTop_toBottomOf="@id/profileImageViewPager"
                     android:layout_marginTop="10dp"/>
 
                 <androidx.cardview.widget.CardView
@@ -216,7 +231,7 @@
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                        android:layout_height="match_parent">
 
                         <TextView
                             android:id="@+id/titleGender"
@@ -229,9 +244,9 @@
                             android:text="@string/gender"
                             android:textColor="@color/accent_red_light"
                             android:textSize="17sp"
+                            app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintBottom_toBottomOf="parent"/>
+                            app:layout_constraintTop_toTopOf="parent" />
 
                         <TextView
                             android:id="@+id/textGender"
@@ -242,10 +257,10 @@
                             android:text="@string/gender"
                             android:textColor="@color/primary_text"
                             android:textSize="17sp"
-                            app:layout_constraintStart_toEndOf="@id/titleGender"
-                            app:layout_constraintTop_toTopOf="@+id/titleGender"
                             app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintHorizontal_bias="0"/>
+                            app:layout_constraintHorizontal_bias="0"
+                            app:layout_constraintStart_toEndOf="@id/titleGender"
+                            app:layout_constraintTop_toTopOf="@+id/titleGender" />
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -304,7 +319,7 @@
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardSeek"
                     android:layout_width="0dp"
-                    app:layout_constraintWidth_max="600dp"
+                    app:layout_constraintWidth_max="1200dp"
                     android:layout_height="wrap_content"
                     app:cardBackgroundColor="@color/primary_dark_midtransparent"
                     app:cardCornerRadius="20dp"
@@ -759,24 +774,31 @@
         android:text="@string/send_message"
         android:fontFamily="@font/jost_light"
         app:icon="@drawable/ic_message"
+        app:iconGravity="end"
         app:iconTint="@color/white"
         android:textColor="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginEnd="16dp"/>
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="16dp"
+        android:elevation="10dp"/>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/buttonFollow"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:backgroundTint="@color/accent_purple_dark"
-        android:src="@drawable/ic_add_borderless"
+        app:icon="@drawable/ic_add_borderless"
+        app:iconTint="@color/white"
         app:borderWidth="0dp"
-        app:fabSize="normal"
-        app:layout_constraintBottom_toTopOf="@id/buttonMessage"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="10dp"
-        android:layout_marginEnd="16dp"
+        android:text="@string/follow"
+        android:fontFamily="@font/jost_light"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="@id/buttonMessage"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="5dp"
+        android:elevation="10dp"
         android:contentDescription="@string/follow"/>
 
     <eightbitlab.com.blurview.BlurView

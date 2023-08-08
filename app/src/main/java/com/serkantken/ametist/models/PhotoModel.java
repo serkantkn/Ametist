@@ -5,6 +5,7 @@ import java.io.Serializable;
 public class PhotoModel implements Serializable {
     String photoId;
     String link, squareLink;
+    int status;
     long date;
 
     public String getPhotoId() {
@@ -37,5 +38,13 @@ public class PhotoModel implements Serializable {
 
     public void setDate(long date) {
         this.date = date;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
     }
 }

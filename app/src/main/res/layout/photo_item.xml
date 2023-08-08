@@ -6,9 +6,9 @@
 
     <com.makeramen.roundedimageview.RoundedImageView
         android:layout_width="0dp"
-        app:layout_constraintWidth_min="350dp"
-        app:layout_constraintWidth_max="600dp"
         android:layout_height="0dp"
+        app:layout_constraintHeight_min="250dp"
+        app:layout_constraintHeight_max="450dp"
         app:layout_constraintDimensionRatio="3:4"
         android:id="@+id/profileImage"
         android:src="@drawable/ic_person_add_xl"
@@ -20,5 +20,27 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
+
+    <ImageView
+        android:layout_width="46dp"
+        android:layout_height="46dp"
+        android:id="@+id/icon_new"
+        android:src="@drawable/ic_new"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="@color/accent_purple_dark"
+        android:visibility="gone"/>
+
+    <ImageView
+        android:layout_width="46dp"
+        android:layout_height="46dp"
+        android:id="@+id/icon_delete"
+        android:src="@drawable/ic_delete"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="@color/accent_red_dark"
+        android:visibility="gone"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
