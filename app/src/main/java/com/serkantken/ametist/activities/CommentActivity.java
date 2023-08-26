@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -74,6 +75,12 @@ public class CommentActivity extends BaseActivity {
 
         String userId = getIntent().getStringExtra("userId");
         String postId = getIntent().getStringExtra("postId");
+        String postImage = getIntent().getStringExtra("postImage");
+
+        if (postImage != null && !postImage.equals("null")) {
+            Glide.with(this).load(postImage).into(binding.postImage);
+            binding.postImage.setVisibility(View.VISIBLE);
+        }
 
         comments = new ArrayList<>();
         adapter = new CommentAdapter(comments, this, CommentActivity.this);

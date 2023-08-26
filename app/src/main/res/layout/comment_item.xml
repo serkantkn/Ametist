@@ -19,7 +19,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintVertical_bias="0"
-        android:layout_marginStart="15dp"
         android:layout_marginTop="5dp"/>
 
     <TextView
@@ -31,25 +30,30 @@
         android:fontFamily="@font/jost_medium"
         android:textSize="15sp"
         app:layout_constraintStart_toEndOf="@id/profileImage"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/date"
         app:layout_constraintTop_toTopOf="@id/profileImage"
         app:layout_constraintBottom_toBottomOf="@id/profileImage"
-        android:layout_marginEnd="15dp"
+        android:layout_marginEnd="5dp"
         android:layout_marginStart="10dp"/>
 
     <TextView
         android:id="@+id/date"
         android:layout_width="0dp"
+        app:layout_constraintWidth_min="90dp"
+        app:layout_constraintWidth_max="150dp"
+        app:layout_constraintHorizontal_bias="1"
         android:layout_height="wrap_content"
         android:text="date"
         android:textColor="@color/secondary_text"
         android:fontFamily="@font/jost_italic"
         android:textSize="13sp"
+        android:textAlignment="viewEnd"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/profileImage"
         app:layout_constraintBottom_toBottomOf="@id/profileImage"
-        android:layout_marginEnd="15dp"
-        android:layout_marginStart="10dp"/>
+        android:layout_marginStart="10dp"
+        android:ellipsize="marquee"
+        android:marqueeRepeatLimit="marquee_forever"/>
 
     <com.ms.square.android.expandabletextview.ExpandableTextView
         android:id="@+id/comment_text"
@@ -60,7 +64,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@id/comment_username"
         app:layout_constraintTop_toBottomOf="@id/comment_username"
-        android:layout_marginEnd="15dp"
         android:layout_marginBottom="5dp">
 
         <TextView
@@ -69,7 +72,8 @@
             android:layout_height="wrap_content"
             android:fontFamily="@font/jost_regular"
             android:textColor="@color/primary_text"
-            android:textSize="15sp"/>
+            android:textSize="15sp"
+            android:text="Comment"/>
         <ImageButton
             android:id="@id/expand_collapse"
             android:layout_width="wrap_content"

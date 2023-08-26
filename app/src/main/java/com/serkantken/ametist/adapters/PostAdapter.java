@@ -18,6 +18,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.util.Pair;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -139,11 +140,24 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
         });
 
         holder.binding.buttonComment.setOnClickListener(view -> {
-            Intent intent = new Intent(context, CommentActivity.class);
-            intent.putExtra("postId", postModel.getPostId());
-            intent.putExtra("userId", postModel.getPostedBy());
-            ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, holder.binding.cardLayout, "comment");
-            context.startActivity(intent, optionsCompat.toBundle());
+            if (!Objects.equals(postModel.getPostPicture(), null))
+            {
+                Intent intent = new Intent(context, CommentActivity.class);
+                intent.putExtra("postId", postModel.getPostId());
+                intent.putExtra("userId", postModel.getPostedBy());
+                intent.putExtra("postImage", postModel.getPostPicture());
+                ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, new Pair<>(holder.binding.cardLayout,"comment"), new Pair<>(holder.binding.postImage, "photograph"));
+                context.startActivity(intent, optionsCompat.toBundle());
+            }
+            else
+            {
+                Intent intent = new Intent(context, CommentActivity.class);
+                intent.putExtra("postId", postModel.getPostId());
+                intent.putExtra("userId", postModel.getPostedBy());
+                intent.putExtra("postImage", "null");
+                ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, holder.binding.cardLayout, "comment");
+                context.startActivity(intent, optionsCompat.toBundle());
+            }
         });
 
         holder.binding.buttonMenu.setOnClickListener(view -> {

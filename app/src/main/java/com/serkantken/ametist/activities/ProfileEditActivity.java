@@ -10,8 +10,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.content.res.AppCompatResources;
-import androidx.core.content.res.ResourcesCompat;
 
 import com.bumptech.glide.Glide;
 import com.github.dhaval2404.imagepicker.ImagePicker;
@@ -24,19 +22,12 @@ import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.serkantken.ametist.R;
-import com.serkantken.ametist.adapters.PhotoAdapter;
 import com.serkantken.ametist.databinding.ActivityProfileEditNewBinding;
-import com.serkantken.ametist.models.PhotoModel;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.utilities.Constants;
-import com.serkantken.ametist.utilities.PhotoListener;
 import com.serkantken.ametist.utilities.Utilities;
-import com.yalantis.ucrop.UCrop;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;

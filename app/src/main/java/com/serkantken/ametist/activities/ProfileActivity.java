@@ -8,11 +8,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -22,11 +20,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
-import com.denzcoskun.imageslider.models.SlideModel;
 import com.github.marlonlom.utilities.timeago.TimeAgo;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
@@ -48,7 +44,6 @@ import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.network.ApiClient;
 import com.serkantken.ametist.network.ApiService;
 import com.serkantken.ametist.utilities.Constants;
-import com.serkantken.ametist.utilities.PhotoListener;
 import com.serkantken.ametist.utilities.Utilities;
 
 import org.json.JSONArray;
@@ -66,7 +61,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ProfileActivity extends BaseActivity implements PhotoListener
+public class ProfileActivity extends BaseActivity
 {
     private ActivityProfileBinding binding;
     private ArrayList<PostModel> postModels;
@@ -75,7 +70,6 @@ public class ProfileActivity extends BaseActivity implements PhotoListener
     private FirebaseFirestore database;
     private UserModel user;
     private Utilities utilities;
-    private ArrayList<SlideModel> pictureList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -126,7 +120,6 @@ public class ProfileActivity extends BaseActivity implements PhotoListener
         auth = FirebaseAuth.getInstance();
         database = FirebaseFirestore.getInstance();
         postModels = new ArrayList<>();
-        pictureList = new ArrayList<>();
 
         if (user.getUserId().equals(auth.getUid()))
         {
@@ -621,16 +614,6 @@ public class ProfileActivity extends BaseActivity implements PhotoListener
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
-    }
-
-    @Override
-    public void onClick(long date) {
-
-    }
-
-    @Override
-    public void onRemove(int status, int position) {
-
     }
 
     @Override

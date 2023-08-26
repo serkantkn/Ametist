@@ -144,7 +144,7 @@ public class LoginTabFragment extends Fragment
             binding.buttonLogin.setVisibility(View.GONE);
             binding.forgotPassword.setVisibility(View.GONE);
             binding.buttonSignup.setVisibility(View.GONE);
-            binding.buttonSigninWithGoogle.setVisibility(View.GONE);
+            binding.alsoLoginCard.setVisibility(View.GONE);
             binding.progressbar.setVisibility(View.VISIBLE);
         }
         else
@@ -154,7 +154,7 @@ public class LoginTabFragment extends Fragment
             binding.buttonLogin.setVisibility(View.VISIBLE);
             binding.forgotPassword.setVisibility(View.VISIBLE);
             binding.buttonSignup.setVisibility(View.VISIBLE);
-            binding.buttonSigninWithGoogle.setVisibility(View.VISIBLE);
+            binding.alsoLoginCard.setVisibility(View.VISIBLE);
             binding.progressbar.setVisibility(View.GONE);
         }
     }

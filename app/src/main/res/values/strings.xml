@@ -150,4 +150,5 @@
     <string name="sign_up_date">Sign Up Date</string>
     <string name="kg" translatable="false">kg</string>
     <string name="add_photo">Add Photo</string>
+    <string name="slide_to_cancel">Slide to cancel</string>
 </resources>
