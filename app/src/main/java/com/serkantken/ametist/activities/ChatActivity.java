@@ -127,7 +127,7 @@ public class ChatActivity extends BaseActivity implements MessageListener {
     private ListenerRegistration senderRegistration;
     private ListenerRegistration receiverRegistration;
     private long currentTimestamp = new Date().getTime();
-    private DocumentFile pickedDir;
+    private String audioFilePath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -215,6 +215,10 @@ public class ChatActivity extends BaseActivity implements MessageListener {
                     binding.buttonSend.setBackground(AppCompatResources.getDrawable(ChatActivity.this, R.drawable.background_mic_button));
                     binding.buttonSend.setImageDrawable(AppCompatResources.getDrawable(ChatActivity.this, R.drawable.ic_mic));
                     binding.buttonSend.setTag("Voice");
+                    if (isRecordingPermissionGranted())
+                    {
+                        binding.buttonSend.setListenForRecord(true);
+                    }
                 }
                 else
                 {
@@ -230,7 +234,8 @@ public class ChatActivity extends BaseActivity implements MessageListener {
 
         binding.buttonSend.setRecordView(binding.recordView);
 
-        binding.buttonSend.setListenForRecord(false);
+        binding.buttonSend.setListenForRecord(isRecordingPermissionGranted());
+
         binding.buttonSend.setOnRecordClickListener(view -> {
             if (binding.buttonSend.getTag().equals("Voice"))
             {
@@ -284,8 +289,9 @@ public class ChatActivity extends BaseActivity implements MessageListener {
 
         binding.recordView.setSlideToCancelTextColor(getColor(R.color.accent_purple_dark));
         binding.recordView.setTimeLimit(30000);
-        binding.recordView.setTrashIconColor(getColor(R.color.accent_blue_dark));
+        binding.recordView.setTrashIconColor(getColor(com.denzcoskun.imageslider.R.color.grey_font));
         binding.recordView.setCounterTimeColor(getColor(R.color.primary_text));
+        binding.recordView.setCancelBounds(-75);
 
         binding.recordView.setOnRecordListener(new OnRecordListener() {
 
@@ -299,7 +305,6 @@ public class ChatActivity extends BaseActivity implements MessageListener {
                     e.printStackTrace();
                     Toast.makeText(ChatActivity.this, "Prepare failed", Toast.LENGTH_SHORT).show();
                 }
-
                 binding.inputMessage.setVisibility(View.GONE);
                 binding.addPhoto.setVisibility(View.GONE);
                 binding.recordView.setVisibility(View.VISIBLE);
@@ -329,11 +334,11 @@ public class ChatActivity extends BaseActivity implements MessageListener {
                 mediaRecorder.reset();
                 mediaRecorder.release();
                 mediaRecorder = null;
-                /*File file = new File(audioPath);
+                File file = new File(audioFilePath);
                 if (file.exists())
                 {
                     file.delete();
-                }*/
+                }
                 showMessagebox();
             }
 
@@ -359,7 +364,7 @@ public class ChatActivity extends BaseActivity implements MessageListener {
             public void onAnimationEnd(Animation animation) {
                 binding.inputMessage.setVisibility(View.VISIBLE);
                 binding.addPhoto.setVisibility(View.VISIBLE);
-                binding.buttonSend.setListenForRecord(false);
+                binding.buttonSend.setListenForRecord(true);
             }
             @Override
             public void onAnimationRepeat(Animation animation) {}
@@ -368,8 +373,7 @@ public class ChatActivity extends BaseActivity implements MessageListener {
 
     private boolean isRecordingPermissionGranted()
     {
-        return ContextCompat.checkSelfPermission(ChatActivity.this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED &&
-                Hawk.get("storageUri") != null;
+        return ContextCompat.checkSelfPermission(ChatActivity.this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
     }
 
     private void requestRecordingPermission()
@@ -379,18 +383,18 @@ public class ChatActivity extends BaseActivity implements MessageListener {
 
     private void setupForRecording()
     {
-        try {
-            mediaRecorder = new MediaRecorder();
-            mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-            DocumentFile file = pickedDir.createFile("audio/wav", System.currentTimeMillis() + ".wav");
-            OutputStream outputStream = getContentResolver().openOutputStream(file.getUri());
-
-            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-        } catch (IOException e) {
-            throw new RuntimeException("Hata oluştu" +e.getMessage(), e);
+        File mediaDir = new File(getFilesDir(), "Media/Audio");
+        if (!mediaDir.exists()) {
+            mediaDir.mkdirs(); // Gerekirse dizinleri oluştur
         }
+        File audioFile = new File(mediaDir, new Date().getTime() + ".3gp");
+        audioFilePath = audioFile.getAbsolutePath();
 
+        mediaRecorder = new MediaRecorder();
+        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        mediaRecorder.setOutputFile(audioFilePath);
+        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
     }
 
     private void selectPhotoFromGallery() {
@@ -642,22 +646,93 @@ public class ChatActivity extends BaseActivity implements MessageListener {
 
     private void sendAudio()
     {
+        HashMap<String, Object> model = new HashMap<>();
+        model.put("timestamp", new Date().getTime());
+        model.put("senderId", auth.getUid());
+        model.put("receiverId", receiverUser.getUserId());
+        model.put("message", "null");
+        model.put("photo", "null");
+        if (isReply)
+        {
+            model.put("hasReply", true);
+            model.put("repliedUserId", repliedMessage.getSenderId());
+            model.put("repliedMessage", repliedMessage.getMessage());
+            if (isReplyWithPhoto)
+            {
+                model.put("isReplyHasPhoto", true);
+                model.put("repliedPhoto", repliedMessage.getPhoto());
+            }
+            else
+            {
+                model.put("isReplyHasPhoto", false);
+            }
+        }
+        else
+        {
+            model.put("hasReply", false);
+        }
+        model.put("isSeen", false);
         StorageReference filePath = FirebaseStorage.getInstance()
                 .getReference("Conversations")
                 .child(conversationId)
                 .child("Records")
                 .child(Objects.requireNonNull(auth.getUid()))
                 .child(receiverUser.getUserId());
-        /*Uri audioFile = Uri.fromFile(new File(audioPath));
+        Uri audioFile = Uri.fromFile(new File(audioFilePath));
         filePath.putFile(audioFile).addOnSuccessListener(taskSnapshot -> {
             Task<Uri> audioUrl = taskSnapshot.getStorage().getDownloadUrl();
             audioUrl.addOnCompleteListener(task -> {
                 if (task.isSuccessful())
                 {
                     String url = task.getResult().toString();
+                    model.put("voice", url);
+
+                    database.collection(Constants.DATABASE_PATH_CHATS).add(model).addOnCompleteListener(task1 -> {
+                        if (task1.isSuccessful()) {
+                            model.put("messageId", task1.getResult().getId());
+
+                            database.collection(Constants.DATABASE_PATH_CHATS).document(task1.getResult().getId()).update(model);
+
+                            if (conversationId != null) {
+                                updateConversation("Voice message");
+                            } else {
+                                MessageModel messageModel = new MessageModel();
+                                messageModel.setSenderId(auth.getUid());
+                                messageModel.setReceiverId(receiverUser.getUserId());
+                                messageModel.setMessage("Voice");
+                                messageModel.setTimestamp(new Date().getTime());
+                                addConversation(messageModel);
+                            }
+                            if (!isReceiverAvailable) {
+                                try {
+                                    JSONArray tokens = new JSONArray();
+                                    tokens.put(receiverUser.getToken());
+
+                                    JSONObject data = new JSONObject();
+                                    data.put(Constants.USER_ID, auth.getUid());
+                                    data.put(Constants.USERNAME, Hawk.get(Constants.USERNAME));
+                                    data.put(Constants.TOKEN, Hawk.get(Constants.TOKEN));
+                                    data.put(Constants.MESSAGE_TYPE, Constants.MESSAGE_TYPE_PHOTO);
+                                    data.put(Constants.MESSAGE, photoPreviewView.inputMessage.getText().toString());
+
+                                    JSONObject body = new JSONObject();
+                                    body.put(Constants.REMOTE_MSG_DATA, data);
+                                    body.put(Constants.REMOTE_MSG_REGISTRATION_IDS, tokens);
+
+                                    sendNotification(body.toString());
+                                } catch (Exception e) {
+                                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            }
+
+                            binding.inputMessage.setText("");
+                            messageModels.clear();
+                            listenMessages();
+                        }
+                    });
                 }
             });
-        });*/
+        });
     }
 
     private void sendNotification(String messageBody) {
@@ -700,9 +775,9 @@ public class ChatActivity extends BaseActivity implements MessageListener {
                 return;
             }
             if (value != null) {
-                if (value.getBoolean("online") != null) {
+                if (value.getBoolean("online") != null)
                     isReceiverAvailable = Objects.requireNonNull(value.getBoolean("online"));
-                }
+
                 receiverUser.setToken(value.getString("token"));
             }
             if (isReceiverAvailable) {
@@ -752,6 +827,7 @@ public class ChatActivity extends BaseActivity implements MessageListener {
                     model.setReceiverId(documentChange.getDocument().getString("receiverId"));
                     model.setMessage(documentChange.getDocument().getString("message"));
                     model.setPhoto(documentChange.getDocument().getString("photo"));
+                    model.setVoice(documentChange.getDocument().getString("voice"));
                     model.setTimestamp(documentChange.getDocument().getLong("timestamp"));
                     model.setHasReply(Boolean.TRUE.equals(documentChange.getDocument().getBoolean("hasReply")));
                     model.setRepliedMessage(documentChange.getDocument().getString("repliedMessage"));
@@ -876,36 +952,6 @@ public class ChatActivity extends BaseActivity implements MessageListener {
                     sendPhotoFromGallery();
                 }
             }
-            else if (requestCode == 42)
-            {
-                assert data != null;
-                Uri treeUri = data.getData();
-                assert treeUri != null;
-                pickedDir = DocumentFile.fromTreeUri(ChatActivity.this, treeUri);
-
-                grantUriPermission(getPackageName(), treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                getContentResolver().takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-
-                Hawk.put("storageUri", treeUri.toString());
-            }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (grantResults.length > 0 && requestCode == 101)
-        {
-            AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
-            builder.setTitle("İzin gerekli");
-            builder.setMessage("Ses kaydı gönderebilmeniz için öncelikle ses kayıt dosyasını cihazınıza kaydetmemiz gerekli. Bu işlem için bize bir dizin belirlemeniz gerekiyor. Aksi taktirde ses kaydı gönderemeyeceksiniz.");
-            builder.setNegativeButton("Daha sonra", (dialog, which) -> dialog.dismiss());
-            builder.setPositiveButton("Dizin seç", (dialog, which) -> {
-                startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE), 42);
-                dialog.dismiss();
-            });
-            builder.create();
-            builder.show();
         }
     }
 

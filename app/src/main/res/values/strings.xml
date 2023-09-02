@@ -151,4 +151,7 @@
     <string name="kg" translatable="false">kg</string>
     <string name="add_photo">Add Photo</string>
     <string name="slide_to_cancel">Slide to cancel</string>
+    <string name="online_status">Share your online status</string>
+    <string name="share_last_seen">Share last seen</string>
+    <string name="privacy">Privacy</string>
 </resources>

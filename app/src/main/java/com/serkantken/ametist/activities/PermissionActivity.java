@@ -33,6 +33,7 @@ public class PermissionActivity extends AppCompatActivity {
         binding.getRoot().setPadding(utilities.convertDpToPixel(16), utilities.getStatusBarHeight()+ utilities.convertDpToPixel(10), 0, 0);
 
         checkPermissions();
+        setDefaultPreferences();
 
         binding.notificationPermissionCheck.setOnClickListener(view -> {
             if (!(Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2))
@@ -96,6 +97,8 @@ public class PermissionActivity extends AppCompatActivity {
     private void setDefaultPreferences()
     {
         Hawk.put(Constants.IS_BALLOONS_SHOWED, false);
+        Hawk.put("online", 1);
+        Hawk.put("lastSeen", 1);
     }
 
     @Override

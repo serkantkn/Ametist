@@ -111,9 +111,4 @@ public class Utilities
         }
         return !Objects.equals(miui, "");
     }
-
-    public boolean isStoragePermissionGranted()
-    {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.R ? Environment.isExternalStorageManager() : ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-    }
 }

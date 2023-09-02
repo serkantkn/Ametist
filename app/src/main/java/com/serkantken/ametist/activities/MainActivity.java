@@ -71,21 +71,13 @@ public class MainActivity extends BaseActivity
         if (Hawk.contains(Constants.IS_BALLOONS_SHOWED))
         {
             if (!(Boolean)Hawk.get(Constants.IS_BALLOONS_SHOWED))
-            {
-                new Handler().postDelayed(() -> {
-                    showBalloon(getString(R.string.your_profile_here), binding.profileImage, 3);
-                }, 2000);
-            }
+                showBalloon(getString(R.string.your_profile_here), binding.profileImage, 3);
         }
         else
-        {
             Hawk.put(Constants.IS_BALLOONS_SHOWED, false);
-        }
 
         binding.profileImage.setOnClickListener(v -> animate(v, 1));
-
         binding.buttonQrScanner.setOnClickListener(v -> animate(v, 2));
-
         binding.buttonSettings.setOnClickListener(v -> animate(v, 3));
     }
 
