@@ -1,10 +1,25 @@
 package com.serkantken.ametist.models;
 
-public class MessageModel
+import java.io.Serializable;
+
+public class MessageModel implements Serializable
 {
-    String messageId, senderId, receiverId, message, photo, voice, conversationId, repliedMessage, repliedPhoto;
-    boolean hasReply, isReplyHasPhoto, isSeen, isPlayed;
-    Long timestamp;
+    String messageId = "";
+    String senderId = "";
+    String receiverId = "";
+    String message = "";
+    String photo = "";
+    String voice = "";
+    String conversationId = "";
+    String repliedMessage = "";
+    String repliedPhoto = "";
+    String repliedUserId = "";
+    boolean hasReply = false;
+    boolean isReplyHasPhoto = false;
+    boolean isSeen = false;
+    boolean isPlayed = false;
+    Long timestamp = 0L;
+    Long seenTimestamp = 0L;
 
     public MessageModel() {
     }
@@ -49,6 +64,14 @@ public class MessageModel
         this.timestamp = timestamp;
     }
 
+    public Long getSeenTimestamp() {
+        return seenTimestamp;
+    }
+
+    public void setSeenTimestamp(Long seenTimestamp) {
+        this.seenTimestamp = seenTimestamp;
+    }
+
     public String getPhoto() {
         return photo;
     }
@@ -89,6 +112,14 @@ public class MessageModel
         this.repliedPhoto = repliedPhoto;
     }
 
+    public String getRepliedUserId() {
+        return repliedUserId;
+    }
+
+    public void setRepliedUserId(String repliedUserId) {
+        this.repliedUserId = repliedUserId;
+    }
+
     public boolean hasReply() {
         return hasReply;
     }
@@ -103,10 +134,6 @@ public class MessageModel
 
     public void setReplyHasPhoto(boolean replyHasPhoto) {
         isReplyHasPhoto = replyHasPhoto;
-    }
-
-    public boolean isHasReply() {
-        return hasReply;
     }
 
     public boolean isSeen() {

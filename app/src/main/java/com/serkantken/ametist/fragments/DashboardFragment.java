@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -47,11 +48,15 @@ import com.serkantken.ametist.databinding.FragmentDashboardBinding;
 import com.serkantken.ametist.databinding.LayoutNewPostDialogBinding;
 import com.serkantken.ametist.models.PostModel;
 import com.serkantken.ametist.models.UserModel;
+import com.serkantken.ametist.utilities.Constants;
 import com.serkantken.ametist.utilities.Utilities;
 import com.skydoves.balloon.Balloon;
 import com.skydoves.balloon.BalloonAnimation;
 import com.skydoves.balloon.BalloonSizeSpec;
 
+import org.checkerframework.checker.units.qual.C;
+
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -104,6 +109,15 @@ public class DashboardFragment extends Fragment
 
         binding.dashboardRV.setPadding(0, utilities.getStatusBarHeight()+utilities.convertDpToPixel(56), 0, utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT)+utilities.convertDpToPixel(66));
 
+        try {
+            Field f = binding.dashboardRefresher.getClass().getDeclaredField("mCircleView");
+            f.setAccessible(true);
+            ImageView imageView = (ImageView) f.get(binding.dashboardRefresher);
+            assert imageView != null;
+            imageView.setAlpha(0.0f);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
         binding.dashboardRefresher.setOnRefreshListener(this::getPosts);
 
         binding.dashboardRV.setOnScrollChangeListener((view, x, y, oldX, oldY) -> {
@@ -264,13 +278,17 @@ public class DashboardFragment extends Fragment
         dialogBinding.privacyLockText.setOnClickListener(view1 -> isPrivacyLockChecked.set(selectPrivacyLock(isPrivacyLockChecked.get())));
 
         dialogBinding.buttonSubmit.setOnClickListener(view1 -> {
-            ProgressDialog progressDialog = new ProgressDialog(requireContext());
-            progressDialog.setMessage(getString(R.string.sending));
-            progressDialog.setCanceledOnTouchOutside(false);
-            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            progressDialog.setIndeterminate(false);
-            progressDialog.create();
-            progressDialog.show();
+            dialogBinding.buttonAddPhoto.setVisibility(View.GONE);
+            dialogBinding.buttonSubmit.setVisibility(View.GONE);
+            dialogBinding.profileImage.setVisibility(View.GONE);
+            dialogBinding.username.setVisibility(View.GONE);
+            dialogBinding.postText.setVisibility(View.GONE);
+            dialogBinding.postImage.setVisibility(View.GONE);
+            dialogBinding.privacyLockText.setVisibility(View.GONE);
+            dialogBinding.privacyLock.setVisibility(View.GONE);
+            dialogBinding.progressBar.setVisibility(View.VISIBLE);
+            dialogBinding.loadingText.setVisibility(View.VISIBLE);
+
             PostModel postModel = new PostModel();
             String postId = UUID.randomUUID().toString();
             postModel.setPostId(postId);
@@ -281,18 +299,17 @@ public class DashboardFragment extends Fragment
             postModel.setCommentCount(0);
             if (isPhotoSelected)
             {
-                StorageReference filePath = FirebaseStorage.getInstance().getReference("Users").child(Objects.requireNonNull(auth.getUid())).child("postPics").child(UUID.randomUUID().toString() + ".jpg");
+                StorageReference filePath = FirebaseStorage.getInstance().getReference(Constants.DATABASE_PATH_USERS).child(Objects.requireNonNull(auth.getUid())).child(Constants.DATABASE_PATH_POST_PICS).child(UUID.randomUUID().toString() + ".jpg");
                 UploadTask uploadTask = filePath.putFile(resultUri, new StorageMetadata.Builder().build());
                 uploadTask.addOnProgressListener(snapshot -> {
                     double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
-                    progressDialog.setProgress((int) progress);
+                    dialogBinding.progressBar.setProgress((int) progress, true);
                 }).addOnSuccessListener(taskSnapshot -> filePath.getDownloadUrl().addOnSuccessListener(uri -> {
                     String downloadUrl = uri.toString();
                     postModel.setPostPicture(downloadUrl);
-                    database.collection("Users").document(auth.getUid()).collection("Posts").document(postId).set(postModel).addOnCompleteListener(task1 -> {
+                    database.collection(Constants.DATABASE_PATH_USERS).document(auth.getUid()).collection(Constants.DATABASE_PATH_POSTS).document(postId).set(postModel).addOnCompleteListener(task1 -> {
                         if (task1.isSuccessful()) {
                             isPhotoSelected = false;
-                            progressDialog.dismiss();
                             dialog.dismiss();
                             getPosts();
                         }
@@ -301,10 +318,9 @@ public class DashboardFragment extends Fragment
             }
             else
             {
-                database.collection("Users").document(Objects.requireNonNull(auth.getUid())).collection("Posts").document(postId).set(postModel).addOnCompleteListener(task -> {
+                database.collection(Constants.DATABASE_PATH_USERS).document(Objects.requireNonNull(auth.getUid())).collection(Constants.DATABASE_PATH_POSTS).document(postId).set(postModel).addOnCompleteListener(task -> {
                     if (task.isSuccessful())
                     {
-                        progressDialog.dismiss();
                         dialog.dismiss();
                         getPosts();
                     }
@@ -364,7 +380,7 @@ public class DashboardFragment extends Fragment
 
     private void getUserInfo()
     {
-        database.collection("Users").get().addOnCompleteListener(task -> {
+        database.collection(Constants.DATABASE_PATH_USERS).get().addOnCompleteListener(task -> {
             if (task.isSuccessful())
             {
                 for (QueryDocumentSnapshot documentSnapshot : task.getResult())
@@ -387,7 +403,7 @@ public class DashboardFragment extends Fragment
         binding.dashboardRV.showShimmerAdapter();
         followingUsers.clear();
         followingUsers.add(auth.getUid());
-        database.collection("Users").document(Objects.requireNonNull(auth.getUid())).collection("followings").get().addOnCompleteListener(task -> {
+        database.collection(Constants.DATABASE_PATH_USERS).document(Objects.requireNonNull(auth.getUid())).collection(Constants.DATABASE_PATH_FOLLOWINGS).get().addOnCompleteListener(task -> {
             if (task.isSuccessful() && task.getResult() != null)
             {
                 for (QueryDocumentSnapshot snapshot : task.getResult())
@@ -400,7 +416,7 @@ public class DashboardFragment extends Fragment
                 {
                     Log.i("sira", i+"");
                     int index = i;
-                    database.collection("Users").document(followingUsers.get(index)).collection("Posts").get().addOnCompleteListener(task1 -> {
+                    database.collection(Constants.DATABASE_PATH_USERS).document(followingUsers.get(index)).collection(Constants.DATABASE_PATH_POSTS).get().addOnCompleteListener(task1 -> {
                         if (task1.isSuccessful())
                         {
                             for (QueryDocumentSnapshot documentSnapshot : task1.getResult())

@@ -133,7 +133,7 @@ public class SignupTabFragment extends Fragment
                 userModel.setSignupDate(new Date().getTime());
                 userModel.setOnline(true);
 
-                database.collection("Users").document(Objects.requireNonNull(auth.getUid())).set(userModel).addOnCompleteListener(task1 -> {
+                database.collection(Constants.DATABASE_PATH_USERS).document(Objects.requireNonNull(auth.getUid())).set(userModel).addOnCompleteListener(task1 -> {
                     if (task1.isSuccessful())
                     {
                         loading(false);
@@ -246,13 +246,13 @@ public class SignupTabFragment extends Fragment
                 balloon.showAlignTop(view);
                 break;
             case 2:
-                balloon.showAlignRight(view);
+                balloon.showAlignEnd(view);
                 break;
             case 3:
                 balloon.showAlignBottom(view);
                 break;
             case 4:
-                balloon.showAlignLeft(view);
+                balloon.showAlignStart(view);
                 break;
         }
     }

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -21,6 +22,7 @@ import com.serkantken.ametist.activities.MainActivity;
 import com.serkantken.ametist.databinding.FragmentLoginTabBinding;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.utilities.Constants;
+import com.serkantken.ametist.utilities.Utilities;
 
 import java.util.Objects;
 
@@ -28,13 +30,25 @@ public class LoginTabFragment extends Fragment
 {
     private FragmentLoginTabBinding binding;
     private FirebaseAuth auth;
+    private Utilities utilities;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         binding = FragmentLoginTabBinding.inflate(getLayoutInflater());
 
+        requireActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+
         auth = FirebaseAuth.getInstance();
+        utilities = new Utilities(requireContext(), requireActivity());
+
+        utilities.blur(binding.alsoLoginCard, 10f, true);
+        utilities.blur(binding.blurInputMail, 10f, true);
+        utilities.blur(binding.blurInputPassword, 10f, true);
+
+        binding.buttonSigninWithGoogle.setOnClickListener(v -> {
+            requireActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+        });
 
         binding.buttonSignup.setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.action_loginTab_to_signupTab));
         binding.forgotPassword.setOnClickListener(v -> {

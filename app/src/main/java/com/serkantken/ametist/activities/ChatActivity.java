@@ -2,29 +2,21 @@ package com.serkantken.ametist.activities;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
-import android.media.AudioRecordingConfiguration;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Parcel;
-import android.os.ParcelFileDescriptor;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.animation.ScaleAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -38,19 +30,13 @@ import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
-import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
-import com.devlomi.record_view.OnBasketAnimationEnd;
-import com.devlomi.record_view.OnRecordClickListener;
 import com.devlomi.record_view.OnRecordListener;
 import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.github.marlonlom.utilities.timeago.TimeAgo;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
@@ -68,7 +54,6 @@ import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.adapters.ChatAdapter;
 import com.serkantken.ametist.databinding.ActivityChatBinding;
-import com.serkantken.ametist.databinding.LayoutChatPhotoSelectorBinding;
 import com.serkantken.ametist.models.MessageModel;
 import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.network.ApiClient;
@@ -81,21 +66,16 @@ import com.skydoves.balloon.BalloonAnimation;
 import com.skydoves.balloon.BalloonSizeSpec;
 import com.yalantis.ucrop.UCrop;
 
-import org.checkerframework.checker.units.qual.A;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Objects;
-import java.util.TimerTask;
 import java.util.UUID;
 
 import eightbitlab.com.blurview.BlurView;
@@ -111,15 +91,12 @@ public class ChatActivity extends BaseActivity implements MessageListener {
     private UserModel receiverUser;
     private ArrayList<MessageModel> messageModels;
     private ChatAdapter chatAdapter;
-    private String conversationId, photoUri;
+    private String conversationId, photoUri, audioFilePath;
     private Boolean isReceiverAvailable = false;
     private Boolean isReply = false;
     private Boolean isReplyWithPhoto = false;
     private Boolean isPhotoUploading = false;
     private Boolean isNotification = false;
-    private ActivityResultLauncher<String> getContent;
-    private BottomSheetDialog photoPreviewDialog;
-    private LayoutChatPhotoSelectorBinding photoPreviewView;
     private MediaPlayer mediaPlayer;
     private MediaRecorder mediaRecorder;
     private Balloon balloon;
@@ -127,7 +104,6 @@ public class ChatActivity extends BaseActivity implements MessageListener {
     private ListenerRegistration senderRegistration;
     private ListenerRegistration receiverRegistration;
     private long currentTimestamp = new Date().getTime();
-    private String audioFilePath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -184,18 +160,6 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         listenMessages();
 
         binding.addPhoto.setOnClickListener(view -> selectPhotoFromGallery());
-
-        getContent = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
-            String destUri = UUID.randomUUID().toString() + ".jpg";
-
-            UCrop.Options options = new UCrop.Options();
-            options.setLogoColor(getColor(R.color.accent_purple_dark));
-            options.setFreeStyleCropEnabled(false);
-            options.setToolbarTitle(getString(R.string.crop));
-            UCrop.of(result, Uri.fromFile(new File(getCacheDir(), destUri)))
-                    .withOptions(options)
-                    .start(ChatActivity.this);
-        });
 
         mediaPlayer = MediaPlayer.create(this, R.raw.new_message);
 
@@ -347,6 +311,24 @@ public class ChatActivity extends BaseActivity implements MessageListener {
 
             }
         });
+
+        binding.buttonDelete.setOnClickListener(view -> {
+            if (!isPhotoUploading)
+            {
+                photoUri = "";
+                binding.layoutPhotoPreview.setVisibility(View.GONE);
+                binding.inputMessage.setVisibility(View.VISIBLE);
+                binding.buttonSend.setVisibility(View.VISIBLE);
+                binding.addPhoto.setVisibility(View.VISIBLE);
+            }
+        });
+
+        binding.buttonSendPhoto.setOnClickListener(view -> {
+            if (!isPhotoUploading)
+            {
+                sendPhoto();
+            }
+        });
     }
 
     private void showMessagebox()
@@ -417,67 +399,49 @@ public class ChatActivity extends BaseActivity implements MessageListener {
 
     private void sendPhotoFromGallery() {
         if (!photoUri.isEmpty()) {
-            photoPreviewDialog = new BottomSheetDialog(this, R.style.BottomSheetDialogTheme_Chat);
-            photoPreviewView = LayoutChatPhotoSelectorBinding.inflate(getLayoutInflater());
+            binding.inputMessage.setVisibility(View.GONE);
+            binding.buttonSend.setVisibility(View.GONE);
+            binding.addPhoto.setVisibility(View.GONE);
+            binding.layoutPhotoPreview.setVisibility(View.VISIBLE);
 
-            utilities.blur(photoPreviewView.blur, 10f, false);
-
-            Glide.with(this).load(photoUri).into(photoPreviewView.postImage);
-            photoPreviewView.titleMessageBox.setText(getString(R.string.photo_preview));
-
-            photoPreviewView.buttonDelete.setOnClickListener(view -> {
-                if (!isPhotoUploading)
-                {
-                    photoUri = "";
-                    photoPreviewDialog.dismiss();
-                }
-            });
-
-            photoPreviewView.buttonSend.setOnClickListener(view -> {
-                if (!isPhotoUploading)
-                {
-                    sendPhoto();
-                }
-            });
-
-            photoPreviewDialog.setContentView(photoPreviewView.getRoot());
-            photoPreviewDialog.show();
+            Glide.with(this).load(photoUri).into(binding.postImage);
+            binding.titleMessageBox.setText(getString(R.string.photo_preview));
         }
     }
 
     private void sendMessage() {
         String message = binding.inputMessage.getText().toString();
-        HashMap<String, Object> model = new HashMap<>();
-        model.put("timestamp", new Date().getTime());
-        model.put("message", message);
-        model.put("photo", "null");
-        model.put("senderId", auth.getUid());
-        model.put("receiverId", receiverUser.getUserId());
+        MessageModel model = new MessageModel();
+        model.setTimestamp(new Date().getTime());
+        model.setMessage(message);
+        model.setPhoto("null");
+        model.setSenderId(auth.getUid());
+        model.setReceiverId(receiverUser.getUserId());
         if (isReply)
         {
-            model.put("hasReply", true);
-            model.put("repliedUserId", repliedMessage.getSenderId());
-            model.put("repliedMessage", repliedMessage.getMessage());
+            model.setHasReply(true);
+            model.setRepliedUserId(repliedMessage.getSenderId());
+            model.setRepliedMessage(repliedMessage.getMessage());
             if (isReplyWithPhoto)
             {
-                model.put("isReplyHasPhoto", true);
-                model.put("repliedPhoto", repliedMessage.getPhoto());
+                model.setReplyHasPhoto(true);
+                model.setRepliedPhoto(repliedMessage.getPhoto());
             }
             else
             {
-                model.put("isReplyHasPhoto", false);
+                model.setReplyHasPhoto(false);
             }
         }
         else
         {
-            model.put("hasReply", false);
+            model.setHasReply(false);
         }
-        model.put("isSeen", false);
+        model.setSeen(false);
 
         database.collection(Constants.DATABASE_PATH_CHATS).add(model).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                model.put("messageId", task.getResult().getId());
-                database.collection(Constants.DATABASE_PATH_CHATS).document(task.getResult().getId()).update(model);
+                model.setMessageId(task.getResult().getId());
+                database.collection(Constants.DATABASE_PATH_CHATS).document(task.getResult().getId()).update("messageId", task.getResult().getId());
 
                 if (conversationId != null) {
                     updateConversation(binding.inputMessage.getText().toString());
@@ -525,38 +489,38 @@ public class ChatActivity extends BaseActivity implements MessageListener {
     }
 
     private void sendPhoto() {
-        photoPreviewView.progressBlur.setVisibility(View.VISIBLE);
-        photoPreviewView.sendColor.setBackgroundColor(getResources().getColor(android.R.color.darker_gray, null));
-        photoPreviewView.deleteColor.setBackgroundColor(getResources().getColor(android.R.color.darker_gray, null));
-        photoPreviewView.inputMessage.setEnabled(false);
+        binding.progressBlur.setVisibility(View.VISIBLE);
+        binding.sendColor.setBackgroundColor(getResources().getColor(android.R.color.darker_gray, null));
+        binding.deleteColor.setBackgroundColor(getResources().getColor(android.R.color.darker_gray, null));
+        binding.inputPhotoMessage.setEnabled(false);
         isPhotoUploading = true;
 
-        String message = photoPreviewView.inputMessage.getText().toString();
-        HashMap<String, Object> model = new HashMap<>();
-        model.put("timestamp", new Date().getTime());
-        model.put("message", message);
-        model.put("senderId", auth.getUid());
-        model.put("receiverId", receiverUser.getUserId());
+        String message = binding.inputPhotoMessage.getText().toString();
+        MessageModel model = new MessageModel();
+        model.setTimestamp(new Date().getTime());
+        model.setMessage(message);
+        model.setSenderId(auth.getUid());
+        model.setReceiverId(receiverUser.getUserId());
         if (isReply)
         {
-            model.put("hasReply", true);
-            model.put("repliedUserId", repliedMessage.getSenderId());
-            model.put("repliedMessage", repliedMessage.getMessage());
+            model.setHasReply(true);
+            model.setRepliedUserId(repliedMessage.getSenderId());
+            model.setRepliedMessage(repliedMessage.getMessage());
             if (isReplyWithPhoto)
             {
-                model.put("isReplyHasPhoto", true);
-                model.put("repliedPhoto", repliedMessage.getPhoto());
+                model.setReplyHasPhoto(true);
+                model.setRepliedPhoto(repliedMessage.getPhoto());
             }
             else
             {
-                model.put("isReplyHasPhoto", false);
+                model.setReplyHasPhoto(false);
             }
         }
         else
         {
-            model.put("hasReply", false);
+            model.setHasReply(false);
         }
-        model.put("isSeen", false);
+        model.setSeen(false);
 
         StorageReference filePath = FirebaseStorage.getInstance()
                 .getReference("Conversations")
@@ -569,31 +533,30 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         UploadTask uploadTask = filePath.putFile(Uri.parse(photoUri), new StorageMetadata.Builder().build());
         uploadTask.addOnProgressListener(snapshot -> {
             double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
-            photoPreviewView.progressbar.setProgress((int) progress);
+            binding.progressbar.setProgress((int) progress);
         }).addOnSuccessListener(taskSnapshot -> {
             filePath.getDownloadUrl().addOnSuccessListener(uri -> {
                 String downloadUrl = uri.toString();
-                model.put("photo", downloadUrl);
+                model.setPhoto(downloadUrl);
 
                 database.collection(Constants.DATABASE_PATH_CHATS).add(model).addOnCompleteListener(task1 -> {
                     if (task1.isSuccessful()) {
-                        model.put("messageId", task1.getResult().getId());
-
-                        database.collection(Constants.DATABASE_PATH_CHATS).document(task1.getResult().getId()).update(model);
+                        model.setMessageId(task1.getResult().getId());
+                        database.collection(Constants.DATABASE_PATH_CHATS).document(task1.getResult().getId()).update("messageId", task1.getResult().getId());
 
                         if (conversationId != null) {
-                            updateConversation(photoPreviewView.inputMessage.getText().toString());
+                            updateConversation(binding.inputPhotoMessage.getText().toString());
                         } else {
                             MessageModel messageModel = new MessageModel();
                             messageModel.setSenderId(auth.getUid());
                             messageModel.setReceiverId(receiverUser.getUserId());
-                            if (Objects.equals(photoPreviewView.inputMessage.getText().toString(), ""))
+                            if (Objects.equals(binding.inputPhotoMessage.getText().toString(), ""))
                             {
                                 messageModel.setMessage("Photo");
                             }
                             else
                             {
-                                messageModel.setMessage(photoPreviewView.inputMessage.getText().toString());
+                                messageModel.setMessage(binding.inputPhotoMessage.getText().toString());
                             }
                             messageModel.setTimestamp(new Date().getTime());
                             addConversation(messageModel);
@@ -608,7 +571,7 @@ public class ChatActivity extends BaseActivity implements MessageListener {
                                 data.put(Constants.USERNAME, Hawk.get(Constants.USERNAME));
                                 data.put(Constants.TOKEN, Hawk.get(Constants.TOKEN));
                                 data.put(Constants.MESSAGE_TYPE, Constants.MESSAGE_TYPE_PHOTO);
-                                data.put(Constants.MESSAGE, photoPreviewView.inputMessage.getText().toString());
+                                data.put(Constants.MESSAGE, binding.inputPhotoMessage.getText().toString());
 
                                 JSONObject body = new JSONObject();
                                 body.put(Constants.REMOTE_MSG_DATA, data);
@@ -622,7 +585,10 @@ public class ChatActivity extends BaseActivity implements MessageListener {
 
                         binding.inputMessage.setText("");
                         isPhotoUploading = false;
-                        photoPreviewDialog.dismiss();
+                        binding.layoutPhotoPreview.setVisibility(View.GONE);
+                        binding.inputMessage.setVisibility(View.VISIBLE);
+                        binding.buttonSend.setVisibility(View.VISIBLE);
+                        binding.addPhoto.setVisibility(View.VISIBLE);
                         messageModels.clear();
                         listenMessages();
                     }
@@ -631,10 +597,10 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         }).addOnFailureListener(e -> {
             Toast.makeText(ChatActivity.this, "Hata oluştu", Toast.LENGTH_SHORT).show();
 
-            photoPreviewView.progressBlur.setVisibility(View.GONE);
-            photoPreviewView.sendColor.setBackground(getResources().getDrawable(R.drawable.purple_gradient,null));
-            photoPreviewView.deleteColor.setBackground(getResources().getDrawable(R.drawable.red_gradient, null));
-            photoPreviewView.inputMessage.setEnabled(true);
+            binding.progressBlur.setVisibility(View.INVISIBLE);
+            binding.sendColor.setBackground(getResources().getDrawable(R.drawable.purple_gradient,null));
+            binding.deleteColor.setBackground(getResources().getDrawable(R.drawable.red_gradient, null));
+            binding.inputPhotoMessage.setEnabled(true);
             isPhotoUploading = false;
         });
 
@@ -646,32 +612,32 @@ public class ChatActivity extends BaseActivity implements MessageListener {
 
     private void sendAudio()
     {
-        HashMap<String, Object> model = new HashMap<>();
-        model.put("timestamp", new Date().getTime());
-        model.put("senderId", auth.getUid());
-        model.put("receiverId", receiverUser.getUserId());
-        model.put("message", "null");
-        model.put("photo", "null");
+        MessageModel model = new MessageModel();
+        model.setTimestamp(new Date().getTime());
+        model.setSenderId(auth.getUid());
+        model.setReceiverId(receiverUser.getUserId());
+        model.setMessage("null");
+        model.setPhoto("null");
         if (isReply)
         {
-            model.put("hasReply", true);
-            model.put("repliedUserId", repliedMessage.getSenderId());
-            model.put("repliedMessage", repliedMessage.getMessage());
+            model.setHasReply(true);
+            model.setRepliedUserId(repliedMessage.getSenderId());
+            model.setRepliedMessage(repliedMessage.getMessage());
             if (isReplyWithPhoto)
             {
-                model.put("isReplyHasPhoto", true);
-                model.put("repliedPhoto", repliedMessage.getPhoto());
+                model.setReplyHasPhoto(true);
+                model.setRepliedPhoto(repliedMessage.getPhoto());
             }
             else
             {
-                model.put("isReplyHasPhoto", false);
+                model.setReplyHasPhoto(false);
             }
         }
         else
         {
-            model.put("hasReply", false);
+            model.setHasReply(false);
         }
-        model.put("isSeen", false);
+        model.setSeen(false);
         StorageReference filePath = FirebaseStorage.getInstance()
                 .getReference("Conversations")
                 .child(conversationId)
@@ -685,13 +651,12 @@ public class ChatActivity extends BaseActivity implements MessageListener {
                 if (task.isSuccessful())
                 {
                     String url = task.getResult().toString();
-                    model.put("voice", url);
+                    model.setVoice(url);
 
                     database.collection(Constants.DATABASE_PATH_CHATS).add(model).addOnCompleteListener(task1 -> {
                         if (task1.isSuccessful()) {
-                            model.put("messageId", task1.getResult().getId());
-
-                            database.collection(Constants.DATABASE_PATH_CHATS).document(task1.getResult().getId()).update(model);
+                            model.setMessageId(task1.getResult().getId());
+                            database.collection(Constants.DATABASE_PATH_CHATS).document(task1.getResult().getId()).update("messageId", task1.getResult().getId());
 
                             if (conversationId != null) {
                                 updateConversation("Voice message");
@@ -712,8 +677,8 @@ public class ChatActivity extends BaseActivity implements MessageListener {
                                     data.put(Constants.USER_ID, auth.getUid());
                                     data.put(Constants.USERNAME, Hawk.get(Constants.USERNAME));
                                     data.put(Constants.TOKEN, Hawk.get(Constants.TOKEN));
-                                    data.put(Constants.MESSAGE_TYPE, Constants.MESSAGE_TYPE_PHOTO);
-                                    data.put(Constants.MESSAGE, photoPreviewView.inputMessage.getText().toString());
+                                    data.put(Constants.MESSAGE_TYPE, Constants.MESSAGE_TYPE_TEXT);
+                                    data.put(Constants.MESSAGE, "Voice");
 
                                     JSONObject body = new JSONObject();
                                     body.put(Constants.REMOTE_MSG_DATA, data);
@@ -815,12 +780,17 @@ public class ChatActivity extends BaseActivity implements MessageListener {
 
     @SuppressLint("NotifyDataSetChanged")
     private final EventListener<QuerySnapshot> eventListenerMessages = (value, error) -> {
-        if (error != null) {
+        if (error != null)
+        {
             return;
         }
-        if (value != null) {
-            for (DocumentChange documentChange : value.getDocumentChanges()) {
-                if (documentChange.getType() == DocumentChange.Type.ADDED) {
+        if (value != null)
+        {
+            for (DocumentChange documentChange : value.getDocumentChanges())
+            {
+
+                if (documentChange.getType() == DocumentChange.Type.ADDED)
+                {
                     MessageModel model = new MessageModel();
                     model.setMessageId(documentChange.getDocument().getId());
                     model.setSenderId(documentChange.getDocument().getString("senderId"));
@@ -837,11 +807,16 @@ public class ChatActivity extends BaseActivity implements MessageListener {
                     {
                         if (!Boolean.TRUE.equals(documentChange.getDocument().getBoolean("isSeen")))
                         {
-                            database.collection(Constants.DATABASE_PATH_CHATS).document(Objects.requireNonNull(documentChange.getDocument().getId())).update("isSeen", true);
+                            long seenDate = new Date().getTime();
+                            database.collection(Constants.DATABASE_PATH_CHATS).document(Objects.requireNonNull(documentChange.getDocument().getId())).update("isSeen", true, "seenTimestamp", seenDate);
                             model.setSeen(true);
+                            model.setSeenTimestamp(seenDate);
                         }
                         else
+                        {
                             model.setSeen(true);
+                            model.setSeenTimestamp(documentChange.getDocument().getLong("seenTimestamp"));
+                        }
                         if (currentTimestamp - model.getTimestamp() < 2000)
                         {
                             if (mediaPlayer != null)

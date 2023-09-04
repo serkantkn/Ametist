@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -20,9 +21,11 @@ import com.serkantken.ametist.adapters.NotificationsAdapter;
 import com.serkantken.ametist.databinding.FragmentNotificationBinding;
 import com.serkantken.ametist.models.NotificationModel;
 import com.serkantken.ametist.models.UserModel;
+import com.serkantken.ametist.utilities.Constants;
 import com.serkantken.ametist.utilities.UserListener;
 import com.serkantken.ametist.utilities.Utilities;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
@@ -50,6 +53,16 @@ public class NotificationFragment extends Fragment implements UserListener
         binding.notifRV.setAdapter(adapter);
         binding.notifRV.setLayoutManager(new LinearLayoutManager(requireContext()));
 
+        try {
+            Field f = binding.notifRefresher.getClass().getDeclaredField("mCircleView");
+            f.setAccessible(true);
+            ImageView imageView = (ImageView) f.get(binding.notifRefresher);
+            assert imageView != null;
+            imageView.setAlpha(0.0f);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
         binding.notifRefresher.setOnRefreshListener(this::getNotifications);
         binding.notifRV.setPadding(0, utilities.getStatusBarHeight()+utilities.convertDpToPixel(56), 0, utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT)+utilities.convertDpToPixel(66));
 
@@ -62,9 +75,9 @@ public class NotificationFragment extends Fragment implements UserListener
     private void getNotifications()
     {
         binding.notifRefresher.setRefreshing(true);
-        database.collection("Users")
+        database.collection(Constants.DATABASE_PATH_USERS)
                 .document(Objects.requireNonNull(auth.getUid()))
-                .collection("notifications")
+                .collection(Constants.DATABASE_PATH_NOTIFICATIONS)
                 .get().addOnCompleteListener(task -> {
                     if (task.isSuccessful())
                     {

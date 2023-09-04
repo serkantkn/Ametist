@@ -12,6 +12,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentChange;
@@ -27,6 +28,7 @@ import com.serkantken.ametist.models.UserModel;
 import com.serkantken.ametist.utilities.UserListener;
 import com.serkantken.ametist.utilities.Utilities;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -54,6 +56,16 @@ public class ChatListFragment extends Fragment implements UserListener
         binding.rvMessageList.setClipToPadding(false);
 
         listenConversations();
+
+        try {
+            Field f = binding.conversationRefresher.getClass().getDeclaredField("mCircleView");
+            f.setAccessible(true);
+            ImageView imageView = (ImageView) f.get(binding.conversationRefresher);
+            assert imageView != null;
+            imageView.setAlpha(0.0f);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
 
         binding.conversationRefresher.setOnRefreshListener(this::listenConversations);
 
@@ -129,5 +141,11 @@ public class ChatListFragment extends Fragment implements UserListener
         intent.putExtra("receiverUser", userModel);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        listenConversations();
     }
 }

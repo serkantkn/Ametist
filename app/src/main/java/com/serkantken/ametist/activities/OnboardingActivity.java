@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.fragment.app.FragmentPagerAdapter;
 
 import android.os.Bundle;
 import android.view.WindowManager;
@@ -30,7 +30,7 @@ public class OnboardingActivity extends AppCompatActivity
         binding.pager.setAdapter(pagerAdapter);
     }
 
-    private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter
+    private class ScreenSlidePagerAdapter extends FragmentPagerAdapter
     {
 
         public ScreenSlidePagerAdapter(@NonNull FragmentManager fm) {

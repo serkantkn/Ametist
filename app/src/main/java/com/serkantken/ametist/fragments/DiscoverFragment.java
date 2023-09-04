@@ -17,6 +17,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -26,6 +27,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.orhanobut.hawk.Hawk;
 import com.serkantken.ametist.R;
 import com.serkantken.ametist.activities.ProfileActivity;
 import com.serkantken.ametist.adapters.UsersAdapter;
@@ -35,7 +37,9 @@ import com.serkantken.ametist.utilities.Constants;
 import com.serkantken.ametist.utilities.UserListener;
 import com.serkantken.ametist.utilities.Utilities;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Objects;
 
 public class DiscoverFragment extends Fragment implements UserListener
@@ -58,6 +62,7 @@ public class DiscoverFragment extends Fragment implements UserListener
         database = FirebaseFirestore.getInstance();
         userList = new ArrayList<>();
         utilities = new Utilities(requireContext(), requireActivity());
+        Hawk.init(requireContext()).build();
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -82,6 +87,16 @@ public class DiscoverFragment extends Fragment implements UserListener
         adapter = new UsersAdapter(userList, getContext(), getActivity(), this);
         binding.discoverRV.setAdapter(adapter);
         binding.discoverRV.setLayoutManager(new StaggeredGridLayoutManager(spanCount, StaggeredGridLayoutManager.VERTICAL));
+
+        try {
+            Field f = binding.discoverRefresher.getClass().getDeclaredField("mCircleView");
+            f.setAccessible(true);
+            ImageView imageView = (ImageView) f.get(binding.discoverRefresher);
+            assert imageView != null;
+            imageView.setAlpha(0.0f);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
         binding.discoverRefresher.setOnRefreshListener(this::getUsers);
 
         CoordinatorLayout.LayoutParams searchBlurParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -138,8 +153,7 @@ public class DiscoverFragment extends Fragment implements UserListener
 
     @SuppressLint("NotifyDataSetChanged")
     private void getUsers() {
-        binding.discoverRefresher.setRefreshing(true);
-        database.collection("Users").get().addOnCompleteListener(task -> {
+        database.collection(Constants.DATABASE_PATH_USERS).get().addOnCompleteListener(task -> {
             if (task.isSuccessful() && task.getResult() != null) {
                 userList.clear();
                 for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
@@ -150,12 +164,50 @@ public class DiscoverFragment extends Fragment implements UserListener
                     userModel.setUserId(queryDocumentSnapshot.getId());
                     userModel.setName(queryDocumentSnapshot.getString("name"));
                     userModel.setProfilePic(queryDocumentSnapshot.getString("profilePic"));
+                    if (!Objects.isNull(Double.parseDouble(Objects.requireNonNull(queryDocumentSnapshot.get("latitude")).toString())))
+                    {
+                        userModel.setLatitude(Double.parseDouble(Objects.requireNonNull(queryDocumentSnapshot.get("latitude")).toString()));
+                        if (!Objects.isNull(Double.parseDouble(Objects.requireNonNull(queryDocumentSnapshot.get("longitude")).toString())))
+                        {
+                            userModel.setLongitude(Double.parseDouble(Objects.requireNonNull(queryDocumentSnapshot.get("longitude")).toString()));
+                            if (Hawk.contains("latitude") && Hawk.contains("longitude"))
+                            {
+                                double usersLatitude = Hawk.get("latitude");
+                                double usersLongitude = Hawk.get("longitude");
+
+                                userModel.setDistance(haversine(usersLatitude, usersLongitude,
+                                        Double.parseDouble(Objects.requireNonNull(queryDocumentSnapshot.get("latitude")).toString()),
+                                        Double.parseDouble(Objects.requireNonNull(queryDocumentSnapshot.get("longitude")).toString())));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        userModel.setLatitude(Constants.EXAMPLE_LATITUDE);
+                        userModel.setLongitude(Constants.EXAMPLE_LONGITUDE);
+
+                        userModel.setDistance(haversine(Constants.EXAMPLE_LATITUDE, Constants.EXAMPLE_LONGITUDE,
+                                Double.parseDouble(Objects.requireNonNull(queryDocumentSnapshot.get("latitude")).toString()),
+                                Double.parseDouble(Objects.requireNonNull(queryDocumentSnapshot.get("longitude")).toString())));
+                    }
                     userList.add(userModel);
                 }
+                userList.sort(Comparator.comparing(UserModel::getDistance));
                 adapter.notifyDataSetChanged();
-                binding.discoverRefresher.setRefreshing(false);
             }
         });
+    }
+
+    private double haversine(double lat1, double lon1, double lat2, double lon2)
+    {
+        double R = 6371; // Dünya yarıçapı (km)
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -205,5 +257,11 @@ public class DiscoverFragment extends Fragment implements UserListener
         Intent intent = new Intent(getContext(), ProfileActivity.class);
         intent.putExtra("receiverUser", userModel);
         requireContext().startActivity(intent);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getUsers();
     }
 }

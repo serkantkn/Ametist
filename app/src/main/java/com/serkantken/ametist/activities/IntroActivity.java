@@ -1,6 +1,9 @@
 package com.serkantken.ametist.activities;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -11,12 +14,14 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.AnticipateInterpolator;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.splashscreen.SplashScreen;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -49,14 +54,35 @@ public class IntroActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        binding = ActivityIntroBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
+        splashScreen.setKeepOnScreenCondition(() -> true);
+        //binding = ActivityIntroBinding.inflate(getLayoutInflater());
+        //setContentView(binding.getRoot());
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
         auth = FirebaseAuth.getInstance();
         Hawk.init(this).build();
         utilities = new Utilities(this, this);
+
+        splashScreen.setOnExitAnimationListener(splashScreenViewProvider -> {
+            ObjectAnimator fadeOut = ObjectAnimator.ofFloat(
+                    splashScreenViewProvider.getView(),
+                    View.TRANSLATION_Y,
+                    0f,
+                    -splashScreenViewProvider.getView().getHeight()
+            );
+            fadeOut.setInterpolator(new AnticipateInterpolator());
+            fadeOut.setDuration(200L);
+
+            fadeOut.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    splashScreenViewProvider.remove();
+                }
+            });
+            fadeOut.start();
+        });
 
         ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
         connected = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
@@ -66,37 +92,19 @@ public class IntroActivity extends AppCompatActivity
         {
             if (connected)
             {
-                timer = new Timer();
-                timer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        startActivity(new Intent(IntroActivity.this, OnboardingActivity.class));
-                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                        finish();
-                    }
-                }, 2000);
+                startActivity(new Intent(IntroActivity.this, OnboardingActivity.class));
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                finish();
             }
             else
-            {
                 showError();
-            }
         }
         else
         {
             if (connected)
-            {
-                timer = new Timer();
-                timer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        getUserInfoAndPosts();
-                    }
-                }, 1000);
-            }
+                getUserInfoAndPosts();
             else
-            {
                 showError();
-            }
         }
     }
 
@@ -114,7 +122,6 @@ public class IntroActivity extends AppCompatActivity
 
     private void getUserInfoAndPosts()
     {
-        binding.progressbar.setVisibility(View.VISIBLE);
         database = FirebaseFirestore.getInstance();
         database.collection(Constants.DATABASE_PATH_USERS).get().addOnCompleteListener(task -> {
             if (task.isSuccessful())

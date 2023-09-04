@@ -97,8 +97,7 @@
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tabLayout"
                 android:layout_width="0dp"
-                app:layout_constraintWidth_max="400dp"
-                android:layout_height="46dp"
+                android:layout_height="0dp"
                 android:background="@android:color/transparent"
                 app:tabMode="fixed"
                 app:tabGravity="fill"
@@ -107,13 +106,12 @@
                 app:tabIndicator="@drawable/tab_indicator"
                 app:tabIndicatorColor="@color/primary_dark_transparent"
                 app:tabIconTint="@color/accent_purple_light"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintStart_toEndOf="@id/username"
                 app:layout_constraintEnd_toStartOf="@id/button_qr_scanner"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintHorizontal_bias="1"
-                android:layout_marginStart="25dp"
-                android:layout_marginEnd="25dp"/>
+                app:layout_constraintTop_toTopOf="@id/profileImage"
+                app:layout_constraintBottom_toBottomOf="@id/profileImage"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -125,6 +123,8 @@
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent">
+
+    </eightbitlab.com.blurview.BlurView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

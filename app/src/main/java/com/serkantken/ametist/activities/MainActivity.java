@@ -1,8 +1,13 @@
 package com.serkantken.ametist.activities;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.PorterDuff;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -11,6 +16,8 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -34,6 +41,7 @@ import com.skydoves.balloon.Balloon;
 import com.skydoves.balloon.BalloonAnimation;
 import com.skydoves.balloon.BalloonSizeSpec;
 
+import java.util.Locale;
 import java.util.Objects;
 
 public class MainActivity extends BaseActivity
@@ -44,6 +52,7 @@ public class MainActivity extends BaseActivity
     private FirebaseFirestore database;
     private Utilities utilities;
     private UserModel user;
+    private static final int LOCATION_REQUEST_CODE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -70,7 +79,8 @@ public class MainActivity extends BaseActivity
 
         if (Hawk.contains(Constants.IS_BALLOONS_SHOWED))
         {
-            if (!(Boolean)Hawk.get(Constants.IS_BALLOONS_SHOWED))
+            boolean value = Hawk.get(Constants.IS_BALLOONS_SHOWED);
+            if (!value)
                 showBalloon(getString(R.string.your_profile_here), binding.profileImage, 3);
         }
         else
@@ -79,6 +89,38 @@ public class MainActivity extends BaseActivity
         binding.profileImage.setOnClickListener(v -> animate(v, 1));
         binding.buttonQrScanner.setOnClickListener(v -> animate(v, 2));
         binding.buttonSettings.setOnClickListener(v -> animate(v, 3));
+    }
+
+    private void getLocation()
+    {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        try
+        {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+            {
+                if (!Hawk.contains("locationPermissionRequested"))
+                {
+                    if (Integer.parseInt(Hawk.get("locationPermissionRequested")) != 1)
+                    {
+                        Hawk.put("locationPermissionRequested", 1);
+                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_REQUEST_CODE);
+                    }
+                }
+            }
+            else
+            {
+                Location location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                assert location != null;
+                Hawk.put("latitude", location.getLatitude());
+                Hawk.put("longitude", location.getLongitude());
+                database.collection(Constants.DATABASE_PATH_USERS).document(Objects.requireNonNull(auth.getUid())).update("latitude", location.getLatitude(), "longitude", location.getLongitude());
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     private void animate(View view, int mode)
@@ -247,6 +289,19 @@ public class MainActivity extends BaseActivity
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_REQUEST_CODE)
+        {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                Toast.makeText(MainActivity.this, "Permission granted", Toast.LENGTH_SHORT).show();
+                getLocation();
+            }
+        }
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -318,5 +373,11 @@ public class MainActivity extends BaseActivity
                 break;
         }
         balloon.setOnBalloonDismissListener(() -> Hawk.put(Constants.IS_BALLOONS_SHOWED, true));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getLocation();
     }
 }

@@ -11,7 +11,7 @@ android {
         minSdk 28
         targetSdk 34
         versionCode 1
-        versionName "0.7.0"
+        versionName "0.7.2"
         renderscriptTargetApi 28
         renderscriptSupportModeEnabled true
 
@@ -39,30 +39,26 @@ apply plugin: "androidx.navigation.safeargs"
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'com.google.android.material:material:1.10.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'com.google.firebase:firebase-auth:22.1.1'
-    implementation 'com.google.firebase:firebase-storage:20.2.1'
-    implementation 'com.google.firebase:firebase-firestore:24.7.1'
-    implementation 'com.google.firebase:firebase-messaging:23.2.1'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-    implementation 'androidx.navigation:navigation-fragment:2.7.1'
-    implementation 'androidx.navigation:navigation-ui:2.7.1'
-    implementation "androidx.room:room-runtime:2.5.2"
-    annotationProcessor "androidx.room:room-compiler:2.5.2"
+    implementation 'com.google.firebase:firebase-auth:22.2.0'
+    implementation 'com.google.firebase:firebase-storage:20.3.0'
+    implementation 'com.google.firebase:firebase-firestore:24.9.1'
+    implementation 'com.google.firebase:firebase-messaging:23.3.1'
+    implementation 'androidx.navigation:navigation-fragment:2.7.4'
+    implementation 'androidx.navigation:navigation-ui:2.7.4'
+    implementation "androidx.core:core-splashscreen:1.0.1"
 
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.10'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.20'
     implementation 'com.makeramen:roundedimageview:2.3.0'
     implementation 'com.airbnb.android:lottie:6.1.0'
     implementation 'com.cuberto:liquid-swipe:1.0.0'
-    implementation 'androidx.core:core:1.10.1'
-    implementation 'androidx.core:core-ktx:1.10.1'
+    implementation 'androidx.core:core:1.12.0'
+    implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'de.hdodenhof:circleimageview:3.1.0'
     implementation 'com.github.marlonlom:timeago:4.0.3'
-    implementation 'com.github.skydoves:balloon:1.5.4'
+    implementation 'com.github.skydoves:balloon:1.6.1'
     implementation 'com.github.bumptech.glide:glide:4.16.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
     implementation 'com.ms-square:expandableTextView:0.1.4'

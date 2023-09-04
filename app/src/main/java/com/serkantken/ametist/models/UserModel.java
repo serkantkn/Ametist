@@ -7,7 +7,8 @@ public class UserModel implements Serializable
     String userId, name, email, password, profilePic, profilePicSquare, about, gender, age, token, looking, relationship, role, sexuality;
     int followerCount, followingCount, height, weight;
     Boolean isOnline;
-    Long lastSeen, signupDate, latitude, longitude;
+    Long lastSeen, signupDate;
+    double distance, latitude, longitude;
 
     public String getUserId() {
         return userId;
@@ -129,19 +130,19 @@ public class UserModel implements Serializable
         this.signupDate = signupDate;
     }
 
-    public Long getLatitude() {
+    public double getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(Long latitude) {
+    public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
 
-    public Long getLongitude() {
+    public double getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(Long longitude) {
+    public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
 
@@ -191,5 +192,13 @@ public class UserModel implements Serializable
 
     public void setSexuality(String sexuality) {
         this.sexuality = sexuality;
+    }
+
+    public double getDistance() {
+        return distance;
+    }
+
+    public void setDistance(double distance) {
+        this.distance = distance;
     }
 }

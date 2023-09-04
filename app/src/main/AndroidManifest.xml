@@ -29,45 +29,50 @@
         <activity
             android:name=".activities.PermissionActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
+            android:screenOrientation="sensor"
             android:theme="@style/Theme.Ametist"
+            android:resizeableActivity="true"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".activities.OnboardingActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
+            android:screenOrientation="sensor"
             android:theme="@style/Theme.Ametist"
+            android:resizeableActivity="true"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".activities.CommentActivity"
             android:exported="false"
             android:resizeableActivity="true"
-            android:screenOrientation="portrait"
+            android:screenOrientation="sensor"
             android:theme="@style/Theme.Ametist_Comment"
             android:windowSoftInputMode="adjustResize"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".activities.ProfileEditActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
+            android:screenOrientation="sensor"
+            android:resizeableActivity="true"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".activities.FullProfilePhotoActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
+            android:screenOrientation="sensor"
             android:theme="@style/Theme.Ametist_PhotoView"
+            android:resizeableActivity="true"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".activities.ProfileActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
+            android:screenOrientation="sensor"
             android:theme="@style/Theme.Ametist_Profile"
+            android:resizeableActivity="true"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".activities.ChatActivity"
             android:exported="false"
             android:resizeableActivity="true"
-            android:screenOrientation="portrait"
+            android:screenOrientation="sensor"
             android:theme="@style/Theme.Ametist_Chat"
             android:windowSoftInputMode="adjustResize"
             tools:ignore="LockedOrientationActivity" />
@@ -75,21 +80,22 @@
             android:name=".activities.SettingsActivity"
             android:exported="false"
             android:resizeableActivity="true"
-            android:screenOrientation="portrait"
+            android:screenOrientation="sensor"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".activities.LoginActivity"
             android:exported="false"
             android:resizeableActivity="true"
-            android:screenOrientation="portrait"
+            android:screenOrientation="sensorPortrait"
+            android:windowSoftInputMode="adjustPan"
+            android:theme="@style/Theme.Ametist_Chat"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".activities.IntroActivity"
             android:exported="true"
             android:resizeableActivity="true"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.Ametist_Intro"
-            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="sensor"
+            android:theme="@style/SplashScreen"
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -101,7 +107,7 @@
             android:name=".activities.MainActivity"
             android:exported="true"
             android:resizeableActivity="true"
-            android:screenOrientation="portrait"
+            android:screenOrientation="sensor"
             android:windowSoftInputMode="adjustResize"
             tools:ignore="LockedOrientationActivity" />
 

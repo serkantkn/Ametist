@@ -18,6 +18,7 @@ public class Constants
     public static final String DATABASE_PATH_CHATS = "chats";
     public static final String DATABASE_PATH_CONVERSATIONS = "conversations";
     public static final String DATABASE_PATH_POSTS = "Posts";
+    public static final String DATABASE_PATH_POST_PICS = "postPics";
     public static final String DATABASE_PATH_FOLLOWERS = "followers";
     public static final String DATABASE_PATH_FOLLOWINGS = "followings";
     public static final String DATABASE_PATH_NOTIFICATIONS = "notifications";
@@ -29,6 +30,8 @@ public class Constants
     public static final String USERNAME = "username";
     public static final String TOKEN = "token";
     public static final String MESSAGE = "message";
+    public static final double EXAMPLE_LATITUDE = 41.011367;
+    public static final double EXAMPLE_LONGITUDE = 28.978657;
 
     public static HashMap<String, String> remoteMsgHeaders = null;
     public static HashMap<String, String> getRemoteMsgHeaders()

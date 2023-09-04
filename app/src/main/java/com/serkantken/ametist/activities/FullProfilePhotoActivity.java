@@ -29,6 +29,8 @@ public class FullProfilePhotoActivity extends BaseActivity
         getWindow().setEnterTransition(fade);
         getWindow().setExitTransition(fade);
 
+        binding.buttonBack.setOnClickListener(v -> onBackPressed());
+
         String pictureUrl = getIntent().getStringExtra("pictureUrl");
 
         if (!Objects.isNull(pictureUrl))
