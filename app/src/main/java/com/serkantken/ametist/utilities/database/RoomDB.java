@@ -6,9 +6,9 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-import com.serkantken.ametist.utilities.database.models.MessageDatabaseModel;
+import com.serkantken.ametist.models.MessageModel;
 
-@Database(entities = MessageDatabaseModel.class, version = 1, exportSchema = false)
+@Database(entities = MessageModel.class, version = 1, exportSchema = false)
 public abstract class RoomDB extends RoomDatabase
 {
     private static RoomDB database;

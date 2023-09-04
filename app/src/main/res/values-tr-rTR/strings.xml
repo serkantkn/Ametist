@@ -146,4 +146,7 @@
     <string name="sign_up_date">Kayıt Olma Tarihi</string>
     <string name="add_photo">Fotoğraf Ekle</string>
     <string name="slide_to_cancel">İptal etmek için kaydırın</string>
+    <string name="online_status">Çevrimiçi durumunu paylaş</string>
+    <string name="share_last_seen">Son görülmeyi paylaş</string>
+    <string name="privacy">Gizlilik</string>
 </resources>

@@ -1,12 +1,58 @@
 package com.serkantken.ametist.models;
 
-public class MessageModel
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
+import java.io.Serializable;
+
+@Entity(tableName = "messages")
+public class MessageModel implements Serializable
 {
-    String messageId, senderId, receiverId, message, photo, voice, conversationId, repliedMessage, repliedPhoto;
-    boolean hasReply, isReplyHasPhoto, isSeen, isPlayed;
-    Long timestamp;
+    @PrimaryKey(autoGenerate = true)
+    int id = 0;
+    @ColumnInfo(name = "messageId")
+    String messageId = "";
+    @ColumnInfo(name = "senderId")
+    String senderId = "";
+    @ColumnInfo(name = "receiverId")
+    String receiverId = "";
+    @ColumnInfo(name = "message")
+    String message = "";
+    @ColumnInfo(name = "photo")
+    String photo = "";
+    @ColumnInfo(name = "voice")
+    String voice = "";
+    @ColumnInfo(name = "conversationId")
+    String conversationId = "";
+    @ColumnInfo(name = "repliedMessage")
+    String repliedMessage = "";
+    @ColumnInfo(name = "repliedPhoto")
+    String repliedPhoto = "";
+    @ColumnInfo(name = "repliedUserId")
+    String repliedUserId = "";
+    @ColumnInfo(name = "hasReply")
+    boolean hasReply = false;
+    @ColumnInfo(name = "isReplyHasPhoto")
+    boolean isReplyHasPhoto = false;
+    @ColumnInfo(name = "isSeen")
+    boolean isSeen = false;
+    @ColumnInfo(name = "isPlayed")
+    boolean isPlayed = false;
+    @ColumnInfo(name = "timestamp")
+    Long timestamp = 0L;
+    @ColumnInfo(name = "seenTimestamp")
+    Long seenTimestamp = 0L;
 
     public MessageModel() {
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getMessageId() {
@@ -49,6 +95,14 @@ public class MessageModel
         this.timestamp = timestamp;
     }
 
+    public Long getSeenTimestamp() {
+        return seenTimestamp;
+    }
+
+    public void setSeenTimestamp(Long seenTimestamp) {
+        this.seenTimestamp = seenTimestamp;
+    }
+
     public String getPhoto() {
         return photo;
     }
@@ -89,6 +143,14 @@ public class MessageModel
         this.repliedPhoto = repliedPhoto;
     }
 
+    public String getRepliedUserId() {
+        return repliedUserId;
+    }
+
+    public void setRepliedUserId(String repliedUserId) {
+        this.repliedUserId = repliedUserId;
+    }
+
     public boolean hasReply() {
         return hasReply;
     }
@@ -103,10 +165,6 @@ public class MessageModel
 
     public void setReplyHasPhoto(boolean replyHasPhoto) {
         isReplyHasPhoto = replyHasPhoto;
-    }
-
-    public boolean isHasReply() {
-        return hasReply;
     }
 
     public boolean isSeen() {

@@ -2,29 +2,21 @@ package com.serkantken.ametist.activities;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
-import android.media.AudioRecordingConfiguration;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Parcel;
-import android.os.ParcelFileDescriptor;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.animation.ScaleAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -38,17 +30,13 @@ import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
-import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.room.Room;
 
 import com.bumptech.glide.Glide;
-import com.devlomi.record_view.OnBasketAnimationEnd;
-import com.devlomi.record_view.OnRecordClickListener;
 import com.devlomi.record_view.OnRecordListener;
 import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.github.marlonlom.utilities.timeago.TimeAgo;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
@@ -76,27 +64,27 @@ import com.serkantken.ametist.network.ApiService;
 import com.serkantken.ametist.utilities.Constants;
 import com.serkantken.ametist.utilities.MessageListener;
 import com.serkantken.ametist.utilities.Utilities;
+import com.serkantken.ametist.utilities.database.MainDAO;
+import com.serkantken.ametist.utilities.database.RoomDB;
 import com.skydoves.balloon.Balloon;
 import com.skydoves.balloon.BalloonAnimation;
 import com.skydoves.balloon.BalloonSizeSpec;
 import com.yalantis.ucrop.UCrop;
 
-import org.checkerframework.checker.units.qual.A;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Objects;
-import java.util.TimerTask;
 import java.util.UUID;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import eightbitlab.com.blurview.BlurView;
 import retrofit2.Call;
@@ -128,6 +116,8 @@ public class ChatActivity extends BaseActivity implements MessageListener {
     private ListenerRegistration receiverRegistration;
     private long currentTimestamp = new Date().getTime();
     private String audioFilePath;
+    private MainDAO mainDAO;
+    private Executor executor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,6 +145,11 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         binding.messageRV.setLayoutManager(manager);
         binding.messageRV.setClipToPadding(false);
 
+        executor = Executors.newSingleThreadExecutor();
+
+        RoomDB roomDB = Room.databaseBuilder(this, RoomDB.class, "messages").build();
+        mainDAO = roomDB.mainDAO();
+
         if (utilities.isMIUI())
         {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
@@ -181,7 +176,7 @@ public class ChatActivity extends BaseActivity implements MessageListener {
             }
         });
 
-        listenMessages();
+        getMessagesFromLocalDatabase();
 
         binding.addPhoto.setOnClickListener(view -> selectPhotoFromGallery());
 
@@ -447,37 +442,38 @@ public class ChatActivity extends BaseActivity implements MessageListener {
 
     private void sendMessage() {
         String message = binding.inputMessage.getText().toString();
-        HashMap<String, Object> model = new HashMap<>();
-        model.put("timestamp", new Date().getTime());
-        model.put("message", message);
-        model.put("photo", "null");
-        model.put("senderId", auth.getUid());
-        model.put("receiverId", receiverUser.getUserId());
+        MessageModel model = new MessageModel();
+        model.setTimestamp(new Date().getTime());
+        model.setMessage(message);
+        model.setPhoto("null");
+        model.setSenderId(auth.getUid());
+        model.setReceiverId(receiverUser.getUserId());
         if (isReply)
         {
-            model.put("hasReply", true);
-            model.put("repliedUserId", repliedMessage.getSenderId());
-            model.put("repliedMessage", repliedMessage.getMessage());
+            model.setHasReply(true);
+            model.setRepliedUserId(repliedMessage.getSenderId());
+            model.setRepliedMessage(repliedMessage.getMessage());
             if (isReplyWithPhoto)
             {
-                model.put("isReplyHasPhoto", true);
-                model.put("repliedPhoto", repliedMessage.getPhoto());
+                model.setReplyHasPhoto(true);
+                model.setRepliedPhoto(repliedMessage.getPhoto());
             }
             else
             {
-                model.put("isReplyHasPhoto", false);
+                model.setReplyHasPhoto(false);
             }
         }
         else
         {
-            model.put("hasReply", false);
+            model.setHasReply(false);
         }
-        model.put("isSeen", false);
+        model.setSeen(false);
 
         database.collection(Constants.DATABASE_PATH_CHATS).add(model).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                model.put("messageId", task.getResult().getId());
-                database.collection(Constants.DATABASE_PATH_CHATS).document(task.getResult().getId()).update(model);
+                model.setMessageId(task.getResult().getId());
+                database.collection(Constants.DATABASE_PATH_CHATS).document(task.getResult().getId()).update("messageId", task.getResult().getId());
+                executor.execute(() -> mainDAO.insert(model));
 
                 if (conversationId != null) {
                     updateConversation(binding.inputMessage.getText().toString());
@@ -532,31 +528,31 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         isPhotoUploading = true;
 
         String message = photoPreviewView.inputMessage.getText().toString();
-        HashMap<String, Object> model = new HashMap<>();
-        model.put("timestamp", new Date().getTime());
-        model.put("message", message);
-        model.put("senderId", auth.getUid());
-        model.put("receiverId", receiverUser.getUserId());
+        MessageModel model = new MessageModel();
+        model.setTimestamp(new Date().getTime());
+        model.setMessage(message);
+        model.setSenderId(auth.getUid());
+        model.setReceiverId(receiverUser.getUserId());
         if (isReply)
         {
-            model.put("hasReply", true);
-            model.put("repliedUserId", repliedMessage.getSenderId());
-            model.put("repliedMessage", repliedMessage.getMessage());
+            model.setHasReply(true);
+            model.setRepliedUserId(repliedMessage.getSenderId());
+            model.setRepliedMessage(repliedMessage.getMessage());
             if (isReplyWithPhoto)
             {
-                model.put("isReplyHasPhoto", true);
-                model.put("repliedPhoto", repliedMessage.getPhoto());
+                model.setReplyHasPhoto(true);
+                model.setRepliedPhoto(repliedMessage.getPhoto());
             }
             else
             {
-                model.put("isReplyHasPhoto", false);
+                model.setReplyHasPhoto(false);
             }
         }
         else
         {
-            model.put("hasReply", false);
+            model.setHasReply(false);
         }
-        model.put("isSeen", false);
+        model.setSeen(false);
 
         StorageReference filePath = FirebaseStorage.getInstance()
                 .getReference("Conversations")
@@ -573,13 +569,13 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         }).addOnSuccessListener(taskSnapshot -> {
             filePath.getDownloadUrl().addOnSuccessListener(uri -> {
                 String downloadUrl = uri.toString();
-                model.put("photo", downloadUrl);
+                model.setPhoto(downloadUrl);
 
                 database.collection(Constants.DATABASE_PATH_CHATS).add(model).addOnCompleteListener(task1 -> {
                     if (task1.isSuccessful()) {
-                        model.put("messageId", task1.getResult().getId());
-
-                        database.collection(Constants.DATABASE_PATH_CHATS).document(task1.getResult().getId()).update(model);
+                        model.setMessageId(task1.getResult().getId());
+                        database.collection(Constants.DATABASE_PATH_CHATS).document(task1.getResult().getId()).update("messageId", task1.getResult().getId());
+                        executor.execute(() -> mainDAO.insert(model));
 
                         if (conversationId != null) {
                             updateConversation(photoPreviewView.inputMessage.getText().toString());
@@ -646,32 +642,32 @@ public class ChatActivity extends BaseActivity implements MessageListener {
 
     private void sendAudio()
     {
-        HashMap<String, Object> model = new HashMap<>();
-        model.put("timestamp", new Date().getTime());
-        model.put("senderId", auth.getUid());
-        model.put("receiverId", receiverUser.getUserId());
-        model.put("message", "null");
-        model.put("photo", "null");
+        MessageModel model = new MessageModel();
+        model.setTimestamp(new Date().getTime());
+        model.setSenderId(auth.getUid());
+        model.setReceiverId(receiverUser.getUserId());
+        model.setMessage("null");
+        model.setPhoto("null");
         if (isReply)
         {
-            model.put("hasReply", true);
-            model.put("repliedUserId", repliedMessage.getSenderId());
-            model.put("repliedMessage", repliedMessage.getMessage());
+            model.setHasReply(true);
+            model.setRepliedUserId(repliedMessage.getSenderId());
+            model.setRepliedMessage(repliedMessage.getMessage());
             if (isReplyWithPhoto)
             {
-                model.put("isReplyHasPhoto", true);
-                model.put("repliedPhoto", repliedMessage.getPhoto());
+                model.setReplyHasPhoto(true);
+                model.setRepliedPhoto(repliedMessage.getPhoto());
             }
             else
             {
-                model.put("isReplyHasPhoto", false);
+                model.setReplyHasPhoto(false);
             }
         }
         else
         {
-            model.put("hasReply", false);
+            model.setHasReply(false);
         }
-        model.put("isSeen", false);
+        model.setSeen(false);
         StorageReference filePath = FirebaseStorage.getInstance()
                 .getReference("Conversations")
                 .child(conversationId)
@@ -685,13 +681,13 @@ public class ChatActivity extends BaseActivity implements MessageListener {
                 if (task.isSuccessful())
                 {
                     String url = task.getResult().toString();
-                    model.put("voice", url);
+                    model.setVoice(url);
 
                     database.collection(Constants.DATABASE_PATH_CHATS).add(model).addOnCompleteListener(task1 -> {
                         if (task1.isSuccessful()) {
-                            model.put("messageId", task1.getResult().getId());
-
-                            database.collection(Constants.DATABASE_PATH_CHATS).document(task1.getResult().getId()).update(model);
+                            model.setMessageId(task1.getResult().getId());
+                            database.collection(Constants.DATABASE_PATH_CHATS).document(task1.getResult().getId()).update("messageId", task1.getResult().getId());
+                            executor.execute(() -> mainDAO.insert(model));
 
                             if (conversationId != null) {
                                 updateConversation("Voice message");
@@ -802,6 +798,19 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         }));
     }
 
+    private void getMessagesFromLocalDatabase()
+    {
+        executor.execute(() -> {
+            messageModels.addAll(mainDAO.getMessages(auth.getUid(), receiverUser.getUserId()));
+            messageModels.addAll(mainDAO.getMessages(receiverUser.getUserId(), auth.getUid()));
+        });
+
+        if (!messageModels.isEmpty())
+            messageModels.sort(Comparator.comparing(MessageModel::getTimestamp));
+
+        listenMessages();
+    }
+
     private void listenMessages() {
         senderRegistration = database.collection(Constants.DATABASE_PATH_CHATS)
                 .whereEqualTo("senderId", auth.getUid())
@@ -815,12 +824,20 @@ public class ChatActivity extends BaseActivity implements MessageListener {
 
     @SuppressLint("NotifyDataSetChanged")
     private final EventListener<QuerySnapshot> eventListenerMessages = (value, error) -> {
-        if (error != null) {
+        if (error != null)
+        {
             return;
         }
-        if (value != null) {
-            for (DocumentChange documentChange : value.getDocumentChanges()) {
-                if (documentChange.getType() == DocumentChange.Type.ADDED) {
+        if (value != null)
+        {
+            for (DocumentChange documentChange : value.getDocumentChanges())
+            {
+                AtomicBoolean isMessageExist = new AtomicBoolean(false);
+                executor.execute(() -> {
+                    isMessageExist.set(mainDAO.isMessageExist(documentChange.getDocument().getId()));
+                });
+                if (documentChange.getType() == DocumentChange.Type.ADDED && isMessageExist.get())
+                {
                     MessageModel model = new MessageModel();
                     model.setMessageId(documentChange.getDocument().getId());
                     model.setSenderId(documentChange.getDocument().getString("senderId"));
@@ -837,11 +854,16 @@ public class ChatActivity extends BaseActivity implements MessageListener {
                     {
                         if (!Boolean.TRUE.equals(documentChange.getDocument().getBoolean("isSeen")))
                         {
-                            database.collection(Constants.DATABASE_PATH_CHATS).document(Objects.requireNonNull(documentChange.getDocument().getId())).update("isSeen", true);
+                            long seenDate = new Date().getTime();
+                            database.collection(Constants.DATABASE_PATH_CHATS).document(Objects.requireNonNull(documentChange.getDocument().getId())).update("isSeen", true, "seenTimestamp", seenDate);
                             model.setSeen(true);
+                            model.setSeenTimestamp(seenDate);
                         }
                         else
+                        {
                             model.setSeen(true);
+                            model.setSeenTimestamp(documentChange.getDocument().getLong("seenTimestamp"));
+                        }
                         if (currentTimestamp - model.getTimestamp() < 2000)
                         {
                             if (mediaPlayer != null)
@@ -858,6 +880,7 @@ public class ChatActivity extends BaseActivity implements MessageListener {
                         }
                     }
                     messageModels.add(model);
+                    executor.execute(() -> mainDAO.insert(model));
                 }
             }
 
