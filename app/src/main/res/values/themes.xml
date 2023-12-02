@@ -39,10 +39,12 @@
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent_purple_dark</item>
-        <item name="android:statusBarColor" >@color/primary_dark_lightransparent</item>
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:statusBarColor" >@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowLightNavigationBar" >true</item>
-        <item name="android:navigationBarColor">@color/primary_dark_lightransparent</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 
     <style name="Theme.Ametist_Comment" parent="Theme.MaterialComponents.Light.NoActionBar">
@@ -80,6 +82,10 @@
 
     <style name="AlertDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
         <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
     </style>
 
     <style name="MainTabText" parent="TextAppearance.Design.Tab">
@@ -89,8 +95,8 @@
     </style>
     
     <style name="SplashScreen" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/primary</item>
-        <item name="windowSplashScreenAnimatedIcon">@mipmap/ametist_logo</item>
+        <item name="windowSplashScreenBackground">@color/accent_purple_dark</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
         <item name="windowSplashScreenAnimationDuration">1000</item>
         <item name="postSplashScreenTheme">@style/Theme.Ametist_Intro</item>
     </style>

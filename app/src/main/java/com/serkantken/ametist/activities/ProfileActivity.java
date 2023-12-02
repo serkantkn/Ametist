@@ -19,6 +19,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -57,6 +58,7 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import eightbitlab.com.blurview.BlurView;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -80,14 +82,11 @@ public class ProfileActivity extends BaseActivity
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
         utilities = new Utilities(this, this);
-        utilities.blur(binding.toolbarBlur, 10f, false);
 
         binding.toolbarBlur.setPadding(0, utilities.getStatusBarHeight(), 0, 0);
-
         binding.navbarBlur.setMinimumHeight(utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT));
-        utilities.blur(binding.navbarBlur, 10f, false);
+        utilities.blur(new BlurView[]{binding.navbarBlur, binding.backBlur, binding.usernameBlur}, 10f, false);
 
-        utilities.blur(binding.backBlur, 10f, false);
         ConstraintSet backBlurSet = new ConstraintSet();
         backBlurSet.clone(binding.profileRoot);
         backBlurSet.connect(R.id.backBlur, ConstraintSet.TOP, R.id.toolbarBlur, ConstraintSet.BOTTOM);
@@ -102,12 +101,7 @@ public class ProfileActivity extends BaseActivity
         int screenHeight = size.y;
 
         //utilities.getStatusBarHeight()+(screenHeight-(screenHeight/4))
-        binding.scrollView.setPadding(
-                0,
-                utilities.getStatusBarHeight()+utilities.convertDpToPixel(64),
-                0,
-                utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT)+utilities.convertDpToPixel(96)
-        );
+        binding.scrollView.setPadding(0, 0, 0, utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT)+utilities.convertDpToPixel(96));
         binding.scrollView.setClipToPadding(false);
 
         ConstraintSet constraintSet = new ConstraintSet();
@@ -160,6 +154,20 @@ public class ProfileActivity extends BaseActivity
         {
             binding.buttonBlock.setVisibility(View.GONE);
         }
+
+        binding.profileImageViewPager.setOnLongClickListener(v -> {
+            if (!Objects.isNull(user.getProfilePic()))
+            {
+                Intent intent = new Intent(ProfileActivity.this, FullProfilePhotoActivity.class);
+                intent.putExtra("pictureUrl", user.getProfilePic());
+                ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(ProfileActivity.this, binding.profileImageViewPager, "photograph");
+                startActivity(intent, optionsCompat.toBundle());
+                return true;
+            }
+            else
+                return false;
+        });
+
         AtomicBoolean isScrolled = new AtomicBoolean(false);
 
         binding.scrollView.setOnScrollChangeListener((View.OnScrollChangeListener) (view, x, y, oldX, oldY) -> {
@@ -192,6 +200,7 @@ public class ProfileActivity extends BaseActivity
                         public void onAnimationStart(Animation animation) {
                             binding.username.setVisibility(View.VISIBLE);
                             binding.backgroundProfileImage.setVisibility(View.VISIBLE);
+                            utilities.blur(new BlurView[]{binding.toolbarBlur}, 10f, false);
                             binding.toolbarBlur.setBackgroundColor(getColor(R.color.primary_dark_lightransparent));
                             binding.navbarBlur.setBackgroundColor(getColor(R.color.primary_dark_lightransparent));
                             isScrolled.set(true);
@@ -222,6 +231,7 @@ public class ProfileActivity extends BaseActivity
                             binding.username.setVisibility(View.INVISIBLE);
                             binding.backgroundProfileImage.setVisibility(View.INVISIBLE);
                             binding.backBlur.setVisibility(View.INVISIBLE);
+                            binding.toolbarBlur.setBlurEnabled(false);
                             binding.toolbarBlur.setBackgroundColor(getColor(android.R.color.transparent));
                             binding.navbarBlur.setBackgroundColor(getColor(android.R.color.transparent));
                         }
@@ -253,7 +263,7 @@ public class ProfileActivity extends BaseActivity
             final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this, R.style.BottomSheetDialogTheme_Chat);
             LayoutQrCodeBinding bottomSheetView = LayoutQrCodeBinding.inflate(getLayoutInflater());
 
-            utilities.blur(bottomSheetView.bottomSheetContainer, 10f, false);
+            utilities.blur(new BlurView[]{bottomSheetView.bottomSheetContainer}, 10f, false);
             WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
             float oldBrightness = layoutParams.screenBrightness;
             layoutParams.screenBrightness = 1.0f;
@@ -443,32 +453,8 @@ public class ProfileActivity extends BaseActivity
                         user.setGender(documentSnapshot.getString("gender"));
                         user.setName(documentSnapshot.getString("name"));
                         user.setAbout(documentSnapshot.getString("about"));
-                        user.setRole(documentSnapshot.getString("role"));
-                        user.setLooking(documentSnapshot.getString("looking"));
-                        user.setRelationship(documentSnapshot.getString("relationship"));
-                        user.setSexuality(documentSnapshot.getString("sexuality"));
                         user.setFollowerCount(Integer.parseInt(Objects.requireNonNull(documentSnapshot.get("followerCount")).toString()));
                         user.setFollowingCount(Integer.parseInt(Objects.requireNonNull(documentSnapshot.get("followingCount")).toString()));
-                        Object height = documentSnapshot.get("height");
-                        if (height != null)
-                        {
-                            user.setHeight(Integer.parseInt(height.toString()));
-                        }
-                        else
-                        {
-                            database.collection(Constants.DATABASE_PATH_USERS).document(user.getUserId()).update("height", 130);
-                            user.setHeight(130);
-                        }
-                        Object weight = documentSnapshot.get("weight");
-                        if (weight != null)
-                        {
-                            user.setWeight(Integer.parseInt(weight.toString()));
-                        }
-                        else
-                        {
-                            database.collection(Constants.DATABASE_PATH_USERS).document(user.getUserId()).update("weight", 30);
-                            user.setWeight(30);
-                        }
                         Object signupDate = documentSnapshot.get("signupDate");
                         if (signupDate != null)
                         {
@@ -479,39 +465,6 @@ public class ProfileActivity extends BaseActivity
                             database.collection(Constants.DATABASE_PATH_USERS).document(user.getUserId()).update("signupDate", Long.parseLong("1685965594357"));
                             user.setSignupDate(Long.parseLong("1685965594357"));
                         }
-
-                        /*database.collection(Constants.DATABASE_PATH_USERS).document(Objects.requireNonNull(user.getUserId())).collection("photos").get().addOnCompleteListener(task1 -> {
-                            if (task1.isSuccessful())
-                            {
-                                pictureList.clear();
-                                ArrayList<PhotoModel> photos = new ArrayList<>();
-                                for (QueryDocumentSnapshot photoIDs : task1.getResult())
-                                {
-                                    if (photoIDs.exists())
-                                    {
-                                        PhotoModel model = new PhotoModel();
-                                        model.setDate(Objects.requireNonNull(photoIDs.getLong("date")));
-                                        model.setLink(photoIDs.getString("link"));
-                                        photos.add(model);
-                                    }
-                                }
-                                photos.sort(Comparator.comparing(PhotoModel::getDate).reversed());
-                                for (int i = 0; i < photos.size(); i++)
-                                {
-                                    pictureList.add(new SlideModel(photos.get(i).getLink(), ScaleTypes.FIT));
-                                }
-
-                                if (!pictureList.isEmpty())
-                                {
-                                    binding.profileImageViewPager.setImageList(pictureList);
-                                    binding.profileImageViewPager.startSliding(5000);
-                                }
-                                else
-                                {
-                                    binding.profileImageViewPager.setVisibility(View.GONE);
-                                }
-                            }
-                        });*/
                     }
                 }
 
@@ -528,18 +481,23 @@ public class ProfileActivity extends BaseActivity
                     case "2":
                         binding.textGender.setText(getString(R.string.woman));
                         break;
+                    case "0":
+                        binding.cardGender.setVisibility(View.GONE);
+                        break;
                 }
-                binding.textRole.setText(user.getRole());
-                binding.textRelationship.setText(user.getRelationship());
-                binding.textSeek.setText(user.getLooking());
-                binding.textHeight.setText(user.getHeight() + " cm");
-                binding.textWeight.setText(user.getWeight() + " kg");
-                binding.textSexuality.setText(user.getSexuality());
                 binding.textSignupDate.setText(TimeAgo.using(user.getSignupDate()));
 
                 if (Objects.isNull(user.getProfilePic()))
                 {
-                    binding.profileImageViewPager.setVisibility(View.GONE);
+                    Glide.with(this).load(R.drawable.ic_person).into(binding.profileImageViewPager);
+                    switch (user.getGender()) {
+                        case "1":
+                            binding.profileImageViewPager.setBackground(AppCompatResources.getDrawable(this, R.drawable.blue_gradient));
+                            break;
+                        case "2":
+                            binding.profileImageViewPager.setBackground(AppCompatResources.getDrawable(this, R.drawable.red_gradient));
+                            break;
+                    }
                 }
                 else
                 {
@@ -568,8 +526,16 @@ public class ProfileActivity extends BaseActivity
                     postModel.setLikeCount(Integer.parseInt(Objects.requireNonNull(documentSnapshot.get("likeCount")).toString()));
                     postModels.add(postModel);
                 }
-                postModels.sort(Comparator.comparing(PostModel::getPostedAt).reversed());
-                adapter.notifyDataSetChanged();
+                if (postModels.isEmpty()) {
+                    binding.emptyDash.getRoot().setVisibility(View.VISIBLE);
+                    binding.emptyDash.aciklama.setVisibility(View.GONE);
+                    binding.posts.setVisibility(View.GONE);
+                } else {
+                    postModels.sort(Comparator.comparing(PostModel::getPostedAt).reversed());
+                    adapter.notifyDataSetChanged();
+                    binding.emptyDash.getRoot().setVisibility(View.GONE);
+                    binding.posts.setVisibility(View.VISIBLE);
+                }
             }
         });
     }
@@ -584,9 +550,6 @@ public class ProfileActivity extends BaseActivity
                 Toast.makeText(this, "Tarama iptal edildi", Toast.LENGTH_LONG).show();
             } else {
                 String qrText = result.getContents();
-                // QR kodu başarıyla tarandı, yapılacak işlemler burada gerçekleştirilebilir
-                Toast.makeText(this, qrText, Toast.LENGTH_SHORT).show();
-
                 database.collection(Constants.DATABASE_PATH_USERS).get().addOnCompleteListener(task -> {
                     if (task.isSuccessful())
                     {

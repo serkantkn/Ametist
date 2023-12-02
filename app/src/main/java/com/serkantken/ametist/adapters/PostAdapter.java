@@ -75,15 +75,15 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new ViewHolder(LayoutPostBinding.inflate(
-                LayoutInflater.from(context),
-                parent,
-                false
-        ));
+            LayoutInflater.from(context),
+            parent,
+            false
+            ));
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.binding.postImage.setVisibility(View.GONE);
+    public void onBindViewHolder(@NonNull ViewHolder viewHolder, int position) {
+        viewHolder.binding.postImage.setVisibility(View.GONE);
         UserModel user = new UserModel();
         PostModel postModel = postModels.get(position);
         database.collection("Users").get().addOnCompleteListener(task -> {
@@ -98,55 +98,55 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                         user.setGender(documentSnapshot.getString("gender"));
                     }
                 }
-                holder.binding.username.setText(user.getName());
-                Glide.with(context).load(user.getProfilePic()).placeholder(AppCompatResources.getDrawable(context, R.drawable.ic_person)).into(holder.binding.profileImage);
+                viewHolder.binding.username.setText(user.getName());
+                Glide.with(context).load(user.getProfilePic()).placeholder(AppCompatResources.getDrawable(context, R.drawable.ic_person)).into(viewHolder.binding.profileImage);
             }
         });
         if (Objects.equals(postModel.getPostedBy(), currentUserId))
         {
-            holder.binding.buttonMenu.setVisibility(View.VISIBLE);
+            viewHolder.binding.buttonMenu.setVisibility(View.VISIBLE);
         }
 
-        isLiked(postModel, holder);
+        isLiked(postModel, viewHolder);
 
-        holder.binding.postText.setText(postModel.getPostText());
-        holder.binding.textLikeCount.setText(String.valueOf(postModel.getLikeCount()));
-        holder.binding.textCommentCount.setText(String.valueOf(postModel.getCommentCount()));
-        holder.binding.date.setText(TimeAgo.using(postModel.getPostedAt()));
-        holder.binding.profileImage.setOnClickListener(view -> onUserClicked(user));
-        holder.binding.username.setOnClickListener(view -> onUserClicked(user));
+        viewHolder.binding.postText.setText(postModel.getPostText());
+        viewHolder.binding.textLikeCount.setText(String.valueOf(postModel.getLikeCount()));
+        viewHolder.binding.textCommentCount.setText(String.valueOf(postModel.getCommentCount()));
+        viewHolder.binding.date.setText(TimeAgo.using(postModel.getPostedAt()));
+        viewHolder.binding.profileImage.setOnClickListener(view -> onUserClicked(user));
+        viewHolder.binding.username.setOnClickListener(view -> onUserClicked(user));
         if (!Objects.equals(postModel.getPostPicture(), null))
         {
-            holder.binding.postImage.setVisibility(View.VISIBLE);
-            Glide.with(context).load(postModel.getPostPicture()).into(holder.binding.postImage);
-            holder.binding.postImage.setOnLongClickListener(view -> {
+            viewHolder.binding.postImage.setVisibility(View.VISIBLE);
+            Glide.with(context).load(postModel.getPostPicture()).into(viewHolder.binding.postImage);
+            viewHolder.binding.postImage.setOnLongClickListener(view -> {
                 Intent intent = new Intent(context, FullProfilePhotoActivity.class);
                 intent.putExtra("pictureUrl", postModel.getPostPicture());
-                ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, holder.binding.postImage, "photograph");
+                ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, viewHolder.binding.postImage, "photograph");
                 context.startActivity(intent, optionsCompat.toBundle());
                 return true;
             });
         }
 
-        holder.binding.buttonLike.setOnClickListener(view -> {
-            if (holder.binding.buttonLike.getTag().equals("Liked"))
+        viewHolder.binding.buttonLike.setOnClickListener(view -> {
+            if (viewHolder.binding.buttonLike.getTag().equals("Liked"))
             {
-                unlikePost(postModel, holder);
+                unlikePost(postModel, viewHolder);
             }
             else
             {
-                likePost(postModel, holder);
+                likePost(postModel, viewHolder);
             }
         });
 
-        holder.binding.buttonComment.setOnClickListener(view -> {
+        viewHolder.binding.buttonComment.setOnClickListener(view -> {
             if (!Objects.equals(postModel.getPostPicture(), null))
             {
                 Intent intent = new Intent(context, CommentActivity.class);
                 intent.putExtra("postId", postModel.getPostId());
                 intent.putExtra("userId", postModel.getPostedBy());
                 intent.putExtra("postImage", postModel.getPostPicture());
-                ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, new Pair<>(holder.binding.cardLayout,"comment"), new Pair<>(holder.binding.postImage, "photograph"));
+                ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, new Pair<>(viewHolder.binding.cardLayout,"comment"), new Pair<>(viewHolder.binding.postImage, "photograph"));
                 context.startActivity(intent, optionsCompat.toBundle());
             }
             else
@@ -155,16 +155,16 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                 intent.putExtra("postId", postModel.getPostId());
                 intent.putExtra("userId", postModel.getPostedBy());
                 intent.putExtra("postImage", "null");
-                ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, holder.binding.cardLayout, "comment");
+                ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, viewHolder.binding.cardLayout, "comment");
                 context.startActivity(intent, optionsCompat.toBundle());
             }
         });
 
-        holder.binding.buttonMenu.setOnClickListener(view -> {
-            showBalloon(holder.binding.buttonMenu, 4);
+        viewHolder.binding.buttonMenu.setOnClickListener(view -> {
+            showBalloon(viewHolder.binding.buttonMenu, 4);
             BlurView blurView = balloon.getContentView().findViewById(R.id.blur);
             Utilities utilities = new Utilities(context, activity);
-            utilities.blur(blurView, 10f, false);
+            utilities.blur(new BlurView[]{blurView}, 10f, false);
 
             CardView deleteButton = balloon.getContentView().findViewById(R.id.buttonDelete);
             deleteButton.setOnClickListener(v -> {
@@ -491,7 +491,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
 
     @Override
     public int getItemCount() {
-        return postModels.size();
+        if (postModels == null){
+            return 0;
+        } else {
+            return postModels.size();
+        }
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

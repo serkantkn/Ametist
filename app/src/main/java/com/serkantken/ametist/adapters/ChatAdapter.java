@@ -151,11 +151,10 @@ public class ChatAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemViewType(int position) {
-        MessageModel model = messageModels.get(position);
-
-        if (messageModels.size() == 0) {
+        if (messageModels.isEmpty()) {
             return EMPTY_VIEW_TYPE;
         } else {
+            MessageModel model = messageModels.get(position);
             if (Objects.equals(model.getSenderId(), FirebaseAuth.getInstance().getUid())) {
                 if (Objects.equals(model.getPhoto(), "null")) {
                     if (Objects.equals(model.getMessage(), "null")) {
@@ -298,7 +297,11 @@ public class ChatAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemCount() {
-        return messageModels.size();
+        if (messageModels == null) {
+            return 0;
+        } else {
+            return messageModels.size();
+        }
     }
 
     private void ifFirstMessage(Context context, int position, View view) {

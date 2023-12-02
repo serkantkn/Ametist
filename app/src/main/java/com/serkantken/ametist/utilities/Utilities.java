@@ -72,24 +72,23 @@ public class Utilities
         view.setLayoutParams(layoutParams);
     }
 
-    public void blur(BlurView view, float radius, boolean isRounded)
+    public void blur(BlurView[] views, float radius, boolean isRounded)
     {
-        View decorView = activity.getWindow().getDecorView();
-        //ViewGroup you want to start blur from. Choose root as close to BlurView in hierarchy as possible.
-        ViewGroup rootView = (ViewGroup) decorView.findViewById(android.R.id.content);
-        //Set drawable to draw in the beginning of each blurred frame (Optional).
-        //Can be used in case your layout has a lot of transparent space and your content
-        //gets kinda lost after after blur is applied.
-        Drawable windowBackground = decorView.getBackground();
-
-        view.setupWith(rootView, new RenderScriptBlur(activity))
-                .setFrameClearDrawable(windowBackground)
-                .setBlurRadius(radius)
-                .setBlurAutoUpdate(true);
-        if (isRounded)
+        for (BlurView view : views)
         {
-            view.setOutlineProvider(ViewOutlineProvider.BACKGROUND);
-            view.setClipToOutline(true);
+            View decorView = activity.getWindow().getDecorView();
+            ViewGroup rootView = decorView.findViewById(android.R.id.content);
+            Drawable windowBackground = decorView.getBackground();
+
+            view.setupWith(rootView, new RenderScriptBlur(activity))
+                    .setFrameClearDrawable(windowBackground)
+                    .setBlurRadius(radius)
+                    .setBlurAutoUpdate(true);
+            if (isRounded)
+            {
+                view.setOutlineProvider(ViewOutlineProvider.BACKGROUND);
+                view.setClipToOutline(true);
+            }
         }
     }
 

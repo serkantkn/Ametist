@@ -41,10 +41,8 @@ import java.util.TimerTask;
 
 public class IntroActivity extends AppCompatActivity
 {
-    private ActivityIntroBinding binding;
     private FirebaseAuth auth;
     private FirebaseFirestore database;
-    Timer timer;
     private UserModel user;
     boolean connected = false;
     AlertDialog.Builder alertDialog;
@@ -56,8 +54,6 @@ public class IntroActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
         splashScreen.setKeepOnScreenCondition(() -> true);
-        //binding = ActivityIntroBinding.inflate(getLayoutInflater());
-        //setContentView(binding.getRoot());
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 

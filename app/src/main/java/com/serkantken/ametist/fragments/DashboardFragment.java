@@ -97,7 +97,6 @@ public class DashboardFragment extends Fragment
         utilities = new Utilities(requireContext(), requireActivity());
         adapter = new PostAdapter(postModels, getContext(), getActivity());
         binding.dashboardRV.setAdapter(adapter);
-        binding.dashboardRV.setLayoutManager(new LinearLayoutManager(getContext()));
 
         getUserInfo();
         getPosts();
@@ -192,7 +191,7 @@ public class DashboardFragment extends Fragment
                         case 2:
                             showBalloon(dialogBinding.buttonAddPhoto, 3);
                             BlurView blurView = balloon.getContentView().findViewById(R.id.blur);
-                            utilities.blur(blurView, 10f, false);
+                            utilities.blur(new BlurView[]{blurView}, 10f, false);
 
                             CardView cameraButton = balloon.getContentView().findViewById(R.id.buttonCamera);
                             cameraButton.setOnClickListener(v -> {
@@ -225,6 +224,7 @@ public class DashboardFragment extends Fragment
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext(), R.style.AlertDialogTheme);
         dialogBinding = LayoutNewPostDialogBinding.inflate(getLayoutInflater());
+        utilities.blur(new BlurView[]{dialogBinding.dialogBlur}, 10f, true);
         builder.setView(dialogBinding.getRoot());
         AlertDialog dialog = builder.create();
         dialogBinding.buttonSubmitBackground.setBackgroundColor(requireContext().getColor(R.color.secondary_text));
@@ -399,8 +399,7 @@ public class DashboardFragment extends Fragment
     @SuppressLint("NotifyDataSetChanged")
     private void getPosts()
     {
-        binding.dashboardRefresher.setRefreshing(false);
-        binding.dashboardRV.showShimmerAdapter();
+        binding.dashboardRefresher.setRefreshing(true);
         followingUsers.clear();
         followingUsers.add(auth.getUid());
         database.collection(Constants.DATABASE_PATH_USERS).document(Objects.requireNonNull(auth.getUid())).collection(Constants.DATABASE_PATH_FOLLOWINGS).get().addOnCompleteListener(task -> {
@@ -431,10 +430,16 @@ public class DashboardFragment extends Fragment
                                 postModel.setLikeCount(Integer.parseInt(Objects.requireNonNull(documentSnapshot.get("likeCount")).toString()));
                                 postModels.add(postModel);
                             }
-                            if (postModels.size() != 0)
+                            if (postModels.isEmpty()) {
+                                binding.dashboardRV.setVisibility(View.GONE);
+                                binding.emptyDash.getRoot().setVisibility(View.VISIBLE);
+                            } else {
+                                binding.dashboardRV.setVisibility(View.VISIBLE);
+                                binding.emptyDash.getRoot().setVisibility(View.GONE);
                                 postModels.sort(Comparator.comparing(PostModel::getPostedAt).reversed());
-                            if (index == followingUsers.size()-1)
-                                adapter.notifyDataSetChanged();
+                                if (index == followingUsers.size()-1)
+                                    adapter.notifyDataSetChanged();
+                            }
                         }
                         else
                         {
@@ -445,6 +450,5 @@ public class DashboardFragment extends Fragment
             }
         });
         binding.dashboardRefresher.setRefreshing(false);
-        binding.dashboardRV.hideShimmerAdapter();
     }
 }

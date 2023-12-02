@@ -9,94 +9,106 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ametist_logo"
+        android:enableOnBackInvokedCallback="true"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ametist_logo"
+        android:preserveLegacyExternalStorage="true"
+        android:requestLegacyExternalStorage="true"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Ametist"
-        android:enableOnBackInvokedCallback="true"
-        tools:targetApi="tiramisu"
-        android:preserveLegacyExternalStorage="true"
-        android:requestLegacyExternalStorage="true">
+        tools:targetApi="tiramisu">
+        <activity
+            android:name=".activities.SignupActivity"
+            android:exported="false"
+            android:resizeableActivity="true"
+            android:screenOrientation="sensor"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/Theme.Ametist_Chat"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".activities.LoginActivity"
+            android:exported="false"
+            android:resizeableActivity="true"
+            android:screenOrientation="sensor"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/Theme.Ametist_Chat"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".activities.PermissionActivity"
             android:exported="false"
-            android:screenOrientation="sensor"
-            android:theme="@style/Theme.Ametist"
             android:resizeableActivity="true"
-            tools:ignore="LockedOrientationActivity" />
+            android:screenOrientation="sensor"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/Theme.Ametist" />
         <activity
             android:name=".activities.OnboardingActivity"
             android:exported="false"
-            android:screenOrientation="sensor"
-            android:theme="@style/Theme.Ametist"
             android:resizeableActivity="true"
-            tools:ignore="LockedOrientationActivity" />
+            android:screenOrientation="sensor"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/Theme.Ametist" />
         <activity
             android:name=".activities.CommentActivity"
             android:exported="false"
             android:resizeableActivity="true"
             android:screenOrientation="sensor"
+            android:configChanges="orientation|screenSize"
             android:theme="@style/Theme.Ametist_Comment"
-            android:windowSoftInputMode="adjustResize"
-            tools:ignore="LockedOrientationActivity" />
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".activities.ProfileEditActivity"
             android:exported="false"
-            android:screenOrientation="sensor"
             android:resizeableActivity="true"
-            tools:ignore="LockedOrientationActivity" />
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="sensor" />
         <activity
             android:name=".activities.FullProfilePhotoActivity"
             android:exported="false"
-            android:screenOrientation="sensor"
-            android:theme="@style/Theme.Ametist_PhotoView"
             android:resizeableActivity="true"
-            tools:ignore="LockedOrientationActivity" />
+            android:screenOrientation="sensor"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/Theme.Ametist_PhotoView" />
         <activity
             android:name=".activities.ProfileActivity"
             android:exported="false"
-            android:screenOrientation="sensor"
-            android:theme="@style/Theme.Ametist_Profile"
             android:resizeableActivity="true"
-            tools:ignore="LockedOrientationActivity" />
+            android:screenOrientation="sensor"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/Theme.Ametist_Profile" />
         <activity
             android:name=".activities.ChatActivity"
             android:exported="false"
             android:resizeableActivity="true"
             android:screenOrientation="sensor"
+            android:configChanges="orientation|screenSize"
             android:theme="@style/Theme.Ametist_Chat"
-            android:windowSoftInputMode="adjustResize"
-            tools:ignore="LockedOrientationActivity" />
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".activities.SettingsActivity"
             android:exported="false"
             android:resizeableActivity="true"
             android:screenOrientation="sensor"
-            tools:ignore="LockedOrientationActivity" />
-        <activity
-            android:name=".activities.LoginActivity"
-            android:exported="false"
-            android:resizeableActivity="true"
-            android:screenOrientation="sensorPortrait"
-            android:windowSoftInputMode="adjustPan"
-            android:theme="@style/Theme.Ametist_Chat"
-            tools:ignore="LockedOrientationActivity" />
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.IntroActivity"
             android:exported="true"
             android:resizeableActivity="true"
             android:screenOrientation="sensor"
-            android:theme="@style/SplashScreen"
-            tools:ignore="LockedOrientationActivity">
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/SplashScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -108,6 +120,7 @@
             android:exported="true"
             android:resizeableActivity="true"
             android:screenOrientation="sensor"
+            android:configChanges="orientation|screenSize"
             android:windowSoftInputMode="adjustResize"
             tools:ignore="LockedOrientationActivity" />
 
@@ -129,7 +142,6 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
-
     </application>
 
 </manifest>

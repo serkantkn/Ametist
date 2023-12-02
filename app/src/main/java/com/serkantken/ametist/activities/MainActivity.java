@@ -44,6 +44,8 @@ import com.skydoves.balloon.BalloonSizeSpec;
 import java.util.Locale;
 import java.util.Objects;
 
+import eightbitlab.com.blurview.BlurView;
+
 public class MainActivity extends BaseActivity
 {
     private ActivityMainBinding binding;
@@ -74,8 +76,7 @@ public class MainActivity extends BaseActivity
         getUserInfo();
         setTabs();
 
-        utilities.blur(binding.tabBarBlur, 10f, false);
-        utilities.blur(binding.toolbarBlur, 10f, false);
+        utilities.blur(new BlurView[]{binding.tabBarBlur, binding.toolbarBlur}, 10f, false);
 
         if (Hawk.contains(Constants.IS_BALLOONS_SHOWED))
         {
@@ -285,7 +286,11 @@ public class MainActivity extends BaseActivity
     private void getUserInfo()
     {
         user = (UserModel) getIntent().getSerializableExtra("currentUserInfo");
-        Glide.with(getApplicationContext()).load(user.getProfilePic()).placeholder(R.mipmap.ametist_logo).into(binding.profileImage);
+        assert user != null;
+        if (user.getProfilePic() != null)
+        {
+            Glide.with(getApplicationContext()).load(user.getProfilePic()).placeholder(R.mipmap.ametist_logo).into(binding.profileImage);
+        }
     }
 
     @Override

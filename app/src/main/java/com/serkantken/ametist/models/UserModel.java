@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 public class UserModel implements Serializable
 {
-    String userId, name, email, password, profilePic, profilePicSquare, about, gender, age, token, looking, relationship, role, sexuality;
-    int followerCount, followingCount, height, weight;
+    String userId, name, email, profilePic, about, gender, age, token;
+    int followerCount, followingCount;
     Boolean isOnline;
     Long lastSeen, signupDate;
     double distance, latitude, longitude;
@@ -34,28 +34,12 @@ public class UserModel implements Serializable
         this.email = email;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public String getProfilePic() {
         return profilePic;
     }
 
     public void setProfilePic(String profilePic) {
         this.profilePic = profilePic;
-    }
-
-    public String getProfilePicSquare() {
-        return profilePicSquare;
-    }
-
-    public void setProfilePicSquare(String profilePicSquare) {
-        this.profilePicSquare = profilePicSquare;
     }
 
     public String getAbout() {
@@ -144,54 +128,6 @@ public class UserModel implements Serializable
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
-    }
-
-    public String getLooking() {
-        return looking;
-    }
-
-    public void setLooking(String looking) {
-        this.looking = looking;
-    }
-
-    public String getRelationship() {
-        return relationship;
-    }
-
-    public void setRelationship(String relationship) {
-        this.relationship = relationship;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
-    }
-
-    public int getWeight() {
-        return weight;
-    }
-
-    public void setWeight(int weight) {
-        this.weight = weight;
-    }
-
-    public String getSexuality() {
-        return sexuality;
-    }
-
-    public void setSexuality(String sexuality) {
-        this.sexuality = sexuality;
     }
 
     public double getDistance() {

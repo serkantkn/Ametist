@@ -7,11 +7,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.orhanobut.hawk.Hawk;
-import com.serkantken.ametist.utilities.Utilities;
 
 import java.util.Date;
 import java.util.Objects;
@@ -26,7 +24,6 @@ public class BaseActivity extends AppCompatActivity
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Utilities utilities = new Utilities(getApplicationContext(), this);
         database = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
         Hawk.init(this).build();

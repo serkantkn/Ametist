@@ -20,7 +20,7 @@
             android:paddingBottom="10dp">
 
             <androidx.cardview.widget.CardView
-                android:id="@+id/notificationsLayout"
+                android:id="@+id/generalLayout"
                 android:layout_width="0dp"
                 app:layout_constraintWidth_max="600dp"
                 android:layout_height="wrap_content"
@@ -33,6 +33,60 @@
                 android:transitionName="comment"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="General"
+                        android:id="@+id/title_general"
+                        android:textSize="17sp"
+                        android:fontFamily="@font/jost_light"
+                        android:textColor="@color/accent_purple_dark"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="16dp"/>
+
+                    <Switch
+                        android:id="@+id/switch_blur"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Set blur on transparent UI parts"
+                        android:textColor="@color/primary_text"
+                        android:textSize="17sp"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginTop="15dp"
+                        android:checked="true"
+                        app:layout_constraintTop_toBottomOf="@id/title_general"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintVertical_bias="0"
+                        tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/notificationsLayout"
+                android:layout_width="0dp"
+                app:layout_constraintWidth_max="600dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/generalLayout"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/primary_dark_midtransparent"
+                android:transitionName="comment"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="10dp">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"

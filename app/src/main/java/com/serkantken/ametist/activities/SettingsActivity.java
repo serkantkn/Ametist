@@ -27,6 +27,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Objects;
 
+import eightbitlab.com.blurview.BlurView;
+
 public class SettingsActivity extends BaseActivity
 {
     private ActivitySettingsBinding binding;
@@ -50,15 +52,20 @@ public class SettingsActivity extends BaseActivity
         auth = FirebaseAuth.getInstance();
         documentReference = database.collection("Users").document(Objects.requireNonNull(auth.getUid()));
 
-        binding.buttonBack.setOnClickListener(view -> onBackPressed());
+        binding.buttonBack.setOnClickListener(view -> getOnBackPressedDispatcher().onBackPressed());
         binding.toolbar.setPadding(0, utilities.getStatusBarHeight(), 0, 0);
         binding.scrollLayout.setPadding(0, utilities.getStatusBarHeight()+utilities.convertDpToPixel(70), 0, 0);
+
+        utilities.blur(new BlurView[]{binding.toolbar}, 10f, false);
 
         if (Hawk.contains("online"))
             binding.switchShowOnline.setChecked((int) Hawk.get("online") == 1);
 
         if (Hawk.contains("lastSeen"))
             binding.switchShowLastSeen.setChecked((int) Hawk.get("lastSeen") == 1);
+
+        if (Hawk.contains("blurUI"))
+            binding.switchBlur.setChecked((int) Hawk.get("blurUI") == 1);
 
         binding.switchShowOnline.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked)
@@ -85,6 +92,13 @@ public class SettingsActivity extends BaseActivity
                 Hawk.put("lastSeen", 0);
                 documentReference.update("lastSeen", FieldValue.delete());
             }
+        });
+
+        binding.switchBlur.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked)
+                Hawk.put("blurUI", 1);
+            else
+                Hawk.put("blurUI", 0);
         });
 
         binding.resetBalloons.setOnClickListener(this::resetBalloons);

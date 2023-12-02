@@ -101,7 +101,9 @@
     <string name="posts">Gönderiler</string>
     <string name="block_user">Engelle</string>
     <string name="no_messages">Burada hiç mesaj yok</string>
+    <string name="no_posts">Burada hiç gönderi yok</string>
     <string name="start_conversation">Sohbete başlamak için aşağıdaki kutuya birşeyler yaz.</string>
+    <string name="start_sharing">Aşağıdaki \"Yeni Gönderi\" düğmesini kullanarak bir şeyler paylaşabilir veya gönderilerini görmek için birini takip edebilirsiniz.</string>
     <string name="only_friends">Sadece arkadaşlarım görebilsin</string>
     <string name="permission_title">Bazı izinlere ihtiyaç duyabiliriz. İsterseniz şimdi, isterseniz gerekli olduğunda izin verebilirsiniz.</string>
     <string name="location">Konum</string>
@@ -117,7 +119,7 @@
     <string name="scan_qr_code_message" tools:ignore="TypographyEllipsis">Kullanıcının QR kodunu okutun...</string>
     <string name="forgot_password">Parolanızı mı unuttunuz?</string>
     <string name="sign_in_with_google">Google hesabınla giriş yap</string>
-    <string name="instead_of" tools:ignore="TypographyEllipsis">Bunun yerine...</string>
+    <string name="instead_of" tools:ignore="TypographyEllipsis">Bunun yerine şunu da kullanabilirsiniz...</string>
     <string name="reply_to">Şu mesaja cevap veriliyor:</string>
     <string name="answer">Cevapla</string>
     <string name="crop_portrait">Büyük resmi kırp</string>
@@ -150,4 +152,8 @@
     <string name="share_last_seen">Son görülmeyi paylaş</string>
     <string name="privacy">Gizlilik</string>
     <string name="sending_post">Gönderi paylaşılıyor...</string>
+    <string name="reset_password">Parolayı Sıfırla</string>
+    <string name="cover_photo">Kapak Fotoğrafı</string>
+    <string name="user_s_name">Kullanıcının adı</string>
+    <string name="introduce_yourself">Kendini tanıt</string>
 </resources>

@@ -42,6 +42,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
 
+import eightbitlab.com.blurview.BlurView;
+
 public class DiscoverFragment extends Fragment implements UserListener
 {
     private FragmentDiscoverBinding binding;
@@ -103,7 +105,7 @@ public class DiscoverFragment extends Fragment implements UserListener
         searchBlurParams.setMargins(0, utilities.getStatusBarHeight()+utilities.convertDpToPixel(64), 0, 0);
         searchBlurParams.gravity = Gravity.TOP;
         binding.searchBlur.setLayoutParams(searchBlurParams);
-        utilities.blur(binding.searchBlur, 10f, false);
+        utilities.blur(new BlurView[]{binding.searchBlur}, 10f, false);
 
         binding.discoverRV.setPadding(utilities.convertDpToPixel(10), utilities.getStatusBarHeight()+utilities.convertDpToPixel(112), utilities.convertDpToPixel(10), utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT)+utilities.convertDpToPixel(66));
         binding.discoverRV.setClipToPadding(false);

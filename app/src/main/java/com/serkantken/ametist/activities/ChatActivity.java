@@ -13,6 +13,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -20,6 +22,7 @@ import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
+import android.window.OnBackInvokedDispatcher;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -30,6 +33,7 @@ import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.core.view.WindowCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
@@ -111,7 +115,7 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         binding = ActivityChatBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        binding.buttonBack.setOnClickListener(view -> onBackPressed());
+        binding.buttonBack.setOnClickListener(view -> getOnBackPressedDispatcher().onBackPressed());
 
         Hawk.init(this).build();
         auth = FirebaseAuth.getInstance();
@@ -120,8 +124,11 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         receiverUser = (UserModel) getIntent().getSerializableExtra("receiverUser");
         isNotification = getIntent().getBooleanExtra("messageNotification", false);
 
-        utilities.blur(binding.toolbar, 10f, false);
-        utilities.blur(binding.navbarBlur, 10f, false);
+        utilities.blur(new BlurView[]{binding.toolbar, binding.navbarBlur}, 10f, false);
+
+        adjustScreen(false);
+
+        binding.profileImage.setOnClickListener(v -> adjustScreen(false));
 
         messageModels = new ArrayList<>();
         chatAdapter = new ChatAdapter(messageModels, this, ChatActivity.this, this, database);
@@ -130,18 +137,8 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         manager.setStackFromEnd(true);
         binding.messageRV.setLayoutManager(manager);
         binding.messageRV.setClipToPadding(false);
+        binding.messageRV.setPadding(0, utilities.convertDpToPixel(74), 0, utilities.convertDpToPixel(70));
 
-        if (utilities.isMIUI())
-        {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-            binding.toolbar.setPadding(0, utilities.getStatusBarHeight(), 0, 0);
-            binding.navbarBlur.setPadding(0, 0, 0, utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT));
-            binding.messageRV.setPadding(0, utilities.convertDpToPixel(74), 0, utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT)+utilities.convertDpToPixel(70));
-        }
-        else
-        {
-            binding.messageRV.setPadding(0, utilities.convertDpToPixel(74), 0, utilities.convertDpToPixel(70));
-        }
 
         //Get receiver user's name
         database.collection(Constants.DATABASE_PATH_USERS).get().addOnCompleteListener(task -> {
@@ -329,6 +326,50 @@ public class ChatActivity extends BaseActivity implements MessageListener {
                 sendPhoto();
             }
         });
+
+        binding.inputMessage.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    adjustScreen(true);
+                    return true;
+                case MotionEvent.ACTION_UP:
+                    showKeyboard(binding.inputMessage);
+                    return true;
+                default:
+                    return false;
+            }
+        });
+
+        binding.inputPhotoMessage.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    adjustScreen(true);
+                    return true;
+                case MotionEvent.ACTION_UP:
+                    showKeyboard(binding.inputPhotoMessage);
+                    return true;
+                default:
+                    return false;
+            }
+        });
+    }
+
+    private void adjustScreen(boolean isKeyboardActive) {
+        if (isKeyboardActive) {
+            WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
+            getWindow().setStatusBarColor(getColor(R.color.primary_dark));
+            getWindow().setNavigationBarColor(getColor(R.color.primary_dark));
+            binding.toolbar.setPadding(0, 0, 0, 0);
+            binding.navbarBlur.setPadding(0, 0, 0, 0);
+            binding.messageRV.setPadding(0, utilities.convertDpToPixel(74), 0, utilities.convertDpToPixel(70));
+        } else {
+            WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+            getWindow().setStatusBarColor(getColor(android.R.color.transparent));
+            getWindow().setNavigationBarColor(getColor(android.R.color.transparent));
+            binding.toolbar.setPadding(0, utilities.getStatusBarHeight(), 0, 0);
+            binding.navbarBlur.setPadding(0, 0, 0, utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT));
+            binding.messageRV.setPadding(0, utilities.convertDpToPixel(74), 0, utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT)+utilities.convertDpToPixel(70));
+        }
     }
 
     private void showMessagebox()
@@ -382,7 +423,7 @@ public class ChatActivity extends BaseActivity implements MessageListener {
     private void selectPhotoFromGallery() {
         showBalloon(binding.addPhoto, 1);
         BlurView blurView = balloon.getContentView().findViewById(R.id.blur);
-        utilities.blur(blurView, 10f, false);
+        utilities.blur(new BlurView[]{blurView}, 10f, false);
 
         CardView cameraButton = balloon.getContentView().findViewById(R.id.buttonCamera);
         cameraButton.setOnClickListener(v -> {
@@ -837,9 +878,12 @@ public class ChatActivity extends BaseActivity implements MessageListener {
             }
 
             messageModels.sort(Comparator.comparing(MessageModel::getTimestamp));
-            if (messageModels.size() == 0) {
-                chatAdapter.notifyDataSetChanged();
+            if (messageModels.isEmpty()) {
+                binding.messageRV.setVisibility(View.GONE);
+                binding.emptyDash.getRoot().setVisibility(View.VISIBLE);
             } else {
+                binding.messageRV.setVisibility(View.VISIBLE);
+                binding.emptyDash.getRoot().setVisibility(View.GONE);
                 chatAdapter.notifyDataSetChanged();
                 binding.messageRV.smoothScrollToPosition(messageModels.size() - 1);
             }
@@ -913,6 +957,20 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
     }
 
+    private void closeKeyboard() {
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+            adjustScreen(false);
+        }
+    }
+
+    public boolean isKeyboardOpen(Context context) {
+        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        return imm.isActive();
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -946,32 +1004,37 @@ public class ChatActivity extends BaseActivity implements MessageListener {
                 balloon.showAlignTop(view);
                 break;
             case 2:
-                balloon.showAlignRight(view);
+                balloon.showAlignEnd(view);
                 break;
             case 3:
                 balloon.showAlignBottom(view);
                 break;
             case 4:
-                balloon.showAlignLeft(view);
+                balloon.showAlignStart(view);
                 break;
         }
     }
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-        mediaPlayer.release();
-        mediaPlayer = null;
-        if (senderRegistration != null && receiverRegistration != null) {
-            senderRegistration.remove();
-            receiverRegistration.remove();
+        if (isKeyboardOpen(getApplicationContext())) {
+            closeKeyboard();
+            Toast.makeText(this, "Klavye kapandı", Toast.LENGTH_SHORT).show();
+        } else {
+            mediaPlayer.release();
+            mediaPlayer = null;
+            if (senderRegistration != null && receiverRegistration != null) {
+                senderRegistration.remove();
+                receiverRegistration.remove();
+            }
+            if (isNotification)
+            {
+                Intent intent = new Intent(ChatActivity.this, IntroActivity.class);
+                startActivity(intent);
+            }
+            finish();
+            super.onBackPressed();
         }
-        if (isNotification)
-        {
-            Intent intent = new Intent(ChatActivity.this, IntroActivity.class);
-            startActivity(intent);
-        }
-        finish();
     }
 
     @Override

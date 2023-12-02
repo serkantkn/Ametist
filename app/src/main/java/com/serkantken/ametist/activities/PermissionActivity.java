@@ -99,6 +99,7 @@ public class PermissionActivity extends AppCompatActivity {
         Hawk.put(Constants.IS_BALLOONS_SHOWED, false);
         Hawk.put("online", 1);
         Hawk.put("lastSeen", 1);
+        Hawk.put("blurUI", 1);
     }
 
     @Override

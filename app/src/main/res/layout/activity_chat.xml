@@ -6,23 +6,27 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
+    android:fitsSystemWindows="false"
     tools:context=".activities.ChatActivity"
     android:background="@color/primary">
 
-    <com.cooltechworks.views.shimmer.ShimmerRecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/messageRV"
         android:layout_width="0dp"
         app:layout_constraintWidth_max="600dp"
         android:layout_height="0dp"
         app:stackFromEnd="true"
-        app:shimmer_demo_child_count="10"
-        app:shimmer_demo_layout="@layout/layout_post"
-        app:shimmer_demo_layout_manager_type="linear_vertical"
-        app:shimmer_demo_angle="20"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
+
+    <include
+        android:id="@+id/empty_dash"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        layout="@layout/layout_empty_chat"
+        android:visibility="gone"/>
 
     <eightbitlab.com.blurview.BlurView
         android:layout_width="match_parent"

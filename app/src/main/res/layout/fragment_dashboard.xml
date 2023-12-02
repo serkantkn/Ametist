@@ -12,20 +12,24 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.cooltechworks.views.shimmer.ShimmerRecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/dashboardRV"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            app:layoutManager="LinearLayoutManager"
             android:nestedScrollingEnabled="true"
             android:clipToPadding="false"
             android:paddingTop="80dp"
-            android:paddingBottom="60dp"
-            app:shimmer_demo_child_count="10"
-            app:shimmer_demo_layout="@layout/layout_post"
-            app:shimmer_demo_layout_manager_type="linear_vertical"
-            app:shimmer_demo_angle="20"/>
+            android:paddingBottom="60dp"/>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <include
+        android:id="@+id/empty_dash"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        layout="@layout/layout_empty_dashboard"
+        android:visibility="gone"/>
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/newPostButton"

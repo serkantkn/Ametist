@@ -106,7 +106,9 @@
     <string name="posts">Posts</string>
     <string name="block_user">Block User</string>
     <string name="no_messages">There are no messages here</string>
+    <string name="no_posts">There are no posts here</string>
     <string name="start_conversation">Type something in the box below to start the conversation.</string>
+    <string name="start_sharing">You can share something using the \"New Post\" button below or follow someone to see their posts.</string>
     <string name="only_friends">Only my friends can see</string>
     <string name="permission_title">We may need some permissions. You can give permission now or when necessary.</string>
     <string name="location">Location</string>
@@ -123,7 +125,7 @@
     <string name="scan_qr_code_message">Scan user\'s QR code</string>
     <string name="forgot_password">Forgot password?</string>
     <string name="sign_in_with_google">Sign in with Google</string>
-    <string name="instead_of" tools:ignore="TypographyEllipsis">Instead of...</string>
+    <string name="instead_of" tools:ignore="TypographyEllipsis">You can also use this instead...</string>
     <string name="reply_to">Reply to this message:</string>
     <string name="answer">Answer</string>
     <string name="delete">Delete</string>
@@ -155,4 +157,9 @@
     <string name="share_last_seen">Share last seen</string>
     <string name="privacy">Privacy</string>
     <string name="sending_post">Sending post...</string>
+    <string name="default_web_client_id" translatable="false">800135909908-p9udsrig4igls1hi81v52bonjc5ob9pg.apps.googleusercontent.com</string>
+    <string name="reset_password">Reset Password</string>
+    <string name="cover_photo">Cover Photo</string>
+    <string name="user_s_name">User\'s name</string>
+    <string name="introduce_yourself">Introduce yourself</string>
 </resources>

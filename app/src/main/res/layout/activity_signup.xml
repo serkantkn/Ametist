@@ -1,0 +1,555 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.SignupActivity"
+    android:background="@drawable/purple_gradient"
+    android:id="@+id/container">
+
+    <View
+        android:layout_width="450dp"
+        android:layout_height="450dp"
+        android:background="@drawable/green_circle"
+        android:id="@+id/circle5"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="-225dp"
+        android:layout_marginBottom="-50dp"
+        android:alpha="0.8"
+        android:transitionName="circle5"/>
+
+    <View
+        android:layout_width="450dp"
+        android:layout_height="450dp"
+        android:background="@drawable/blue_circle"
+        android:id="@+id/circle1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="100dp"
+        android:layout_marginEnd="-100dp"
+        android:alpha="0.8"
+        android:transitionName="circle1"/>
+
+    <View
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:background="@drawable/blue_circle"
+        android:id="@+id/circle2"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="75dp"
+        android:layout_marginTop="-25dp"
+        android:alpha="0.8"
+        android:transitionName="circle2"/>
+
+    <View
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:background="@drawable/yellow_circle"
+        android:id="@+id/circle3"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="-45dp"
+        android:layout_marginTop="550dp"
+        android:alpha="0.8"
+        android:transitionName="circle3"/>
+
+    <View
+        android:layout_width="175dp"
+        android:layout_height="175dp"
+        android:background="@drawable/red_circle"
+        android:id="@+id/circle4"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="-60dp"
+        android:layout_marginTop="-500dp"
+        android:alpha="0.8"
+        android:transitionName="circle4"/>
+
+    <eightbitlab.com.blurview.BlurView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/loadingBlur"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:visibility="invisible">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/background_edittext_transparent"
+            android:padding="15dp">
+
+            <ProgressBar
+                android:id="@+id/progressbar"
+                android:layout_width="51dp"
+                android:layout_height="50dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/loadingText"
+                android:text="Hesap açılıyor..."
+                android:fontFamily="@font/jost_regular"
+                android:textColor="@color/secondary_text"
+                android:textSize="17sp"
+                app:layout_constraintTop_toBottomOf="@id/progressbar"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </eightbitlab.com.blurview.BlurView>
+
+    <ImageView
+        android:id="@+id/imgLogo"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@mipmap/ametist_logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias=".06"
+        android:contentDescription="@string/logo"
+        android:visibility="invisible"/>
+
+    <TextView
+        android:id="@+id/appName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/lets_begin"
+        android:textColor="@color/white"
+        android:fontFamily="@font/jost_light"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imgLogo"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0"
+        android:visibility="invisible"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:id="@+id/scrollView"
+        app:layout_constraintTop_toBottomOf="@id/appName"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="invisible">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/backButton"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="5dp">
+
+                <ImageView
+                    android:layout_width="46dp"
+                    android:layout_height="46dp"
+                    android:id="@+id/button_back"
+                    android:src="@drawable/ic_back"
+                    android:padding="10dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/text_back_to_signin"
+                    android:text="Geri git. Hesabım var."
+                    android:textColor="@color/white"
+                    android:textSize="17sp"
+                    android:fontFamily="@font/jost_regular"
+                    app:layout_constraintTop_toTopOf="@id/button_back"
+                    app:layout_constraintBottom_toBottomOf="@id/button_back"
+                    app:layout_constraintStart_toEndOf="@id/button_back"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <eightbitlab.com.blurview.BlurView
+                android:id="@+id/blur_name"
+                android:layout_width="0dp"
+                app:layout_constraintWidth_max="460dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/background_edittext_transparent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/backButton"
+                android:layout_marginTop="10dp">
+
+                <EditText
+                    android:id="@+id/input_name"
+                    android:layout_height="match_parent"
+                    android:layout_width="match_parent"
+                    android:background="@android:color/transparent"
+                    android:textColorHint="@color/secondary_text"
+                    android:textColor="@color/primary_text"
+                    android:hint="@string/name"
+                    android:fontFamily="@font/jost_regular"
+                    android:textSize="17sp"
+                    android:inputType="text"
+                    android:paddingStart="25dp"
+                    android:paddingTop="15dp"
+                    android:paddingEnd="25dp"
+                    android:paddingBottom="15dp"
+                    android:importantForAutofill="no" />
+
+            </eightbitlab.com.blurview.BlurView>
+
+            <eightbitlab.com.blurview.BlurView
+                android:id="@+id/cardAge"
+                android:layout_width="0dp"
+                app:layout_constraintWidth_max="460dp"
+                android:layout_height="wrap_content"
+                android:background="@drawable/background_edittext_transparent"
+                app:layout_constraintTop_toBottomOf="@id/blur_name"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/titleAge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:fontFamily="@font/jost_regular"
+                        android:text="@string/age"
+                        android:textColor="@color/accent_red_light"
+                        android:textSize="17sp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="0"/>
+
+                    <Spinner
+                        android:id="@+id/spinnerAge"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/background_edittext"
+                        android:textColor="@color/primary_text"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/titleAge"/>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </eightbitlab.com.blurview.BlurView>
+
+            <eightbitlab.com.blurview.BlurView
+                android:id="@+id/radioGender"
+                android:layout_width="0dp"
+                app:layout_constraintWidth_max="460dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/background_edittext_transparent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/cardAge"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/textGender"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/gender"
+                        android:textColor="@color/accent_purple_dark"
+                        android:textSize="17sp"
+                        android:fontFamily="@font/jost_regular"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="10dp"/>
+
+                    <RadioGroup
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        app:layout_constraintTop_toBottomOf="@id/textGender"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent">
+
+                        <RadioButton
+                            android:id="@+id/radioMale"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/man"
+                            android:textColor="@color/primary_text"
+                            android:layout_marginEnd="10dp"
+                            android:fontFamily="@font/jost_regular"
+                            android:textSize="17sp"
+                            android:layout_gravity="center"/>
+
+                        <RadioButton
+                            android:id="@+id/radioFemale"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/woman"
+                            android:textColor="@color/primary_text"
+                            android:layout_marginStart="10dp"
+                            android:fontFamily="@font/jost_regular"
+                            android:textSize="17sp"
+                            android:layout_gravity="center"/>
+
+                    </RadioGroup>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </eightbitlab.com.blurview.BlurView>
+
+            <eightbitlab.com.blurview.BlurView
+                android:id="@+id/blur_mail"
+                android:layout_width="0dp"
+                app:layout_constraintWidth_max="460dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/background_edittext_transparent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/radioGender"
+                app:layout_constraintVertical_bias="0">
+
+                <EditText
+                    android:id="@+id/input_mail"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:textColorHint="@color/secondary_text"
+                    android:textColor="@color/primary_text"
+                    android:hint="@string/email"
+                    android:fontFamily="@font/jost_regular"
+                    android:textSize="17sp"
+                    android:inputType="textEmailAddress"
+                    android:paddingStart="25dp"
+                    android:paddingTop="15dp"
+                    android:paddingEnd="25dp"
+                    android:paddingBottom="15dp"
+                    android:importantForAutofill="no" />
+
+            </eightbitlab.com.blurview.BlurView>
+
+            <eightbitlab.com.blurview.BlurView
+                android:id="@+id/blur_password"
+                android:layout_width="0dp"
+                app:layout_constraintWidth_max="460dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="15dp"
+                android:background="@drawable/background_edittext_transparent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/blur_mail"
+                app:layout_constraintVertical_bias="0">
+
+                <EditText
+                    android:id="@+id/input_password"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:textColorHint="@color/secondary_text"
+                    android:textColor="@color/primary_text"
+                    android:hint="@string/password"
+                    android:fontFamily="@font/jost_regular"
+                    android:textSize="17sp"
+                    android:inputType="textPassword"
+                    android:paddingStart="25dp"
+                    android:paddingTop="15dp"
+                    android:paddingEnd="25dp"
+                    android:paddingBottom="15dp"
+                    android:importantForAutofill="no" />
+
+            </eightbitlab.com.blurview.BlurView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/buttonSignup"
+                android:layout_width="0dp"
+                app:layout_constraintWidth_max="360dp"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="5dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/blur_password"
+                app:layout_constraintVertical_bias=".1"
+                app:layout_constraintWidth_percent=".6" >
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/purple_gradient">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sing_up"
+                        android:textSize="17sp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
+                        android:textColor="@color/white"
+                        android:fontFamily="@font/jost_regular"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"/>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <eightbitlab.com.blurview.BlurView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/alsoLoginCard"
+                android:layout_marginTop="15dp"
+                app:layout_constraintStart_toStartOf="@id/blur_mail"
+                app:layout_constraintEnd_toEndOf="@id/blur_mail"
+                app:layout_constraintTop_toBottomOf="@id/buttonSignup"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:background="@drawable/background_edittext_transparent"
+                android:layout_marginBottom="15dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/alsoLoginText"
+                        android:text="You can also login with these"
+                        android:fontFamily="@font/jost_regular"
+                        android:textSize="17sp"
+                        android:textColor="@color/secondary_text"
+                        android:layout_marginTop="10dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"/>
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/button_signin_with_phone"
+                        app:cardCornerRadius="15dp"
+                        app:layout_constraintTop_toBottomOf="@id/alsoLoginText"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/button_signin_with_google"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintVertical_bias="0"
+                        app:layout_constraintHorizontal_chainStyle="packed"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="20dp"
+                        android:layout_marginEnd="5dp"
+                        app:cardElevation="10dp">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@color/primary"
+                            android:padding="10dp">
+
+                            <ImageView
+                                android:layout_width="40dp"
+                                android:layout_height="0dp"
+                                app:layout_constraintDimensionRatio="1:1"
+                                android:id="@+id/phone_logo"
+                                android:src="@drawable/ic_phone"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_chainStyle="packed"
+                                app:tint="@color/accent_purple_dark" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    </androidx.cardview.widget.CardView>
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/button_signin_with_google"
+                        app:cardCornerRadius="15dp"
+                        app:layout_constraintTop_toBottomOf="@id/alsoLoginText"
+                        app:layout_constraintStart_toEndOf="@id/button_signin_with_phone"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintVertical_bias="0"
+                        app:layout_constraintHorizontal_chainStyle="packed"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="20dp"
+                        android:layout_marginStart="5dp"
+                        app:cardElevation="10dp">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@color/primary"
+                            android:padding="10dp">
+
+                            <ImageView
+                                android:layout_width="40dp"
+                                android:layout_height="0dp"
+                                app:layout_constraintDimensionRatio="1:1"
+                                android:id="@+id/google_logo"
+                                android:src="@drawable/google_logo"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_chainStyle="packed"/>
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    </androidx.cardview.widget.CardView>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </eightbitlab.com.blurview.BlurView>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
