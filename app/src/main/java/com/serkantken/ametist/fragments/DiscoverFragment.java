@@ -7,6 +7,7 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.transition.Fade;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -21,6 +22,7 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
@@ -86,7 +88,7 @@ public class DiscoverFragment extends Fragment implements UserListener
             spanCount = 8;
         }
 
-        adapter = new UsersAdapter(userList, getContext(), getActivity(), this);
+        adapter = new UsersAdapter(userList, getContext(), utilities, this);
         binding.discoverRV.setAdapter(adapter);
         binding.discoverRV.setLayoutManager(new StaggeredGridLayoutManager(spanCount, StaggeredGridLayoutManager.VERTICAL));
 
@@ -166,6 +168,7 @@ public class DiscoverFragment extends Fragment implements UserListener
                     userModel.setUserId(queryDocumentSnapshot.getId());
                     userModel.setName(queryDocumentSnapshot.getString("name"));
                     userModel.setProfilePic(queryDocumentSnapshot.getString("profilePic"));
+                    userModel.setGender(queryDocumentSnapshot.getString("gender"));
                     if (!Objects.isNull(Double.parseDouble(Objects.requireNonNull(queryDocumentSnapshot.get("latitude")).toString())))
                     {
                         userModel.setLatitude(Double.parseDouble(Objects.requireNonNull(queryDocumentSnapshot.get("latitude")).toString()));

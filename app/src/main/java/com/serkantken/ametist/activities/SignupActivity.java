@@ -135,6 +135,10 @@ public class SignupActivity extends AppCompatActivity {
                 {
                     gender = "2";
                 }
+                else
+                {
+                    gender = "0";
+                }
                 email = binding.inputMail.getText().toString().trim().toLowerCase();
                 password = binding.inputPassword.getText().toString();
 

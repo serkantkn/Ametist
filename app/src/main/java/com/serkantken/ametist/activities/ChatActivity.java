@@ -2,7 +2,9 @@ package com.serkantken.ametist.activities;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -13,6 +15,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.transition.Fade;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -137,7 +140,7 @@ public class ChatActivity extends BaseActivity implements MessageListener {
         manager.setStackFromEnd(true);
         binding.messageRV.setLayoutManager(manager);
         binding.messageRV.setClipToPadding(false);
-        binding.messageRV.setPadding(0, utilities.convertDpToPixel(74), 0, utilities.convertDpToPixel(70));
+        binding.messageRV.setPadding(0, utilities.convertDpToPixel(74), 0, utilities.getNavigationBarHeight(Configuration.ORIENTATION_PORTRAIT)+utilities.convertDpToPixel(70));
 
 
         //Get receiver user's name
@@ -513,7 +516,17 @@ public class ChatActivity extends BaseActivity implements MessageListener {
 
                         sendNotification(body.toString());
                     } catch (Exception e) {
-                        Toast.makeText(ChatActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ChatActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                        AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
+                        builder.setMessage(e.getMessage());
+                        builder.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                        builder.create();
+                        builder.show();
                     }
                 }
 
@@ -771,6 +784,16 @@ public class ChatActivity extends BaseActivity implements MessageListener {
             @Override
             public void onFailure(@NonNull Call<String> call, @NonNull Throwable t) {
                 Toast.makeText(ChatActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
+                AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
+                builder.setMessage(t.getMessage());
+                builder.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                builder.create();
+                builder.show();
             }
         });
     }

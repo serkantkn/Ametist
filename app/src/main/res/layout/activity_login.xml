@@ -123,7 +123,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintVertical_bias=".06"
         android:contentDescription="@string/logo"
-        android:visibility="invisible"/>
+        android:visibility="visible"/>
 
     <TextView
         android:id="@+id/appName"
@@ -138,7 +138,7 @@
         app:layout_constraintTop_toBottomOf="@+id/imgLogo"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintVertical_bias="0"
-        android:visibility="invisible"/>
+        android:visibility="visible"/>
 
     <ScrollView
         android:layout_width="match_parent"
@@ -146,7 +146,7 @@
         android:id="@+id/scrollView"
         app:layout_constraintTop_toBottomOf="@id/appName"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:visibility="invisible">
+        android:visibility="visible">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"

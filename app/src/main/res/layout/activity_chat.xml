@@ -540,7 +540,8 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0"
-                app:riv_corner_radius="10dp" />
+                app:riv_corner_radius="10dp"
+                android:transitionName="photograph"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
